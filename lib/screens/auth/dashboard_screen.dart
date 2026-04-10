@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'edukasi_screen.dart';
 import 'profil_screen.dart';
+import 'target_sampah_screen.dart';
+import 'user_data.dart';
 
 const Color kPrimary = Color(0xFF26D077);
 const Color kPrimaryDark = Color(0xFF1BAF60);
@@ -15,23 +18,33 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
   bool _showSaldo = false;
-
   final double _saldo = 0;
   final int _koin = 0;
 
-  void _onNavTap(int index) {
+  final UserData _userData = UserData();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _userData.load();
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _onNavTap(int index) async {
     if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const EdukasiScreen()),
-      );
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const EdukasiScreen()));
       return;
     }
     if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfilScreen()),
-      );
+      await Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const ProfilScreen()));
+      if (mounted) setState(() {});
       return;
     }
     setState(() => _currentIndex = index);
@@ -61,7 +74,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Logo + Notif
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -77,12 +89,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 TextSpan(text: 'SET'),
                                 WidgetSpan(
                                   child: Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 1),
-                                    child: Icon(
-                                      Icons.recycling,
-                                      color: Colors.white,
-                                      size: 22,
-                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 1),
+                                    child: Icon(Icons.recycling,
+                                        color: Colors.white, size: 22),
                                   ),
                                 ),
                                 TextSpan(text: 'R.IN'),
@@ -96,30 +106,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.notifications_outlined,
-                              color: kPrimary,
-                              size: 22,
-                            ),
+                            child: const Icon(Icons.notifications_outlined,
+                                color: kPrimary, size: 22),
                           ),
                         ],
                       ),
 
                       const SizedBox(height: 16),
 
-                      // ✅ Avatar + Nama → klik ke Profil
                       GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ProfilScreen(),
-                          ),
-                        ),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ProfilScreen()),
+                          );
+                          if (mounted) setState(() {});
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
+                            color: Colors.white.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: Row(
@@ -128,13 +136,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               CircleAvatar(
                                 radius: 18,
                                 backgroundColor: Colors.white,
-                                child: Icon(Icons.person,
-                                    color: kPrimary, size: 20),
+                                backgroundImage:
+                                    !_isLoading && _userData.fotoProfil != null
+                                        ? FileImage(_userData.fotoProfil!)
+                                        : null,
+                                child: (_isLoading ||
+                                        _userData.fotoProfil == null)
+                                    ? Icon(Icons.person,
+                                        color: kPrimary, size: 20)
+                                    : null,
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                'User',
-                                style: TextStyle(
+                              Text(
+                                _isLoading ? 'User' : _userData.nama,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15,
@@ -147,7 +162,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Card Saldo + Koin
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(18),
@@ -188,10 +202,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ? 'Rp ${_saldo.toStringAsFixed(0)}'
                                   : 'Rp ••••••••',
                               style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 16),
                             Center(
@@ -210,14 +223,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    '$_koin',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
+                                  Text('$_koin',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w800)),
                                 ],
                               ),
                             ),
@@ -282,26 +292,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildMenuItem(Icons.recycling, 'Setor\nsampah', () {}),
+                    // ✅ Targetkan Sampah → navigasi ke TargetSampahScreen
                     _buildMenuItem(
-                        Icons.flag_outlined, 'Targetkan\nSampah', () {}),
-                    _buildMenuItem(Icons.location_on_outlined,
-                        'Cek Bank\nSampah', () {}),
+                      Icons.flag_outlined,
+                      'Targetkan\nSampah',
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TargetSampahScreen(),
+                        ),
+                      ),
+                    ),
+                    _buildMenuItem(
+                        Icons.location_on_outlined, 'Cek Bank\nSampah', () {}),
                   ],
                 ),
               ),
 
               const SizedBox(height: 28),
 
-              // ── Aktivitas ──
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Aktivitas',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87),
-                ),
+                child: Text('Aktivitas',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87)),
               ),
               const SizedBox(height: 12),
               Padding(
@@ -314,11 +330,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
-                    child: Text(
-                      'Belum ada aktivitas',
-                      style:
-                          TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                    ),
+                    child: Text('Belum ada aktivitas',
+                        style: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 13)),
                   ),
                 ),
               ),
@@ -337,7 +351,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
-              color: kPrimary.withOpacity(0.3),
+              color: kPrimary.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -368,7 +382,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: kPrimary.withOpacity(0.12),
+              color: kPrimary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: kPrimary, size: 30),
@@ -399,14 +413,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: isActive ? kPrimary : Colors.white70, size: 22),
             if (isActive) ...[
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: kPrimary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
+              Text(label,
+                  style: const TextStyle(
+                      color: kPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13)),
             ],
           ],
         ),

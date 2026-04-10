@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'edit_profil_screen.dart';
- 
+import 'user_data.dart';
+
 const Color kPrimary = Color(0xFF26D077);
 const Color kPrimaryDark = Color(0xFF1BAF60);
- 
+
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
- 
+
   @override
   State<ProfilScreen> createState() => _ProfilScreenState();
 }
- 
+
 class _ProfilScreenState extends State<ProfilScreen> {
-  String _nama = 'User';
-  String _email = 'User@gmail.com';
-  String _noTelpon = '088888888888';
- 
+  // ✅ Pakai singleton UserData
+  final UserData _userData = UserData();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,29 +36,27 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border:
-                            Border.all(color: Colors.grey.shade300, width: 1.5),
+                        border: Border.all(
+                            color: Colors.grey.shade300, width: 1.5),
                       ),
                       child: const Icon(Icons.chevron_left,
                           size: 24, color: Colors.black87),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    'Profil',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87),
-                  ),
+                  const Text('Profil',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87)),
                 ],
               ),
             ),
- 
+
             const SizedBox(height: 12),
             const Divider(height: 1, color: Colors.black12),
             const SizedBox(height: 28),
- 
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -72,28 +70,24 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         CircleAvatar(
                           radius: 56,
                           backgroundColor: Colors.grey.shade200,
-                          child: Icon(Icons.person,
-                              size: 56, color: Colors.grey.shade400),
+                          backgroundImage: _userData.fotoProfil != null
+                              ? FileImage(_userData.fotoProfil!)
+                              : null,
+                          child: _userData.fotoProfil == null
+                              ? Icon(Icons.person,
+                                  size: 56, color: Colors.grey.shade400)
+                              : null,
                         ),
                         GestureDetector(
                           onTap: () async {
-                            final result = await Navigator.push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EditProfilScreen(
-                                  nama: _nama,
-                                  email: _email,
-                                  noTelpon: _noTelpon,
-                                ),
+                                builder: (context) =>
+                                    EditProfilScreen(userData: _userData),
                               ),
                             );
-                            if (result != null) {
-                              setState(() {
-                                _nama = result['nama'];
-                                _email = result['email'];
-                                _noTelpon = result['noTelpon'];
-                              });
-                            }
+                            setState(() {});
                           },
                           child: Container(
                             width: 30,
@@ -110,72 +104,60 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         ),
                       ],
                     ),
- 
+
                     const SizedBox(height: 14),
- 
-                    // Nama
-                    Text(
-                      _nama,
-                      style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87),
-                    ),
- 
+
+                    Text(_userData.nama,
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87)),
+
                     const SizedBox(height: 4),
- 
-                    // Email
-                    Text(
-                      _email,
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                    ),
- 
+
+                    Text(_userData.email,
+                        style: TextStyle(
+                            fontSize: 14, color: Colors.grey.shade500)),
+
                     const SizedBox(height: 32),
- 
-                    // ── Personal Info ──
+
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: const Text(
-                        'Personal Info',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87),
-                      ),
+                      child: const Text('Personal Info',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87)),
                     ),
- 
+
                     const SizedBox(height: 16),
- 
-                    // Nomor Telpon
+
                     _buildInfoItem(
                       icon: Icons.location_on_outlined,
                       title: 'Nomor Telpon',
-                      subtitle: _noTelpon,
+                      subtitle: _userData.noTelpon,
                     ),
- 
+
                     const Divider(height: 1, color: Colors.black12),
- 
-                    // Notifikasi
+
                     _buildMenuItem(
                       icon: Icons.notifications_outlined,
                       label: 'Notifikasi',
                       onTap: () {},
                     ),
- 
+
                     const Divider(height: 1, color: Colors.black12),
- 
-                    // Bantuan
+
                     _buildMenuItem(
                       icon: Icons.help_outline,
                       label: 'Bantuan',
                       onTap: () {},
                     ),
- 
+
                     const Divider(height: 1, color: Colors.black12),
- 
+
                     const SizedBox(height: 36),
- 
-                    // ── Keluar ──
+
                     GestureDetector(
                       onTap: () {
                         Navigator.popUntil(context, (route) => route.isFirst);
@@ -185,17 +167,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         children: const [
                           Icon(Icons.logout, color: Colors.red, size: 20),
                           SizedBox(width: 8),
-                          Text(
-                            'Keluar',
-                            style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.red,
-                                fontWeight: FontWeight.w600),
-                          ),
+                          Text('Keluar',
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
- 
+
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -206,7 +186,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       ),
     );
   }
- 
+
   Widget _buildInfoItem({
     required IconData icon,
     required String title,
@@ -222,7 +202,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  style:
+                      TextStyle(fontSize: 12, color: Colors.grey.shade500)),
               const SizedBox(height: 2),
               Text(subtitle,
                   style: const TextStyle(
@@ -235,7 +216,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       ),
     );
   }
- 
+
   Widget _buildMenuItem({
     required IconData icon,
     required String label,
