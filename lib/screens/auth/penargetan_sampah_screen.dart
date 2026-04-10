@@ -13,10 +13,10 @@ class PenargentanSampahScreen extends StatefulWidget {
 
 class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
   final List<Map<String, dynamic>> _sampahList = [
-    {'nama': 'Plastik', 'hargaPerKg': 2000, 'koinPerKg': 20, 'jumlah': 1},
-    {'nama': 'Kertas', 'hargaPerKg': 1500, 'koinPerKg': 15, 'jumlah': 1},
-    {'nama': 'Kaca', 'hargaPerKg': 1000, 'koinPerKg': 10, 'jumlah': 1},
-    {'nama': 'Logam', 'hargaPerKg': 3000, 'koinPerKg': 30, 'jumlah': 1},
+    {'nama': 'Plastik', 'hargaPerKg': 2000, 'koinPerKg': 20, 'jumlah': 0},
+    {'nama': 'Kertas', 'hargaPerKg': 1500, 'koinPerKg': 15, 'jumlah': 0},
+    {'nama': 'Kaca', 'hargaPerKg': 1000, 'koinPerKg': 10, 'jumlah': 0},
+    {'nama': 'Logam', 'hargaPerKg': 3000, 'koinPerKg': 30, 'jumlah': 0},
   ];
 
   double get _totalKg =>
@@ -36,11 +36,21 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
   void _ubahJumlah(int index, int delta) {
     setState(() {
       final newVal = (_sampahList[index]['jumlah'] as int) + delta;
-      if (newVal >= 1) _sampahList[index]['jumlah'] = newVal;
+      // ✅ Minimal 0, tidak bisa minus
+      if (newVal >= 0) _sampahList[index]['jumlah'] = newVal;
     });
   }
 
   void _buatPenargetan() {
+    if (_totalKg == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Masukan minimal 1 kg untuk membuat target'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     Navigator.pop(context, {
       'totalKg': _totalKg,
       'totalKoin': _totalKoin,
@@ -110,9 +120,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600)),
                           const SizedBox(height: 12),
-                          ..._sampahList
-                              .map((s) => _buildHargaItem(s))
-                              .toList(),
+                          ..._sampahList.map((s) => _buildHargaItem(s)),
                         ],
                       ),
                     ),
@@ -146,8 +154,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                                   child: _buildCounterItem(
                                       entry.key, entry.value),
                                 ),
-                              )
-                              .toList(),
+                              ),
                         ],
                       ),
                     ),
@@ -181,13 +188,13 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Estimasi koin yang di dapatkan : $_totalKoin',
+                            'Estimasi koin yang di dapatkan : ${_totalKg == 0 ? '-' : '$_totalKoin'}',
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 13),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Estimasi saldo yang di dapatkan : Rp ${_totalSaldo.toStringAsFixed(0)}',
+                            'Estimasi saldo yang di dapatkan : ${_totalKg == 0 ? '-' : 'Rp ${_totalSaldo.toStringAsFixed(0)}'}',
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 13),
                           ),
