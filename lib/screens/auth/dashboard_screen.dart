@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'edukasi_screen.dart';
 import 'profil_screen.dart';
+import 'keuangan_screen.dart';
 
 const Color kPrimary = Color(0xFF26D077);
 const Color kPrimaryDark = Color(0xFF1BAF60);
@@ -24,6 +25,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const EdukasiScreen()),
+      );
+      return;
+    }
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const KeuanganScreen()),
       );
       return;
     }
