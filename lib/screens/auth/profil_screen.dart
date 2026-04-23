@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:proyek_2_setor_in/screens/auth/app_theme.dart';
 import 'edit_profil_screen.dart';
 import 'user_data.dart';
-
-const Color kPrimary = Color(0xFF26D077);
-const Color kPrimaryDark = Color(0xFF1BAF60);
+import 'login_screen.dart';
 
 class ProfilScreen extends StatefulWidget {
-  const ProfilScreen({super.key});
+  final VoidCallback? onUpdate;
+  const ProfilScreen({super.key, this.onUpdate});
 
   @override
   State<ProfilScreen> createState() => _ProfilScreenState();
 }
 
 class _ProfilScreenState extends State<ProfilScreen> {
-  // ✅ Pakai singleton UserData
   final UserData _userData = UserData();
 
   @override
@@ -24,26 +23,11 @@ class _ProfilScreenState extends State<ProfilScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── AppBar ──
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.grey.shade300, width: 1.5),
-                      ),
-                      child: const Icon(Icons.chevron_left,
-                          size: 24, color: Colors.black87),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   const Text('Profil',
                       style: TextStyle(
                           fontSize: 20,
@@ -52,18 +36,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 12),
             const Divider(height: 1, color: Colors.black12),
             const SizedBox(height: 28),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // ── Avatar ──
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
@@ -87,6 +68,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                     EditProfilScreen(userData: _userData),
                               ),
                             );
+                            widget.onUpdate?.call();
                             setState(() {});
                           },
                           child: Container(
@@ -104,23 +86,17 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 14),
-
                     Text(_userData.nama,
                         style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87)),
-
                     const SizedBox(height: 4),
-
                     Text(_userData.email,
                         style: TextStyle(
                             fontSize: 14, color: Colors.grey.shade500)),
-
                     const SizedBox(height: 32),
-
                     Align(
                       alignment: Alignment.centerLeft,
                       child: const Text('Personal Info',
@@ -129,38 +105,34 @@ class _ProfilScreenState extends State<ProfilScreen> {
                               fontWeight: FontWeight.w700,
                               color: Colors.black87)),
                     ),
-
                     const SizedBox(height: 16),
-
                     _buildInfoItem(
                       icon: Icons.location_on_outlined,
                       title: 'Nomor Telpon',
                       subtitle: _userData.noTelpon,
                     ),
-
                     const Divider(height: 1, color: Colors.black12),
-
                     _buildMenuItem(
                       icon: Icons.notifications_outlined,
                       label: 'Notifikasi',
                       onTap: () {},
                     ),
-
                     const Divider(height: 1, color: Colors.black12),
-
                     _buildMenuItem(
                       icon: Icons.help_outline,
                       label: 'Bantuan',
                       onTap: () {},
                     ),
-
                     const Divider(height: 1, color: Colors.black12),
-
                     const SizedBox(height: 36),
-
                     GestureDetector(
                       onTap: () {
-                        Navigator.popUntil(context, (route) => route.isFirst);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const LoginScreen()),
+                          (route) => false,
+                        );
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -175,7 +147,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -231,8 +202,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             Icon(icon, color: Colors.black54, size: 26),
             const SizedBox(width: 16),
             Text(label,
-                style:
-                    const TextStyle(fontSize: 15, color: Colors.black87)),
+                style: const TextStyle(fontSize: 15, color: Colors.black87)),
           ],
         ),
       ),

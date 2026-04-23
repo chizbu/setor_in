@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 import 'login_screen.dart';
-
-const Color kPrimary = Color(0xFF26D077);
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -89,9 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ? GestureDetector(
                 onTap: onToggleObscure,
                 child: Icon(
-                  obscure
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
+                  obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                   color: Colors.grey,
                   size: 20,
                 ),
@@ -205,8 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 prefixIcon: Icons.lock_outline,
                 isPassword: true,
                 obscure: _obscurePassword,
-                onToggleObscure: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
               ),
               const SizedBox(height: 16),
               _buildLabel('Konfirmasi Password'),
@@ -216,8 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 prefixIcon: Icons.lock_outline,
                 isPassword: true,
                 obscure: _obscureKonfirmasi,
-                onToggleObscure: () =>
-                    setState(() => _obscureKonfirmasi = !_obscureKonfirmasi),
+                onToggleObscure: () => setState(() => _obscureKonfirmasi = !_obscureKonfirmasi),
               ),
               const SizedBox(height: 16),
               _buildLabel('Nomor telpon'),
@@ -253,9 +248,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
                     ),
                     child: const Text(
                       'Masuk disini',

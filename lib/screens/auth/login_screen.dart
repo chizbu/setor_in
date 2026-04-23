@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 import 'register_screen.dart';
 import 'resetpassword_screen.dart';
 import 'dashboard_screen.dart';
-
-const Color kPrimary = Color(0xFF26D077);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,13 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // ✅ Navigasi ke Dashboard setelah login berhasil
-    // pushReplacement supaya user tidak bisa back ke halaman login
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => const DashboardScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const DashboardScreen()),
     );
 
     // TODO: Hubungkan ke API login
@@ -79,8 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
         prefixIcon: Icon(prefixIcon, color: Colors.grey, size: 20),
         suffixIcon: isPassword
             ? GestureDetector(
-                onTap: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
+                onTap: () => setState(() => _obscurePassword = !_obscurePassword),
                 child: Icon(
                   _obscurePassword
                       ? Icons.visibility_off_outlined
@@ -162,14 +156,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ResetPasswordScreen(),
-                      ),
-                    );
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ResetPasswordScreen()),
+                  ),
                   child: const Text(
                     'Lupa Password?',
                     style: TextStyle(
@@ -211,9 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
                     ),
                     child: const Text(
                       'Daftar disini',
