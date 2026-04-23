@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'app_theme.dart';
 import 'user_data.dart';
-
-const Color kPrimary = Color(0xFF26D077);
 
 class EditProfilScreen extends StatefulWidget {
   final UserData userData;
@@ -18,8 +17,6 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
   late TextEditingController _emailController;
   late TextEditingController _noTelponController;
   final _formKey = GlobalKey<FormState>();
-
-  // ✅ Buat instance ImagePicker sekali saja
   final ImagePicker _picker = ImagePicker();
   File? _fotoSementara;
 
@@ -28,8 +25,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
     super.initState();
     _namaController = TextEditingController(text: widget.userData.nama);
     _emailController = TextEditingController(text: widget.userData.email);
-    _noTelponController =
-        TextEditingController(text: widget.userData.noTelpon);
+    _noTelponController = TextEditingController(text: widget.userData.noTelpon);
     _fotoSementara = widget.userData.fotoProfil;
   }
 
@@ -53,51 +49,30 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: 40, height: 4,
               margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
-              ),
+              decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Foto Profil',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                GestureDetector(
-                  onTap: () => Navigator.pop(ctx),
-                  child: const Icon(Icons.close, size: 20),
-                ),
+                const Text('Foto Profil', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                GestureDetector(onTap: () => Navigator.pop(ctx), child: const Icon(Icons.close, size: 20)),
               ],
             ),
             const SizedBox(height: 20),
-            // ✅ Kamera
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.camera_alt_outlined,
-                  color: Colors.black54, size: 24),
-              title: const Text('Kamera',
-                  style: TextStyle(fontSize: 15, color: Colors.black87)),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await _ambilFoto(ImageSource.camera);
-              },
+              leading: const Icon(Icons.camera_alt_outlined, color: Colors.black54, size: 24),
+              title: const Text('Kamera', style: TextStyle(fontSize: 15, color: Colors.black87)),
+              onTap: () async { Navigator.pop(ctx); await _ambilFoto(ImageSource.camera); },
             ),
             const Divider(height: 1),
-            // ✅ Galeri
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.image_outlined,
-                  color: Colors.black54, size: 24),
-              title: const Text('Galeri',
-                  style: TextStyle(fontSize: 15, color: Colors.black87)),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await _ambilFoto(ImageSource.gallery);
-              },
+              leading: const Icon(Icons.image_outlined, color: Colors.black54, size: 24),
+              title: const Text('Galeri', style: TextStyle(fontSize: 15, color: Colors.black87)),
+              onTap: () async { Navigator.pop(ctx); await _ambilFoto(ImageSource.gallery); },
             ),
             const SizedBox(height: 16),
           ],
@@ -106,26 +81,14 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
     );
   }
 
-  // ✅ Satu fungsi untuk kamera dan galeri
   Future<void> _ambilFoto(ImageSource source) async {
     try {
-      final XFile? foto = await _picker.pickImage(
-        source: source,
-        imageQuality: 85,
-        maxWidth: 800,
-        maxHeight: 800,
-      );
+      final XFile? foto = await _picker.pickImage(source: source, imageQuality: 85, maxWidth: 800, maxHeight: 800);
       if (foto != null && mounted) {
-        setState(() {
-          _fotoSementara = File(foto.path);
-        });
+        setState(() => _fotoSementara = File(foto.path));
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal ambil foto: $e')),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal ambil foto: $e')));
     }
   }
 
@@ -135,17 +98,14 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
       widget.userData.email = _emailController.text.trim();
       widget.userData.noTelpon = _noTelponController.text.trim();
       widget.userData.fotoProfil = _fotoSementara;
-
       await widget.userData.simpan();
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Profil berhasil diperbarui'),
             backgroundColor: kPrimary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
         Navigator.pop(context);
@@ -168,23 +128,17 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      width: 44,
-                      height: 44,
+                      width: 44, height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.grey.shade300, width: 1.5),
+                        border: Border.all(color: Colors.grey.shade300, width: 1.5),
                       ),
-                      child: const Icon(Icons.chevron_left,
-                          size: 24, color: Colors.black87),
+                      child: const Icon(Icons.chevron_left, size: 24, color: Colors.black87),
                     ),
                   ),
                   const SizedBox(width: 16),
                   const Text('Edit Profil',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87)),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.black87)),
                 ],
               ),
             ),
@@ -199,43 +153,34 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ── Foto + icon kamera ──
                       Stack(
                         alignment: Alignment.bottomRight,
                         children: [
                           CircleAvatar(
                             radius: 56,
                             backgroundColor: Colors.grey.shade200,
-                            // ✅ Tampilkan foto yang dipilih
-                            backgroundImage: _fotoSementara != null
-                                ? FileImage(_fotoSementara!)
-                                : null,
+                            backgroundImage: _fotoSementara != null ? FileImage(_fotoSementara!) : null,
                             child: _fotoSementara == null
-                                ? Icon(Icons.person,
-                                    size: 56, color: Colors.grey.shade400)
+                                ? Icon(Icons.person, size: 56, color: Colors.grey.shade400)
                                 : null,
                           ),
                           GestureDetector(
                             onTap: _showFotoBottomSheet,
                             child: Container(
-                              width: 34,
-                              height: 34,
+                              width: 34, height: 34,
                               decoration: BoxDecoration(
                                 color: kPrimary,
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 2),
+                                border: Border.all(color: Colors.white, width: 2),
                               ),
-                              child: const Icon(Icons.camera_alt,
-                                  size: 16, color: Colors.white),
+                              child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text('Ketuk ikon kamera untuk ganti foto',
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade500)),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                       const SizedBox(height: 28),
 
                       _buildLabel('Nama'),
@@ -243,9 +188,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         controller: _namaController,
                         hint: 'Masukan nama',
                         icon: Icons.person_outline,
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Nama tidak boleh kosong'
-                            : null,
+                        validator: (v) => v == null || v.isEmpty ? 'Nama tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -256,12 +199,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         icon: Icons.mail_outline,
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) {
-                          if (v == null || v.isEmpty)
-                            return 'Email tidak boleh kosong';
-                          final regex = RegExp(
-                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-                          if (!regex.hasMatch(v))
-                            return 'Format email tidak valid';
+                          if (v == null || v.isEmpty) return 'Email tidak boleh kosong';
+                          final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                          if (!regex.hasMatch(v)) return 'Format email tidak valid';
                           return null;
                         },
                       ),
@@ -273,9 +213,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         hint: 'Masukan nomor telpon',
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Nomor telpon tidak boleh kosong'
-                            : null,
+                        validator: (v) => v == null || v.isEmpty ? 'Nomor telpon tidak boleh kosong' : null,
                       ),
                       const SizedBox(height: 36),
 
@@ -288,13 +226,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                             backgroundColor: kPrimary,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                           ),
                           child: const Text('Simpan Perubahan',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600)),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -315,10 +250,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(text,
-            style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87)),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
       ),
     );
   }
@@ -340,8 +272,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),
