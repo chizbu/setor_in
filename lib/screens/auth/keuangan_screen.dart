@@ -887,7 +887,7 @@ class RincianTransaksiScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Keuangan', showBack: false, context: context),
+      appBar: _buildAppBar('Keuangan', showBack: true, context: context),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
