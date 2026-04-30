@@ -41,7 +41,7 @@ jobs:
         with:
           name: app-release
           # Jalur path harus diawali dengan folder proyek Anda
-          path: setor_in/build/app/outputs/flutter-apk/app-release.apk
+          path: setor_in/build/app/outputs/flutter-apk/*.apk
 
       - name: 🚀 Create Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -60,5 +60,3 @@ jobs:
           document: setor_in/build/app/outputs/flutter-apk/app-release.apk
           message: |
             📦 Ini adalah file APK hasil build terbaru dari branch main.
-
-#ini
