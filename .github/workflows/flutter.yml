@@ -2,10 +2,8 @@ name: Flutter CI
 
 on:
   push:
-    branches:
-      - main
-    tags:
-      - 'v*'
+    branches: [ main ]
+    tags: [ 'v*' ]
 
 permissions:
   contents: write
@@ -13,6 +11,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Menambahkan ini agar semua perintah otomatis masuk ke folder setor_in
+    defaults:
+      run:
+        working-directory: ./setor_in 
 
     steps:
       - name: 📥 Checkout Repository
@@ -21,7 +23,7 @@ jobs:
       - name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
+          flutter-version: '3.29.0'
           cache: true
 
       - name: 📦 Install Dependencies
@@ -38,14 +40,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          # Jalur path harus diawali dengan folder proyek Anda
+          path: setor_in/build/app/outputs/flutter-apk/app-release.apk
 
       - name: 🚀 Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           name: "Release ${{ github.ref_name }}"
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: setor_in/build/app/outputs/flutter-apk/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -54,6 +57,6 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          document: build/app/outputs/flutter-apk/app-release.apk
+          document: setor_in/build/app/outputs/flutter-apk/app-release.apk
           message: |
-            📦 Ini adalah file APK hasil build terbaru.
+            📦 Ini adalah file APK hasil build terbaru dari branch main.
