@@ -2,15 +2,80 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'edukasi_detail_screen.dart';
 
+// ─── Data Kategori ───────────────────────────────────────────────
+final List<Map<String, dynamic>> _kategoriList = [
+  {'label': 'Kertas',     'icon': Icons.receipt_long_outlined},
+  {'label': 'Plastik',    'icon': Icons.water_drop_outlined},
+  {'label': 'Kaca',       'icon': Icons.wine_bar_outlined},
+  {'label': 'Organik',    'icon': Icons.eco_outlined},
+  {'label': 'Logam',      'icon': Icons.hardware_outlined},
+  {'label': 'Elektronik', 'icon': Icons.devices_outlined},
+];
+
+// ─── Data Modul ──────────────────────────────────────────────────
+// Ganti nama file 'assets/images/modul_xxx.jpg' di pubspec.yaml sesuai foto kamu.
 final List<Map<String, dynamic>> _modulList = [
+  {
+    'title': 'Daur Ulang Plastik di Rumah',
+    'subtitle': 'Modul 2',
+    'kategori': 'Plastik',
+    'durasi': '7 menit',
+    'tag': 'Pemula',
+    'image': 'assets/images/modul_plastik.jpg',
+    'color': Color(0xFF0D9146),
+    'icon': Icons.water_drop_outlined,
+    'definisi':
+        'Sampah plastik adalah limbah berbahan polimer sintetis yang sulit terurai secara alami dan membutuhkan penanganan khusus.',
+    'contoh': [
+      'Botol plastik minuman',
+      'Kantong plastik belanja',
+      'Kemasan makanan & snack',
+      'Sedotan plastik',
+      'Ember & gayung bekas',
+    ],
+    'pengelolaan': [
+      'Cuci bersih plastik sebelum dikumpulkan',
+      'Pisahkan berdasarkan jenis kode resin',
+      'Gepengkan botol untuk hemat ruang',
+      'Gunakan kembali jika memungkinkan',
+      'Kirim ke bank sampah atau daur ulang',
+    ],
+  },
+  {
+    'title': 'Cara Mengelola Sampah Organik dari Rumah',
+    'subtitle': 'Modul 4',
+    'kategori': 'Organik',
+    'durasi': '8 menit',
+    'tag': 'Menengah',
+    'image': 'assets/images/modul_organik.jpg',
+    'color': Color(0xFF059669),
+    'icon': Icons.compost_outlined,
+    'definisi':
+        'Sampah organik adalah limbah yang berasal dari makhluk hidup dan dapat terurai secara alami menjadi kompos yang berguna.',
+    'contoh': [
+      'Sisa makanan & sayuran',
+      'Kulit buah-buahan',
+      'Daun kering dan ranting',
+      'Ampas kopi dan teh',
+      'Kotoran hewan peliharaan',
+    ],
+    'pengelolaan': [
+      'Pisahkan dari sampah anorganik',
+      'Buat kompos dengan wadah tertutup',
+      'Tambahkan tanah atau daun kering',
+      'Aduk rutin setiap 3 hari',
+      'Gunakan kompos untuk pupuk tanaman',
+    ],
+  },
   {
     'title': 'Cara Memilah Sampah Kertas',
     'subtitle': 'Modul 1',
     'kategori': 'Kertas',
     'durasi': '5 menit',
-    'icon': Icons.article_outlined,
-    'color': Color(0xFF3B82F6),
     'tag': 'Pemula',
+    'image': 'assets/images/modul_kertas.jpg',
+    'color': Color(0xFF3B82F6),
+    'icon': Icons.article_outlined,
     'definisi':
         'Sampah kertas adalah limbah yang terbuat dari serat selulosa yang berasal dari kayu, bambu, atau bahan organik lainnya.',
     'contoh': [
@@ -30,38 +95,14 @@ final List<Map<String, dynamic>> _modulList = [
     ],
   },
   {
-    'title': 'Daur Ulang Plastik di Rumah',
-    'subtitle': 'Modul 2',
-    'kategori': 'Plastik',
-    'durasi': '7 menit',
-    'icon': Icons.water_drop_outlined,
-    'color': Color(0xFF0D9146),
-    'tag': 'Pemula',
-    'definisi':
-        'Sampah plastik adalah limbah berbahan polimer sintetis yang sulit terurai secara alami dan membutuhkan penanganan khusus.',
-    'contoh': [
-      'Botol plastik minuman',
-      'Kantong plastik belanja',
-      'Kemasan makanan & snack',
-      'Sedotan plastik',
-      'Ember & gayung bekas',
-    ],
-    'pengelolaan': [
-      'Cuci bersih plastik sebelum dikumpulkan',
-      'Pisahkan berdasarkan jenis kode resin',
-      'Gepengkan botol untuk hemat ruang',
-      'Gunakan kembali jika memungkinkan',
-      'Kirim ke bank sampah atau daur ulang',
-    ],
-  },
-  {
     'title': 'Mengelola Sampah Logam',
     'subtitle': 'Modul 3',
     'kategori': 'Logam',
     'durasi': '6 menit',
-    'icon': Icons.hardware_outlined,
-    'color': Color(0xFFF59E0B),
     'tag': 'Menengah',
+    'image': 'assets/images/modul_logam.jpg',
+    'color': Color(0xFFF59E0B),
+    'icon': Icons.hardware_outlined,
     'definisi':
         'Sampah logam mencakup berbagai jenis material berbasis besi, aluminium, dan tembaga yang bernilai tinggi untuk didaur ulang.',
     'contoh': [
@@ -80,38 +121,14 @@ final List<Map<String, dynamic>> _modulList = [
     ],
   },
   {
-    'title': 'Pengelolaan Sampah Organik',
-    'subtitle': 'Modul 4',
-    'kategori': 'Organik',
-    'durasi': '8 menit',
-    'icon': Icons.compost_outlined,
-    'color': Color(0xFF059669),
-    'tag': 'Menengah',
-    'definisi':
-        'Sampah organik adalah limbah yang berasal dari makhluk hidup dan dapat terurai secara alami menjadi kompos yang berguna.',
-    'contoh': [
-      'Sisa makanan & sayuran',
-      'Kulit buah-buahan',
-      'Daun kering dan ranting',
-      'Ampas kopi dan teh',
-      'Kotoran hewan peliharaan',
-    ],
-    'pengelolaan': [
-      'Pisahkan dari sampah anorganik',
-      'Buat kompos dengan wadah tertutup',
-      'Tambahkan tanah atau daun kering',
-      'Aduk rutin setiap 3 hari',
-      'Gunakan kompos untuk pupuk tanaman',
-    ],
-  },
-  {
     'title': 'Sampah Elektronik (E-Waste)',
     'subtitle': 'Modul 5',
     'kategori': 'Elektronik',
     'durasi': '10 menit',
-    'icon': Icons.devices_outlined,
-    'color': Color(0xFFEF4444),
     'tag': 'Lanjutan',
+    'image': 'assets/images/modul_elektronik.jpg',
+    'color': Color(0xFFEF4444),
+    'icon': Icons.devices_outlined,
     'definisi':
         'Sampah elektronik adalah perangkat listrik atau elektronik yang sudah tidak digunakan dan mengandung bahan berbahaya.',
     'contoh': [
@@ -131,384 +148,261 @@ final List<Map<String, dynamic>> _modulList = [
   },
 ];
 
-class EdukasiScreen extends StatefulWidget {
+// ─── Screen ──────────────────────────────────────────────────────
+class EdukasiScreen extends StatelessWidget {
   const EdukasiScreen({super.key});
-
-  @override
-  State<EdukasiScreen> createState() => _EdukasiScreenState();
-}
-
-class _EdukasiScreenState extends State<EdukasiScreen> {
-  String _filterKategori = 'Semua';
-
-  final List<String> _kategoriList = [
-    'Semua', 'Kertas', 'Plastik', 'Logam', 'Organik', 'Elektronik',
-  ];
-
-  List<Map<String, dynamic>> get _filtered {
-    if (_filterKategori == 'Semua') return _modulList;
-    return _modulList.where((m) => m['kategori'] == _filterKategori).toList();
-  }
-
-  Color _tagColor(String tag) {
-    switch (tag) {
-      case 'Pemula': return kPrimary;
-      case 'Menengah': return kWarning;
-      case 'Lanjutan': return kDanger;
-      default: return kPrimary;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBg,
-      body: NestedScrollView(
-        headerSliverBuilder: (_, __) => [
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: kPrimary,
-            foregroundColor: Colors.white,
-            expandedHeight: 140,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(gradient: kGradientPrimary),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('📚 Edukasi Daur Ulang',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Pelajari cara mengelola sampah dengan benar',
-                          style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 13),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(children: [
-                          _statChip(Icons.menu_book_rounded,
-                              '${_modulList.length} Modul'),
-                          const SizedBox(width: 8),
-                          _statChip(Icons.category_outlined, '5 Kategori'),
-                        ]),
-                      ],
+      backgroundColor: const Color(0xFFF5F5F5),
+
+      // ── AppBar sederhana (sesuai mockup: back button + "Edukasi") ──
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () => Navigator.maybePop(context),
+          child: Container(
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              color: Colors.black87,
+              size: 22,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Edukasi',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, color: Colors.grey.shade200),
+        ),
+      ),
+
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+
+            // ── Label "Kategori sampah" ──
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Kategori sampah',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // ── Kategori: horizontal scroll ──
+            SizedBox(
+              height: 90,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: _kategoriList.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, i) {
+                  final k = _kategoriList[i];
+                  return _KategoriCard(
+                    label: k['label'] as String,
+                    icon: k['icon'] as IconData,
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ── Label "Modul" ──
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Modul',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // ── Daftar Modul ──
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+              itemCount: _modulList.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, i) {
+                final m = _modulList[i];
+                return _ModulCard(
+                  data: m,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EdukasiDetailScreen(data: m),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(48),
-              child: Container(
-                color: Colors.white,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: _kategoriList.map((k) {
-                      final active = _filterKategori == k;
-                      return GestureDetector(
-                        onTap: () => setState(() => _filterKategori = k),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: active ? kPrimary : kBg,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: active ? kPrimary : Colors.grey.shade200),
-                          ),
-                          child: Text(k,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: active
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  color: active ? Colors.white : kTextSoft)),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Widget: Kategori Card ────────────────────────────────────────
+class _KategoriCard extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _KategoriCard({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 72,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
-        body: _filtered.isEmpty
-            ? _buildEmpty()
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                children: [
-                  if (_filterKategori == 'Semua') ...[
-                    _buildFeaturedCard(_filtered.first),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Semua Modul',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: kText)),
-                        Text('${_filtered.length - 1} lainnya',
-                            style: const TextStyle(
-                                fontSize: 12, color: kTextSoft)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ..._filtered.skip(1).map((m) => _buildModulCard(m)),
-                  ] else ...[
-                    ..._filtered.map((m) => _buildModulCard(m)),
-                  ],
-                ],
-              ),
       ),
-    );
-  }
-
-  Widget _statChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(children: [
-        Icon(icon, color: Colors.white, size: 13),
-        const SizedBox(width: 4),
-        Text(label,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-      ]),
-    );
-  }
-
-  Widget _buildFeaturedCard(Map<String, dynamic> m) {
-    final color = m['color'] as Color;
-    return GestureDetector(
-      onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (_) => EdukasiDetailScreen(data: m))),
-      child: Container(
-        height: 180,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color, color.withValues(alpha: 0.7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-                color: color.withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8)),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(m['icon'] as IconData,
-                  size: 140, color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text('⭐ Unggulan',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600)),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(m['tag'],
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600)),
-                    ),
-                  ]),
-                  const Spacer(),
-                  Text(m['subtitle'],
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 4),
-                  Text(m['title'],
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 10),
-                  Row(children: [
-                    const Icon(Icons.access_time_rounded,
-                        color: Colors.white70, size: 14),
-                    const SizedBox(width: 4),
-                    Text(m['durasi'],
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 12)),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text('Baca →',
-                          style: TextStyle(
-                              color: color,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModulCard(Map<String, dynamic> m) {
-    final color = m['color'] as Color;
-    return GestureDetector(
-      onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (_) => EdukasiDetailScreen(data: m))),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 3)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(m['icon'] as IconData, color: color, size: 28),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Text(m['subtitle'],
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: color,
-                            fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _tagColor(m['tag']).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(m['tag'],
-                          style: TextStyle(
-                              fontSize: 9,
-                              color: _tagColor(m['tag']),
-                              fontWeight: FontWeight.w700)),
-                    ),
-                  ]),
-                  const SizedBox(height: 4),
-                  Text(m['title'],
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: kText)),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    const Icon(Icons.access_time_rounded,
-                        size: 12, color: kTextSoft),
-                    const SizedBox(width: 3),
-                    Text(m['durasi'],
-                        style: const TextStyle(
-                            fontSize: 11, color: kTextSoft)),
-                    const SizedBox(width: 10),
-                    const Icon(Icons.category_outlined,
-                        size: 12, color: kTextSoft),
-                    const SizedBox(width: 3),
-                    Text(m['kategori'],
-                        style: const TextStyle(
-                            fontSize: 11, color: kTextSoft)),
-                  ]),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios_rounded, size: 14, color: color),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmpty() {
-    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-                color: kPrimary.withValues(alpha: 0.1), shape: BoxShape.circle),
-            child: const Icon(Icons.search_off_rounded,
-                color: kPrimary, size: 36),
+              color: const Color(0xFFE8F5EE),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF0D9146), size: 22),
           ),
-          const SizedBox(height: 16),
-          const Text('Modul tidak ditemukan',
-              style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
           const SizedBox(height: 6),
-          const Text('Coba pilih kategori lain',
-              style: TextStyle(fontSize: 13, color: kTextSoft)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Widget: Modul Card (foto background + judul di bawah) ────────
+class _ModulCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final VoidCallback onTap;
+
+  const _ModulCard({required this.data, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final String imagePath = data['image'] as String;
+    final Color accentColor = data['color'] as Color;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: SizedBox(
+          height: 180,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Foto background ──
+              Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                // Fallback jika foto belum ada
+                errorBuilder: (_, __, ___) => Container(
+                  color: accentColor.withOpacity(0.15),
+                  child: Center(
+                    child: Icon(
+                      data['icon'] as IconData,
+                      color: accentColor,
+                      size: 52,
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Gradient gelap dari tengah ke bawah ──
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.15),
+                        Colors.black.withOpacity(0.65),
+                      ],
+                      stops: const [0.35, 0.6, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Judul di bagian bawah (center, seperti mockup) ──
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: Text(
+                  data['title'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black38,
+                        blurRadius: 6,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
