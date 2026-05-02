@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'app_theme.dart';
 
 class EdukasiDetailScreen extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -7,239 +6,187 @@ class EdukasiDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String title = (data['title'] as String?) ?? '';
+    final String image = (data['image'] as String?) ?? '';
+    final String durasi = (data['durasi'] as String?) ?? '';
+    final String penulis = (data['penulis'] as String?) ?? '';
+    final String kategori = (data['kategori'] as String?) ?? '';
+    final List<Map<String, dynamic>> artikel =
+        (data['artikel'] as List<dynamic>?)
+            ?.map((e) => Map<String, dynamic>.from(e as Map))
+            .toList() ??
+        [];
+
     return Scaffold(
-      backgroundColor: kBg,
+      backgroundColor: const Color(0xFFF8F8F8),
       body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
         slivers: [
-          _buildSliverAppBar(context),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _InfoCard(
-                  icon: Icons.info_outline_rounded,
-                  title: 'Definisi',
-                  color: kPrimary,
-                  child: Text(
-                    data['definisi'] as String,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: kTextSoft,
-                      height: 1.6,
+          // ── Hero cover ──
+          SliverAppBar(
+            expandedHeight: 260,
+            pinned: true,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.white,
+            leading: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withValues(alpha: 0.35),
+                ),
+                child: const Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 15, color: Colors.white),
+              ),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Foto cover
+                  Image.asset(
+                    image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey.shade400,
+                      child: const Center(
+                        child: Icon(Icons.image_outlined,
+                            size: 60, color: Colors.white54),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                _InfoCard(
-                  icon: Icons.category_outlined,
-                  title: 'Contoh Sampah',
-                  color: kInfo,
-                  child: _BulletList(items: data['contoh'] as List),
-                ),
-                const SizedBox(height: 14),
-                _InfoCard(
-                  icon: Icons.recycling_rounded,
-                  title: 'Cara Pengelolaan',
-                  color: const Color(0xFF059669),
-                  child: _BulletList(items: data['pengelolaan'] as List),
-                ),
-              ]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 240,
-      pinned: true,
-      backgroundColor: kPrimary,
-      surfaceTintColor: Colors.transparent,
-      leading: Padding(
-        padding: const EdgeInsets.all(8),
-        child: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-        ),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.parallax,
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: kGradientPrimary,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 60),
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.recycling_rounded,
-                  size: 48,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Sampah ${data['kategori']}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Pelajari lebih lanjut',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
-          ),
-        ),
-        title: Text(
-          'Sampah ${data['kategori']}',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
-      ),
-    );
-  }
-}
-
-// ─── Info Card ───────────────────────────────────────────────────────────────
-
-class _InfoCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Color color;
-  final Widget child;
-
-  const _InfoCard({
-    required this.icon,
-    required this.title,
-    required this.color,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 18),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: kText,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          const SizedBox(height: 14),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Bullet List ─────────────────────────────────────────────────────────────
-
-class _BulletList extends StatelessWidget {
-  final List items;
-  const _BulletList({required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items.asMap().entries.map((entry) {
-        final isLast = entry.key == items.length - 1;
-        return Padding(
-          padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 6),
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: kPrimary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  entry.value.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: kTextSoft,
-                    height: 1.5,
+                  // Gradient overlay
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
+                          ],
+                          stops: const [0.4, 1.0],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  // Judul di atas foto
+                  Positioned(
+                    left: 20,
+                    right: 20,
+                    bottom: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (kategori.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              kategori,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(children: [
+                          const Icon(Icons.access_time_rounded,
+                              color: Colors.white70, size: 13),
+                          const SizedBox(width: 4),
+                          Text(durasi,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12)),
+                          const SizedBox(width: 14),
+                          const Icon(Icons.person_outline_rounded,
+                              color: Colors.white70, size: 13),
+                          const SizedBox(width: 4),
+                          Text(penulis,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12)),
+                        ]),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        );
-      }).toList(),
+
+          // ── Isi artikel ──
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 60),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  if (i >= artikel.length) return null;
+                  final section = artikel[i];
+                  final heading = (section['heading'] as String?) ?? '';
+                  final body = (section['body'] as String?) ?? '';
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Heading section
+                        Text(
+                          heading,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A1A),
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Divider kecil
+                        Container(
+                          width: 32,
+                          height: 3,
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D9146),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        // Body paragraf
+                        Text(
+                          body,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF4A4A4A),
+                            height: 1.7,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                childCount: artikel.length,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
