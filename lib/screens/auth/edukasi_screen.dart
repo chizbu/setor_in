@@ -134,17 +134,7 @@ final List<Map<String, dynamic>> kategoriSampahList = [
   },
 ];
 
-// ─── DATA MODUL — cover + artikel lengkap tersendiri ─────────────────────────
-// 'artikel' berisi list section: {'heading': '...', 'body': '...'}
-// Foto: letakkan di assets/images/ dan daftarkan di pubspec.yaml
-// Contoh pubspec.yaml:
-//   flutter:
-//     assets:
-//       - assets/images/modul_plastik.jpg
-//       - assets/images/modul_organik.jpg
-//       - assets/images/modul_kertas.jpg
-//       - assets/images/modul_logam.jpg
-//       - assets/images/modul_elektronik.jpg
+// ─── DATA MODUL ───────────────────────────────────────────────────────────────
 final List<Map<String, dynamic>> modulList = [
   {
     'title': 'Daur Ulang Plastik di Rumah',
@@ -320,7 +310,8 @@ final List<Map<String, dynamic>> modulList = [
 
 // ─── SCREEN UTAMA ─────────────────────────────────────────────────────────────
 class EdukasiScreen extends StatelessWidget {
-  const EdukasiScreen({super.key});
+  final VoidCallback? onBack;
+  const EdukasiScreen({super.key, this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -328,19 +319,26 @@ class EdukasiScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(10),
+        leading: IconButton(
+          onPressed: () {
+            if (onBack != null) {
+              onBack!();
+            } else if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
+          icon: Container(
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade300, width: 1.5),
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
-              size: 15,
+              size: 16,
               color: Colors.black87,
             ),
           ),
@@ -348,21 +346,20 @@ class EdukasiScreen extends StatelessWidget {
         title: const Text(
           'Edukasi',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
             color: Colors.black87,
           ),
         ),
-        centerTitle: false,
+        centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+          child: Divider(height: 1, color: Colors.grey.shade200),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 100),
         children: [
-          // ── KATEGORI SAMPAH ──
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 20, 20, 12),
             child: Text(
@@ -375,8 +372,6 @@ class EdukasiScreen extends StatelessWidget {
             ),
           ),
           _KategoriRow(),
-
-          // ── MODUL ──
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 22, 20, 12),
             child: Text(

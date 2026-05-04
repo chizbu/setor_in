@@ -9,7 +9,8 @@ import 'app_theme.dart';
 // ══════════════════════════════════════════════
 
 class KeuanganScreen extends StatefulWidget {
-  const KeuanganScreen({super.key});
+  final VoidCallback? onBack;
+  const KeuanganScreen({super.key, this.onBack});
 
   @override
   State<KeuanganScreen> createState() => _KeuanganScreenState();
@@ -25,7 +26,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Keuangan', showBack: Navigator.canPop(context), context: context),
+      appBar: _buildAppBar('Keuangan', showBack: true, context: context, onBack: widget.onBack),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -970,7 +971,6 @@ class RincianTransaksiScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Tombol kembali ke dashboard
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -1028,25 +1028,51 @@ class RincianTransaksiScreen extends StatelessWidget {
 //  SHARED AppBar
 // ══════════════════════════════════════════════
 
-PreferredSizeWidget _buildAppBar(String title, {required bool showBack, required BuildContext context}) {
+PreferredSizeWidget _buildAppBar(
+  String title, {
+  required bool showBack,
+  required BuildContext context,
+  VoidCallback? onBack,
+}) {
   return AppBar(
     backgroundColor: Colors.white,
+    surfaceTintColor: Colors.transparent,
     elevation: 0,
     leading: showBack
-        ? GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              margin: const EdgeInsets.all(8),
+        ? IconButton(
+            onPressed: () {
+              if (onBack != null) {
+                onBack();
+              } else if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.popUntil(context, (route) => route.isFirst);
+              }
+            },
+            icon: Container(
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey.shade300),
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.chevron_left, color: Colors.black87),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16,
+                color: Colors.black87,
+              ),
             ),
           )
         : null,
-    title: Text(title,
-        style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 18)),
+    title: Text(
+      title,
+      style: const TextStyle(
+        color: Colors.black87,
+        fontWeight: FontWeight.w800,
+        fontSize: 16,
+      ),
+    ),
+    centerTitle: true,
     bottom: PreferredSize(
       preferredSize: const Size.fromHeight(1),
       child: Divider(height: 1, color: Colors.grey.shade200),
