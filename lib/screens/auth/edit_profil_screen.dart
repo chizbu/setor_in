@@ -83,12 +83,21 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
 
   Future<void> _ambilFoto(ImageSource source) async {
     try {
-      final XFile? foto = await _picker.pickImage(source: source, imageQuality: 85, maxWidth: 800, maxHeight: 800);
+      final XFile? foto = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 800,
+        maxHeight: 800,
+      );
       if (foto != null && mounted) {
         setState(() => _fotoSementara = File(foto.path));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal ambil foto: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal ambil foto: $e')),
+        );
+      }
     }
   }
 
@@ -117,128 +126,126 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Row(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 16,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Edit Profil',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, color: Colors.grey.shade200),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 28),
+              Stack(
+                alignment: Alignment.bottomRight,
                 children: [
+                  CircleAvatar(
+                    radius: 56,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: _fotoSementara != null ? FileImage(_fotoSementara!) : null,
+                    child: _fotoSementara == null
+                        ? Icon(Icons.person, size: 56, color: Colors.grey.shade400)
+                        : null,
+                  ),
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: _showFotoBottomSheet,
                     child: Container(
-                      width: 44, height: 44,
+                      width: 34, height: 34,
                       decoration: BoxDecoration(
+                        color: kPrimary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: const Icon(Icons.chevron_left, size: 24, color: Colors.black87),
+                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  const Text('Edit Profil',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.black87)),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: Colors.black12),
-            const SizedBox(height: 28),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                            radius: 56,
-                            backgroundColor: Colors.grey.shade200,
-                            backgroundImage: _fotoSementara != null ? FileImage(_fotoSementara!) : null,
-                            child: _fotoSementara == null
-                                ? Icon(Icons.person, size: 56, color: Colors.grey.shade400)
-                                : null,
-                          ),
-                          GestureDetector(
-                            onTap: _showFotoBottomSheet,
-                            child: Container(
-                              width: 34, height: 34,
-                              decoration: BoxDecoration(
-                                color: kPrimary,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Ketuk ikon kamera untuk ganti foto',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                      const SizedBox(height: 28),
-
-                      _buildLabel('Nama'),
-                      _buildTextField(
-                        controller: _namaController,
-                        hint: 'Masukan nama',
-                        icon: Icons.person_outline,
-                        validator: (v) => v == null || v.isEmpty ? 'Nama tidak boleh kosong' : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildLabel('Email'),
-                      _buildTextField(
-                        controller: _emailController,
-                        hint: 'Masukan email',
-                        icon: Icons.mail_outline,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Email tidak boleh kosong';
-                          final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-                          if (!regex.hasMatch(v)) return 'Format email tidak valid';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildLabel('Nomor Telpon'),
-                      _buildTextField(
-                        controller: _noTelponController,
-                        hint: 'Masukan nomor telpon',
-                        icon: Icons.phone_outlined,
-                        keyboardType: TextInputType.phone,
-                        validator: (v) => v == null || v.isEmpty ? 'Nomor telpon tidak boleh kosong' : null,
-                      ),
-                      const SizedBox(height: 36),
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: _handleSimpan,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: kPrimary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                          ),
-                          child: const Text('Simpan Perubahan',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+              const SizedBox(height: 8),
+              Text('Ketuk ikon kamera untuk ganti foto',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              const SizedBox(height: 28),
+              _buildLabel('Nama'),
+              _buildTextField(
+                controller: _namaController,
+                hint: 'Masukan nama',
+                icon: Icons.person_outline,
+                validator: (v) => v == null || v.isEmpty ? 'Nama tidak boleh kosong' : null,
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Email'),
+              _buildTextField(
+                controller: _emailController,
+                hint: 'Masukan email',
+                icon: Icons.mail_outline,
+                keyboardType: TextInputType.emailAddress,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Email tidak boleh kosong';
+                  final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                  if (!regex.hasMatch(v)) return 'Format email tidak valid';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Nomor Telpon'),
+              _buildTextField(
+                controller: _noTelponController,
+                hint: 'Masukan nomor telpon',
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                validator: (v) => v == null || v.isEmpty ? 'Nomor telpon tidak boleh kosong' : null,
+              ),
+              const SizedBox(height: 36),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _handleSimpan,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
+                  child: const Text('Simpan Perubahan',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

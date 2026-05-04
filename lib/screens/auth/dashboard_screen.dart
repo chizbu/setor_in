@@ -55,9 +55,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildBody() {
     switch (_currentIndex) {
       case 1:
-        return const EdukasiScreen();
+        return EdukasiScreen(
+          onBack: () => setState(() => _currentIndex = 0),
+        );
       case 2:
-        return const KeuanganScreen();
+        return KeuanganScreen(
+          onBack: () => setState(() => _currentIndex = 0),
+        );
       case 3:
         return ProfilScreen(onUpdate: () => setState(() {}));
       default:
@@ -455,26 +459,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.monetization_on_rounded,
-                  label: 'Total Koin',
-                  value: '${_userData.koin} koin',
-                  color: kWarning,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.eco_rounded,
-                  label: 'CO₂ Tersimpan',
-                  value: '2.4 kg',
-                  color: kAccent,
-                ),
-              ),
-            ],
+          // Hanya CO₂ Tersimpan, Total Koin dihapus
+          _buildStatCard(
+            icon: Icons.eco_rounded,
+            label: 'CO₂ Tersimpan',
+            value: '2.4 kg',
+            color: kAccent,
           ),
         ],
       ),

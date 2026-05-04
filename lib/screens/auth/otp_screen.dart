@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
-const Color kPrimary = Color(0xFF26D077);
+import 'app_theme.dart';
+import 'login_screen.dart';
 
 class OtpScreen extends StatefulWidget {
-  final String email; // email yang dipakai (dari register atau reset password)
+  final String email;
   final String source; // 'register' atau 'reset_password'
 
   const OtpScreen({
@@ -69,11 +69,22 @@ class _OtpScreenState extends State<OtpScreen> {
     }
 
     // TODO: Hubungkan ke API verifikasi OTP
-    // Bedakan alur berdasarkan widget.source
     if (widget.source == 'register') {
-      // navigasi ke halaman utama / home
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Akun berhasil dibuat! Silakan masuk.'),
+          backgroundColor: kPrimary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
     } else if (widget.source == 'reset_password') {
-      // navigasi ke halaman buat password baru
+      // TODO: navigasi ke halaman buat password baru
     }
   }
 
@@ -237,10 +248,10 @@ class _OtpScreenState extends State<OtpScreen> {
                     onTap: _handleResend,
                     child: Text(
                       _canResend ? 'Kirim ulang' : '$_secondsRemaining detik',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: _canResend ? kPrimary : kPrimary,
+                        color: kPrimary,
                       ),
                     ),
                   ),

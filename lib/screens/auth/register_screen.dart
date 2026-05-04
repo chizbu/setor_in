@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'login_screen.dart';
+import 'otp_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,7 +51,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // TODO: Hubungkan ke API register
+    // Navigasi ke OTP screen setelah validasi sukses
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OtpScreen(
+          email: email,
+          source: 'register',
+        ),
+      ),
+    );
   }
 
   Widget _buildLabel(String text) {
@@ -155,13 +165,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.black26),
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.chevron_left, size: 24),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 16,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
