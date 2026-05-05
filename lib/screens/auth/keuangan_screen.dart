@@ -84,7 +84,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   label: 'Tukar koin',
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const MetodePembayaranScreen(isTransfer: false)),
+                    MaterialPageRoute(builder: (_) => TukarKoinScreen(koin: _koin)),
                   ),
                 ),
                 _buildMenuTile(
@@ -176,6 +176,256 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               )),
         ],
       ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════
+//  TUKAR KOIN SCREEN
+// ══════════════════════════════════════════════
+
+class TukarKoinScreen extends StatefulWidget {
+  final int koin;
+  const TukarKoinScreen({super.key, required this.koin});
+
+  @override
+  State<TukarKoinScreen> createState() => _TukarKoinScreenState();
+}
+
+class _TukarKoinScreenState extends State<TukarKoinScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  int _jumlahKoin = 0;
+
+  // 1 koin = Rp 100
+  static const int _nilaiPerKoin = 100;
+
+  int get _saldoDidapat => _jumlahKoin * _nilaiPerKoin;
+  bool get _canProceed => _jumlahKoin > 0 && _jumlahKoin <= widget.koin;
+
+  String _fmt(int amount) => amount
+      .toString()
+      .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar('Tukar Koin', showBack: true, context: context),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+
+            // Info koin yang dimiliki
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: kPrimaryDark,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.monetization_on_rounded, color: Colors.amber, size: 36),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Koin Kamu', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.koin} Koin',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Kurs info
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: kPrimary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: kPrimary.withOpacity(0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: kPrimary, size: 18),
+                  const SizedBox(width: 10),
+                  Text(
+                    '1 Koin = Rp ${_fmt(_nilaiPerKoin)}',
+                    style: const TextStyle(
+                      color: kPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Jumlah Koin yang Ditukar',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
+            ),
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: _ctrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (v) {
+                setState(() {
+                  _jumlahKoin = int.tryParse(v) ?? 0;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: '0',
+                suffixText: 'Koin',
+                suffixStyle: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimary, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                errorText: _jumlahKoin > widget.koin ? 'Koin tidak mencukupi' : null,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Quick select chips
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [10, 25, 50, 100].where((v) => v <= widget.koin).map((val) {
+                return GestureDetector(
+                  onTap: () {
+                    _ctrl.text = val.toString();
+                    setState(() => _jumlahKoin = val);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: kPrimary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: kPrimary.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      '$val Koin',
+                      style: const TextStyle(
+                        color: kPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Preview saldo didapat
+            AnimatedOpacity(
+              opacity: _jumlahKoin > 0 && _jumlahKoin <= widget.koin ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    _summaryRow('Koin ditukar', '$_jumlahKoin Koin'),
+                    const SizedBox(height: 8),
+                    _summaryRow('Saldo didapat', 'Rp ${_fmt(_saldoDidapat)}', highlight: true),
+                    const SizedBox(height: 8),
+                    _summaryRow('Sisa koin', '${widget.koin - _jumlahKoin} Koin'),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _canProceed
+                    ? () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '$_jumlahKoin koin berhasil ditukar menjadi Rp ${_fmt(_saldoDidapat)}',
+                            ),
+                            backgroundColor: kPrimary,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                        Navigator.pop(context);
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimary,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Tukar Sekarang',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value, {bool highlight = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: highlight ? FontWeight.w800 : FontWeight.w600,
+            color: highlight ? kPrimary : Colors.black87,
+          ),
+        ),
+      ],
     );
   }
 }
