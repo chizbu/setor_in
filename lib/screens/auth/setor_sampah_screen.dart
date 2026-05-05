@@ -23,7 +23,7 @@ class JenisSampah {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENTRY POINT — langsung ke Riwayat Nasabah
+// ENTRY POINT
 // ─────────────────────────────────────────────────────────────────────────────
 class SetorSampahScreen extends StatelessWidget {
   const SetorSampahScreen({super.key});
@@ -35,7 +35,7 @@ class SetorSampahScreen extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RIWAYAT & NOTIFIKASI NASABAH
+// RIWAYAT NASABAH
 // ─────────────────────────────────────────────────────────────────────────────
 class _RiwayatNasabahScreen extends StatelessWidget {
   const _RiwayatNasabahScreen();
@@ -88,8 +88,6 @@ class _RiwayatNasabahScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasNew = _riwayat.any((r) => r['baru'] == true);
-
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
@@ -121,84 +119,10 @@ class _RiwayatNasabahScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined, color: kText),
-              ),
-              if (hasNew)
-                Positioned(
-                  right: 10,
-                  top: 10,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: kDanger,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // Banner notifikasi bill baru
-          if (hasNew) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: kPrimary.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kPrimary.withValues(alpha: 0.25)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: kPrimary.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.notifications_active_rounded,
-                      color: kPrimary,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bill Baru Masuk!',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: kPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Kamu punya 1 tagihan setor baru dari petugas.',
-                          style: TextStyle(fontSize: 12, color: kTextSoft),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-
           const Text(
             'Riwayat Transaksi',
             style: TextStyle(
@@ -516,10 +440,7 @@ class _RiwayatNasabahScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       child: Row(
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 13, color: kTextSoft),
-          ),
+          Text(label, style: const TextStyle(fontSize: 13, color: kTextSoft)),
           const Spacer(),
           Text(
             val,
@@ -555,10 +476,7 @@ class _RiwayatNasabahScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white60, fontSize: 11),
-        ),
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 11)),
       ],
     );
   }

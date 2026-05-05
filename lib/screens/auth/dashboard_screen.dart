@@ -6,7 +6,7 @@ import 'target_sampah_screen.dart';
 import 'setor_sampah_screen.dart';
 import 'keuangan_screen.dart';
 import 'cek_bank_sampah_screen.dart';
-import 'tukar_koin_screen.dart';
+import 'notifikasi_screen.dart'; // ← TAMBAHAN
 import 'user_data.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -123,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildLogo(),
-                _buildNotifButton(),
+                _buildNotifButton(), // ← sudah di-fix di bawah
               ],
             ),
             const SizedBox(height: 16),
@@ -200,29 +200,38 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  // ─── FIX: tambah GestureDetector untuk buka NotifikasiScreen ───
   Widget _buildNotifButton() {
-    return Stack(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-          child: const Icon(Icons.notifications_outlined, color: kPrimary, size: 22),
-        ),
-        Positioned(
-          right: 8,
-          top: 8,
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: kDanger,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5),
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
+      ),
+      child: Stack(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(
+                color: Colors.white, shape: BoxShape.circle),
+            child: const Icon(Icons.notifications_outlined,
+                color: kPrimary, size: 22),
+          ),
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: kDanger,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -252,7 +261,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                             style: TextStyle(color: Colors.white70, fontSize: 12)),
                         const SizedBox(width: 6),
                         GestureDetector(
-                          onTap: () => setState(() => _showSaldo = !_showSaldo),
+                          onTap: () =>
+                              setState(() => _showSaldo = !_showSaldo),
                           child: Icon(
                             _showSaldo
                                 ? Icons.visibility_outlined
@@ -278,7 +288,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -291,7 +302,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: Colors.white70, size: 14),
                         SizedBox(width: 4),
                         Text('Koin',
-                            style: TextStyle(color: Colors.white70, fontSize: 11)),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 11)),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -315,12 +327,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                   icon: Icons.swap_horiz_rounded,
                   label: 'Tukarkan Koin',
                   onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => TukarKoinScreen(
-                                koinAwal: _userData.koin,
-                                saldoAwal: _userData.saldo,
-                              ))),
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TukarKoinScreen(koin: _userData.koin),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -420,7 +431,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             Text(m.label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    fontSize: 11, color: kText, fontWeight: FontWeight.w500)),
+                    fontSize: 11,
+                    color: kText,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -459,7 +472,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
           const SizedBox(height: 12),
-          // Hanya CO₂ Tersimpan, Total Koin dihapus
           _buildStatCard(
             icon: Icons.eco_rounded,
             label: 'CO₂ Tersimpan',
@@ -529,7 +541,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               const Text('Aktivitas Terakhir',
                   style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: kText)),
               GestureDetector(
                 onTap: () => setState(() => _currentIndex = 2),
                 child: const Text('Lihat semua',
@@ -569,7 +583,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   color: item.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.recycling_rounded, color: item.color, size: 22),
+                child:
+                    Icon(Icons.recycling_rounded, color: item.color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -583,7 +598,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: kText)),
                     const SizedBox(height: 2),
                     Text(item.subtitle,
-                        style: const TextStyle(fontSize: 12, color: kTextSoft)),
+                        style:
+                            const TextStyle(fontSize: 12, color: kTextSoft)),
                   ],
                 ),
               ),
@@ -698,7 +714,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         child: Row(
           children: [
-            Icon(icon, color: isActive ? kPrimary : Colors.white70, size: 22),
+            Icon(icon,
+                color: isActive ? kPrimary : Colors.white70, size: 22),
             if (isActive) ...[
               const SizedBox(width: 6),
               Text(label,
