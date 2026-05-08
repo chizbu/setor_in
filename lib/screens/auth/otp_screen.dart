@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'login_screen.dart';
+import 'new_password_screen.dart'; // ← tambahkan import ini
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -75,7 +76,8 @@ class _OtpScreenState extends State<OtpScreen> {
           content: const Text('Akun berhasil dibuat! Silakan masuk.'),
           backgroundColor: kPrimary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       Navigator.pushAndRemoveUntil(
@@ -84,7 +86,17 @@ class _OtpScreenState extends State<OtpScreen> {
         (route) => false,
       );
     } else if (widget.source == 'reset_password') {
-      // TODO: navigasi ke halaman buat password baru
+      // ✅ Navigasi ke halaman buat password baru
+      // Kirim email & otp agar bisa dipakai saat submit password baru ke API
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NewPasswordScreen(
+            email: widget.email,
+            otp: otp,
+          ),
+        ),
+      );
     }
   }
 
@@ -172,7 +184,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                    border:
+                        Border.all(color: Colors.grey.shade300, width: 1.5),
                   ),
                   child: const Icon(
                     Icons.chevron_left,
@@ -234,7 +247,8 @@ class _OtpScreenState extends State<OtpScreen> {
                 children: [
                   Text(
                     'Tidak menerima pesan dari email? ',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    style:
+                        TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                 ],
               ),
