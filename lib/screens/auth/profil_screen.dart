@@ -3,6 +3,7 @@ import 'package:proyek_2_setor_in/screens/auth/app_theme.dart';
 import 'edit_profil_screen.dart';
 import 'user_data.dart';
 import 'login_screen.dart';
+import 'bantuan_screen.dart'; // ← tambahkan import ini
 
 class ProfilScreen extends StatefulWidget {
   final VoidCallback? onUpdate;
@@ -112,16 +113,19 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       subtitle: _userData.noTelpon,
                     ),
                     const Divider(height: 1, color: Colors.black12),
-                    _buildMenuItem(
-                      icon: Icons.notifications_outlined,
-                      label: 'Notifikasi',
-                      onTap: () {},
-                    ),
-                    const Divider(height: 1, color: Colors.black12),
+                    // ✅ Notifikasi dihapus
+                    // ✅ Bantuan sekarang navigasi ke BantuanScreen
                     _buildMenuItem(
                       icon: Icons.help_outline,
                       label: 'Bantuan',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const BantuanScreen(),
+                          ),
+                        );
+                      },
                     ),
                     const Divider(height: 1, color: Colors.black12),
                     const SizedBox(height: 36),
