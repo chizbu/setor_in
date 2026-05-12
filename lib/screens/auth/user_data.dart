@@ -20,7 +20,15 @@ class UserData {
 
   bool _sudahLoad = false;
 
-  // ── Load dari SharedPreferences (hanya sekali) ──
+  // ── Reset flag agar load() membaca ulang dari SharedPreferences ──
+  // Dipanggil dari DashboardScreen setelah kembali dari layar lain
+  // (misal: MisiPageScreen, SetorSampahScreen) supaya koin/saldo
+  // yang berubah di layar tersebut langsung tampil di dashboard.
+  void resetLoadFlag() {
+    _sudahLoad = false;
+  }
+
+  // ── Load dari SharedPreferences (hanya sekali, kecuali flag direset) ──
   Future<void> load() async {
     if (_sudahLoad) return;
     final prefs = await SharedPreferences.getInstance();

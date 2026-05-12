@@ -1,10 +1,23 @@
+// ══════════════════════════════════════════════════════
+//  misi_harian_screen.dart
+//  Screen Misi & Reward (tab Harian / Mingguan)
+//  Sesuai desain mockup SETOR.IN
+// ══════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'app_theme.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MODEL
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Warna brand ─────────────────────────────────────
+const Color kPrimary      = Color(0xFF22C55E);
+const Color kPrimaryLight = Color(0xFFF0FDF4);
+const Color kPrimaryDark  = Color(0xFF16A34A);
+const Color kText         = Color(0xFF111827);
+const Color kTextSoft     = Color(0xFF6B7280);
+const Color kBg           = Color(0xFFF9FAFB);
+const Color kInfo         = Color(0xFF3B82F6);
+const Color kWarning      = Color(0xFFF59E0B);
+const Color kDanger       = Color(0xFFEF4444);
+
+// ─── Model ────────────────────────────────────────────
 enum MisiStatus { belum, selesai, diklaim }
 
 class MisiItem {
@@ -17,7 +30,7 @@ class MisiItem {
   final int targetJumlah;
   int progressJumlah;
   MisiStatus status;
-  final String kategori; // 'harian' | 'mingguan'
+  final String kategori;
 
   MisiItem({
     required this.id,
@@ -32,13 +45,11 @@ class MisiItem {
     required this.kategori,
   });
 
-  double get progress => targetJumlah == 0 ? 0 : (progressJumlah / targetJumlah).clamp(0.0, 1.0);
-  bool get bisaDiklaim => progressJumlah >= targetJumlah && status == MisiStatus.selesai;
+  double get progress =>
+      targetJumlah == 0 ? 0 : (progressJumlah / targetJumlah).clamp(0.0, 1.0);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Screen ───────────────────────────────────────────
 class MisiHarianScreen extends StatefulWidget {
   final int koinAwal;
   const MisiHarianScreen({super.key, this.koinAwal = 0});
@@ -140,10 +151,10 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
     super.dispose();
   }
 
-  List<MisiItem> get _harian => _misi.where((m) => m.kategori == 'harian').toList();
+  List<MisiItem> get _harian  => _misi.where((m) => m.kategori == 'harian').toList();
   List<MisiItem> get _mingguan => _misi.where((m) => m.kategori == 'mingguan').toList();
 
-  int get _totalKoinTersedia => _misi
+  int get _totalSiapDiklaim => _misi
       .where((m) => m.status == MisiStatus.selesai)
       .fold(0, (sum, m) => sum + m.koinReward);
 
@@ -154,17 +165,18 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
       misi.status = MisiStatus.diklaim;
       _koin += misi.koinReward;
     });
-    _showKlaimSuccess(misi);
+    _showKlaimSheet(misi);
   }
 
-  void _showKlaimSuccess(MisiItem misi) {
+  void _showKlaimSheet(MisiItem misi) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28)),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(28)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -174,16 +186,20 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               curve: Curves.elasticOut,
               builder: (_, v, child) => Transform.scale(scale: v, child: child),
               child: Container(
-                width: 80, height: 80,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                    color: misi.color.withValues(alpha: 0.12), shape: BoxShape.circle),
-                child: Icon(Icons.emoji_events_rounded, color: misi.color, size: 44),
+                    color: misi.color.withOpacity(0.12),
+                    shape: BoxShape.circle),
+                child: Icon(Icons.emoji_events_rounded,
+                    color: misi.color, size: 44),
               ),
             ),
             const SizedBox(height: 16),
             const Text('Misi Selesai!',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: kText)),
-            const SizedBox(height: 8),
+                style: TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.w800, color: kText)),
+            const SizedBox(height: 6),
             Text(misi.judul,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 14, color: kTextSoft)),
@@ -195,11 +211,14 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.monetization_on_rounded, color: kPrimary, size: 24),
+                  const Icon(Icons.monetization_on_rounded,
+                      color: kPrimary, size: 26),
                   const SizedBox(width: 8),
                   Text('+${misi.koinReward} Koin',
                       style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w800, color: kPrimary)),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: kPrimary)),
                 ],
               ),
             ),
@@ -212,10 +231,12 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                   backgroundColor: kPrimary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
                 ),
-                child: const Text('Lanjutkan', style: TextStyle(fontWeight: FontWeight.w700)),
+                child: const Text('Lanjutkan',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
               ),
             ),
           ],
@@ -224,6 +245,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
     );
   }
 
+  // ── Build ────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -244,7 +266,13 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
             expandedHeight: 160,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: const BoxDecoration(gradient: kGradientPrimary),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 56, 20, 0),
@@ -256,31 +284,35 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text('Total Koinmu',
-                                  style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                  style: TextStyle(
+                                      color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 4),
                               Text('$_koin Koin',
                                   style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 26,
+                                      fontSize: 28,
                                       fontWeight: FontWeight.w800)),
                             ],
                           ),
                         ),
-                        if (_totalKoinTersedia > 0)
+                        if (_totalSiapDiklaim > 0)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 7),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               children: [
                                 const Icon(Icons.card_giftcard_rounded,
-                                    color: Colors.white, size: 16),
-                                const SizedBox(width: 6),
-                                Text('+$_totalKoinTersedia koin siap diklaim',
+                                    color: Colors.white, size: 15),
+                                const SizedBox(width: 5),
+                                Text('+$_totalSiapDiklaim koin siap diklaim',
                                     style: const TextStyle(
-                                        color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -296,31 +328,35 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               indicatorWeight: 3,
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white60,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-              tabs: const [Tab(text: 'Misi Harian'), Tab(text: 'Misi Mingguan')],
+              labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 13),
+              tabs: const [
+                Tab(text: 'Misi Harian'),
+                Tab(text: 'Misi Mingguan'),
+              ],
             ),
           ),
         ],
         body: TabBarView(
           controller: _tabCtrl,
           children: [
-            _buildMisiList(_harian),
-            _buildMisiList(_mingguan),
+            _buildList(_harian),
+            _buildList(_mingguan),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMisiList(List<MisiItem> list) {
+  Widget _buildList(List<MisiItem> list) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       itemCount: list.length,
-      itemBuilder: (_, i) => _buildMisiCard(list[i]),
+      itemBuilder: (_, i) => _buildCard(list[i]),
     );
   }
 
-  Widget _buildMisiCard(MisiItem misi) {
+  Widget _buildCard(MisiItem misi) {
     final isDiklaim = misi.status == MisiStatus.diklaim;
     final isSelesai = misi.status == MisiStatus.selesai;
 
@@ -329,27 +365,35 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: isSelesai ? Border.all(color: misi.color.withValues(alpha: 0.4), width: 1.5) : null,
+        borderRadius: BorderRadius.circular(16),
+        border: isSelesai
+            ? Border.all(color: misi.color.withOpacity(0.4), width: 1.5)
+            : null,
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header row
           Row(
             children: [
               Container(
-                width: 48, height: 48,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: isDiklaim
                       ? Colors.grey.shade100
-                      : misi.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
+                      : misi.color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(misi.icon,
-                    color: isDiklaim ? Colors.grey.shade400 : misi.color, size: 24),
+                    color: isDiklaim ? Colors.grey.shade400 : misi.color,
+                    size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -363,8 +407,9 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                             color: isDiklaim ? kTextSoft : kText)),
                     const SizedBox(height: 2),
                     Text(misi.deskripsi,
-                        style: const TextStyle(fontSize: 11, color: kTextSoft),
-                        maxLines: 1,
+                        style: const TextStyle(
+                            fontSize: 11, color: kTextSoft),
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis),
                   ],
                 ),
@@ -375,7 +420,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
           ),
           const SizedBox(height: 14),
 
-          // Progress bar
+          // Progress + reward
           Row(
             children: [
               Expanded(
@@ -393,38 +438,45 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('${misi.progressJumlah}/${misi.targetJumlah} selesai',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: isDiklaimed ? kTextSoft : misi.color,
-                            fontWeight: FontWeight.w500)),
+                    Text(
+                      '${misi.progressJumlah}/${misi.targetJumlah} selesai',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: isDiklaim ? kTextSoft : misi.color,
+                          fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              // Reward chip
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isDiklaim ? Colors.grey.shade100 : kPrimaryLight,
+                  color: isDiklaim
+                      ? Colors.grey.shade100
+                      : kPrimaryLight,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.monetization_on_rounded,
-                        size: 13, color: isDiklaim ? Colors.grey.shade400 : kPrimary),
+                        size: 13,
+                        color: isDiklaim ? Colors.grey.shade400 : kPrimary),
                     const SizedBox(width: 3),
                     Text('+${misi.koinReward}',
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: isDiklaim ? Colors.grey.shade400 : kPrimary)),
+                            color: isDiklaim
+                                ? Colors.grey.shade400
+                                : kPrimary)),
                   ],
                 ),
               ),
             ],
           ),
 
+          // Klaim button
           if (isSelesai) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -438,7 +490,8 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                   backgroundColor: misi.color,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
               ),
@@ -449,25 +502,30 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
     );
   }
 
-  bool get isDiklaimed => false;
-
   Widget _statusBadge(MisiItem misi) {
     switch (misi.status) {
       case MisiStatus.diklaim:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-              color: Colors.grey.shade100, borderRadius: BorderRadius.circular(20)),
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(20)),
           child: const Text('Diklaim',
-              style: TextStyle(fontSize: 10, color: kTextSoft, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  fontSize: 10,
+                  color: kTextSoft,
+                  fontWeight: FontWeight.w600)),
         );
       case MisiStatus.selesai:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration:
-              BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(
+              color: kPrimaryLight, borderRadius: BorderRadius.circular(20)),
           child: const Text('Selesai!',
-              style: TextStyle(fontSize: 10, color: kPrimary, fontWeight: FontWeight.w700)),
+              style: TextStyle(
+                  fontSize: 10,
+                  color: kPrimary,
+                  fontWeight: FontWeight.w700)),
         );
       case MisiStatus.belum:
         return const SizedBox.shrink();
