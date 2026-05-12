@@ -11,9 +11,11 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
-// ══════════════════════════════════════════════
+import 'user_data.dart'; // ← TAMBAHAN: import UserData
+
+// ══════════════════════════════════════════════════════════════
 //  MODEL RIWAYAT TRANSAKSI
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 enum JenisTransaksi { tukarKoin, transfer }
 
@@ -35,9 +37,9 @@ class RiwayatTransaksi {
   });
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  RIWAYAT GLOBAL
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class RiwayatStore {
   static final List<RiwayatTransaksi> data = [];
@@ -79,9 +81,10 @@ class RiwayatStore {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  KEUANGAN SCREEN
-// ══════════════════════════════════════════════
+//  FIX: Baca koin & saldo dari UserData (bukan hardcoded 0)
+// ══════════════════════════════════════════════════════════════
 
 class KeuanganScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -93,9 +96,36 @@ class KeuanganScreen extends StatefulWidget {
 
 class _KeuanganScreenState extends State<KeuanganScreen> {
   bool _showSaldo = false;
-  final double _saldo = 0;
-  final int _koin = 0;
 
+  // ── FIX: pakai UserData singleton, bukan final hardcoded ──
+  final UserData _userData = UserData();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  /// Load UserData lalu rebuild UI
+  Future<void> _loadData() async {
+    _userData.resetLoadFlag();
+    await _userData.load();
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  /// Dipanggil setiap kali kembali dari sub-screen agar data fresh
+  Future<void> _reloadData() async {
+    _userData.resetLoadFlag();
+    await _userData.load();
+    if (mounted) setState(() {});
+  }
+
+  // ── Getter shortcut ──────────────────────────────────────
+  double get _saldo => _isLoading ? 0 : _userData.saldo;
+  int    get _koin  => _isLoading ? 0 : _userData.koin;
+
+  // ────────────────────────────────────────────────────────
   Widget _buildTopSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,9 +163,11 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                _showSaldo
-                    ? 'Rp ${_saldo.toStringAsFixed(0)}'
-                    : 'Rp ••••••••',
+                _isLoading
+                    ? 'Memuat...'
+                    : _showSaldo
+                        ? 'Rp ${_saldo.toStringAsFixed(0)}'
+                        : 'Rp ••••••••',
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -147,9 +179,12 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   const Icon(Icons.monetization_on_outlined,
                       color: Colors.white70, size: 16),
                   const SizedBox(width: 4),
-                  Text('Koinmu  $_koin',
-                      style: const TextStyle(
-                          color: Colors.white70, fontSize: 14)),
+                  // FIX: tampilkan _koin dari UserData
+                  Text(
+                    _isLoading ? 'Koinmu  ...' : 'Koinmu  $_koin',
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 14),
+                  ),
                 ],
               ),
             ],
@@ -167,9 +202,12 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => TukarKoinScreen(koin: _koin)),
+                    // FIX: kirim _koin terbaru dari UserData
+                    builder: (_) => TukarKoinScreen(koin: _koin),
+                  ),
                 );
-                setState(() {});
+                // FIX: reload setelah tukar koin agar UI update
+                await _reloadData();
               },
             ),
             _buildMenuTile(
@@ -179,10 +217,10 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const MetodePembayaranScreen(
-                          isTransfer: true)),
+                      builder: (_) =>
+                          const MetodePembayaranScreen(isTransfer: true)),
                 );
-                setState(() {});
+                await _reloadData();
               },
             ),
           ],
@@ -193,13 +231,11 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
 
   Widget _buildRiwayatTile(RiwayatTransaksi item) {
     final isTransfer = item.jenis == JenisTransaksi.transfer;
-    final iconData = isTransfer
-        ? Icons.compare_arrows_rounded
-        : Icons.monetization_on_outlined;
+    final iconData =
+        isTransfer ? Icons.compare_arrows_rounded : Icons.monetization_on_outlined;
     final iconColor = isTransfer ? Colors.blue.shade400 : kPrimary;
-    final iconBg = isTransfer
-        ? Colors.blue.shade50
-        : kPrimary.withOpacity(0.1);
+    final iconBg =
+        isTransfer ? Colors.blue.shade50 : kPrimary.withOpacity(0.1);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -227,8 +263,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 const SizedBox(height: 2),
                 Text(
                   item.subjudul,
-                  style: TextStyle(
-                      color: Colors.grey.shade500, fontSize: 11),
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
                 ),
               ],
             ),
@@ -249,8 +284,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 item.tanggal.contains(',')
                     ? item.tanggal.split(',').last.trim()
                     : item.tanggal,
-                style:
-                    TextStyle(fontSize: 10, color: Colors.grey.shade400),
+                style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
               ),
             ],
           ),
@@ -293,140 +327,146 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
       backgroundColor: Colors.white,
       appBar: _buildAppBar('Keuangan',
           showBack: true, context: context, onBack: widget.onBack),
-      body: Stack(
-        children: [
-          // Konten atas: kartu saldo + menu
-          SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 260),
-            child: _buildTopSection(),
-          ),
-
-          // Sheet riwayat yang bisa ditarik ke atas
-          DraggableScrollableSheet(
-            initialChildSize: 0.38,
-            minChildSize: 0.38,
-            maxChildSize: 1.0,
-            snap: true,
-            snapSizes: const [0.38, 1.0],
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(24)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: kPrimary))
+          : Stack(
+              children: [
+                // Konten atas: kartu saldo + menu
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 260),
+                  child: _buildTopSection(),
                 ),
-                child: Column(
-                  children: [
-                    // Handle + header
-                    GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const RiwayatScreen()),
-                      ).then((_) => setState(() {})),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 10),
-                          Container(
-                            width: 36,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
+
+                // Sheet riwayat yang bisa ditarik ke atas
+                DraggableScrollableSheet(
+                  initialChildSize: 0.38,
+                  minChildSize: 0.38,
+                  maxChildSize: 1.0,
+                  snap: true,
+                  snapSizes: const [0.38, 1.0],
+                  builder: (context, scrollController) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(24)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, -4),
                           ),
-                          const SizedBox(height: 14),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 20),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Riwayat',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                Text(
-                                  'Lihat semua',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: kPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Divider(height: 1, color: Colors.grey.shade100),
                         ],
                       ),
-                    ),
-
-                    // Isi riwayat
-                    Expanded(
-                      child: riwayat.isEmpty
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        children: [
+                          // Handle + header
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const RiwayatScreen()),
+                            ).then((_) => setState(() {})),
+                            child: Column(
                               children: [
-                                Icon(Icons.receipt_long_outlined,
-                                    size: 48,
-                                    color: Colors.grey.shade300),
                                 const SizedBox(height: 10),
-                                Text(
-                                  'Belum ada transaksi',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade400,
-                                      fontSize: 13),
+                                Container(
+                                  width: 36,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
                                 ),
+                                const SizedBox(height: 14),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        'Riwayat',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Lihat semua',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: kPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Divider(
+                                    height: 1, color: Colors.grey.shade100),
                               ],
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(24)),
-                              ),
-                              child: ListView.separated(
-                                controller: scrollController,
-                                padding: const EdgeInsets.fromLTRB(
-                                    20, 8, 20, 40),
-                                itemCount: riwayat.length,
-                                separatorBuilder: (_, __) => Divider(
-                                    height: 1,
-                                    color: Colors.grey.shade200,
-                                    indent: 68),
-                                itemBuilder: (context, index) =>
-                                    _buildRiwayatTile(riwayat[index]),
-                              ),
                             ),
-                    ),
-                  ],
+                          ),
+
+                          // Isi riwayat
+                          Expanded(
+                            child: riwayat.isEmpty
+                                ? Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.receipt_long_outlined,
+                                          size: 48,
+                                          color: Colors.grey.shade300),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        'Belum ada transaksi',
+                                        style: TextStyle(
+                                            color: Colors.grey.shade400,
+                                            fontSize: 13),
+                                      ),
+                                    ],
+                                  )
+                                : Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade50,
+                                      borderRadius:
+                                          const BorderRadius.vertical(
+                                              top: Radius.circular(24)),
+                                    ),
+                                    child: ListView.separated(
+                                      controller: scrollController,
+                                      padding: const EdgeInsets.fromLTRB(
+                                          20, 8, 20, 40),
+                                      itemCount: riwayat.length,
+                                      separatorBuilder: (_, __) => Divider(
+                                          height: 1,
+                                          color: Colors.grey.shade200,
+                                          indent: 68),
+                                      itemBuilder: (context, index) =>
+                                          _buildRiwayatTile(riwayat[index]),
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+              ],
+            ),
     );
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  RIWAYAT SCREEN (halaman penuh)
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
@@ -456,7 +496,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
     return RiwayatStore.data;
   }
 
-  int get _totalMasuk => _filtered.where((r) => r.isPlus).fold(0, (sum, r) {
+  int get _totalMasuk =>
+      _filtered.where((r) => r.isPlus).fold(0, (sum, r) {
         final angka = r.nominal.replaceAll(RegExp(r'[^\d]'), '');
         return sum + (int.tryParse(angka) ?? 0);
       });
@@ -566,8 +607,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(
-                                top: 16, bottom: 8),
+                            padding:
+                                const EdgeInsets.only(top: 16, bottom: 8),
                             child: Text(
                               tgl,
                               style: TextStyle(
@@ -586,10 +627,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                                   color: Colors.grey.shade200),
                             ),
                             child: Column(
-                              children:
-                                  items.asMap().entries.map((e) {
-                                final isLast =
-                                    e.key == items.length - 1;
+                              children: items.asMap().entries.map((e) {
+                                final isLast = e.key == items.length - 1;
                                 return Column(
                                   children: [
                                     _buildTile(e.value),
@@ -646,8 +685,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       child: Column(
         children: [
           Text(label,
-              style: TextStyle(
-                  fontSize: 11, color: Colors.grey.shade500)),
+              style:
+                  TextStyle(fontSize: 11, color: Colors.grey.shade500)),
           const SizedBox(height: 4),
           Text(value,
               style: TextStyle(
@@ -725,9 +764,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  TUKAR KOIN SCREEN
-// ══════════════════════════════════════════════
+//  FIX: Kurangi koin di UserData dan tambah saldo setelah tukar
+// ══════════════════════════════════════════════════════════════
 
 class TukarKoinScreen extends StatefulWidget {
   final int koin;
@@ -743,8 +783,9 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
 
   static const int _nilaiPerKoin = 100;
 
-  int get _saldoDidapat => _jumlahKoin * _nilaiPerKoin;
-  bool get _canProceed => _jumlahKoin > 0 && _jumlahKoin <= widget.koin;
+  int    get _saldoDidapat => _jumlahKoin * _nilaiPerKoin;
+  bool   get _canProceed   =>
+      _jumlahKoin > 0 && _jumlahKoin <= widget.koin;
 
   String _fmt(int amount) => amount
       .toString()
@@ -755,7 +796,8 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Tukar Koin', showBack: true, context: context),
+      appBar:
+          _buildAppBar('Tukar Koin', showBack: true, context: context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -778,8 +820,8 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('Koin Kamu',
-                          style:
-                              TextStyle(color: Colors.white70, fontSize: 13)),
+                          style: TextStyle(
+                              color: Colors.white70, fontSize: 13)),
                       const SizedBox(height: 4),
                       Text(
                         '${widget.koin} Koin',
@@ -796,7 +838,8 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
             ),
             const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: kPrimary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
@@ -837,18 +880,23 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
                 hintText: '0',
                 suffixText: 'Koin',
                 suffixStyle: const TextStyle(
-                    fontWeight: FontWeight.w600, color: Colors.black54),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300)),
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade300)),
                 focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: kPrimary, width: 2)),
+                    borderSide:
+                        const BorderSide(color: kPrimary, width: 2)),
                 enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300)),
-                errorText:
-                    _jumlahKoin > widget.koin ? 'Koin tidak mencukupi' : null,
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade300)),
+                errorText: _jumlahKoin > widget.koin
+                    ? 'Koin tidak mencukupi'
+                    : null,
               ),
             ),
             const SizedBox(height: 12),
@@ -869,7 +917,8 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
                     decoration: BoxDecoration(
                       color: kPrimary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: kPrimary.withOpacity(0.3)),
+                      border: Border.all(
+                          color: kPrimary.withOpacity(0.3)),
                     ),
                     child: Text(
                       '$val Koin',
@@ -898,11 +947,13 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
                   children: [
                     _summaryRow('Koin ditukar', '$_jumlahKoin Koin'),
                     const SizedBox(height: 8),
-                    _summaryRow('Saldo didapat', 'Rp ${_fmt(_saldoDidapat)}',
+                    _summaryRow(
+                        'Saldo didapat',
+                        'Rp ${_fmt(_saldoDidapat)}',
                         highlight: true),
                     const SizedBox(height: 8),
-                    _summaryRow(
-                        'Sisa koin', '${widget.koin - _jumlahKoin} Koin'),
+                    _summaryRow('Sisa koin',
+                        '${widget.koin - _jumlahKoin} Koin'),
                   ],
                 ),
               ),
@@ -912,24 +963,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: _canProceed
-                    ? () {
-                        RiwayatStore.tambahTukarKoin(
-                            _jumlahKoin, _saldoDidapat);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '$_jumlahKoin koin berhasil ditukar menjadi Rp ${_fmt(_saldoDidapat)}',
-                            ),
-                            backgroundColor: kPrimary,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                        );
-                        Navigator.pop(context);
-                      }
-                    : null,
+                onPressed: _canProceed ? _tukarKoin : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
                   disabledBackgroundColor: Colors.grey.shade300,
@@ -953,17 +987,50 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
     );
   }
 
-  Widget _summaryRow(String label, String value, {bool highlight = false}) {
+  // ── FIX: Simpan perubahan koin & saldo ke UserData ──────
+  Future<void> _tukarKoin() async {
+    // 1. Catat ke riwayat transaksi
+    RiwayatStore.tambahTukarKoin(_jumlahKoin, _saldoDidapat);
+
+    // 2. Update UserData (koin berkurang, saldo bertambah)
+    final userData = UserData();
+    await userData.load();
+    userData.koin  -= _jumlahKoin;   // kurangi koin
+    userData.saldo += _saldoDidapat; // tambah saldo rupiah
+    await userData.simpan();         // persist ke SharedPreferences
+
+    // 3. Tampilkan snackbar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$_jumlahKoin koin berhasil ditukar menjadi '
+            'Rp ${_fmt(_saldoDidapat)}',
+          ),
+          backgroundColor: kPrimary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  Widget _summaryRow(String label, String value,
+      {bool highlight = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+            style: TextStyle(
+                fontSize: 13, color: Colors.grey.shade600)),
         Text(
           value,
           style: TextStyle(
             fontSize: 13,
-            fontWeight: highlight ? FontWeight.w800 : FontWeight.w600,
+            fontWeight:
+                highlight ? FontWeight.w800 : FontWeight.w600,
             color: highlight ? kPrimary : Colors.black87,
           ),
         ),
@@ -972,9 +1039,9 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  METODE PEMBAYARAN
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class MetodePembayaranScreen extends StatefulWidget {
   final bool isTransfer;
@@ -985,7 +1052,8 @@ class MetodePembayaranScreen extends StatefulWidget {
       _MetodePembayaranScreenState();
 }
 
-class _MetodePembayaranScreenState extends State<MetodePembayaranScreen> {
+class _MetodePembayaranScreenState
+    extends State<MetodePembayaranScreen> {
   String? _selected;
   final List<String> _metode = ['Dana', 'OVO', 'Gopay', 'Shoopepay'];
 
@@ -993,7 +1061,8 @@ class _MetodePembayaranScreenState extends State<MetodePembayaranScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Keuangan', showBack: true, context: context),
+      appBar: _buildAppBar('Keuangan',
+          showBack: true, context: context),
       body: Column(
         children: [
           const SizedBox(height: 20),
@@ -1014,12 +1083,13 @@ class _MetodePembayaranScreenState extends State<MetodePembayaranScreen> {
               child: Column(
                 children: _metode.asMap().entries.map((entry) {
                   final index = entry.key;
-                  final name = entry.value;
+                  final name  = entry.value;
                   final isLast = index == _metode.length - 1;
                   return Column(
                     children: [
                       InkWell(
-                        onTap: () => setState(() => _selected = name),
+                        onTap: () =>
+                            setState(() => _selected = name),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 16),
@@ -1080,8 +1150,8 @@ class _MetodePembayaranScreenState extends State<MetodePembayaranScreen> {
                     : () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) =>
-                                  TransferScreen(metode: _selected!)),
+                              builder: (_) => TransferScreen(
+                                  metode: _selected!)),
                         ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
@@ -1104,9 +1174,9 @@ class _MetodePembayaranScreenState extends State<MetodePembayaranScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  TRANSFER SCREEN
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class TransferScreen extends StatefulWidget {
   final String metode;
@@ -1117,7 +1187,8 @@ class TransferScreen extends StatefulWidget {
 }
 
 class _TransferScreenState extends State<TransferScreen> {
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController =
+      TextEditingController();
   String _query = '';
   List<Contact> _contacts = [];
   bool _loadingContacts = true;
@@ -1157,7 +1228,8 @@ class _TransferScreenState extends State<TransferScreen> {
     return _contacts.where((c) {
       final nameMatch =
           c.displayName.toLowerCase().contains(_query.toLowerCase());
-      final phoneMatch = c.phones.any((p) => p.number.contains(_query));
+      final phoneMatch =
+          c.phones.any((p) => p.number.contains(_query));
       return nameMatch || phoneMatch;
     }).toList();
   }
@@ -1206,8 +1278,8 @@ class _TransferScreenState extends State<TransferScreen> {
         _query.isNotEmpty && RegExp(r'^[0-9+]{6,}$').hasMatch(_query);
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar:
-          _buildAppBar('Ke ${widget.metode}', showBack: true, context: context),
+      appBar: _buildAppBar('Ke ${widget.metode}',
+          showBack: true, context: context),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -1215,14 +1287,15 @@ class _TransferScreenState extends State<TransferScreen> {
           children: [
             const SizedBox(height: 12),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(30)),
               child: Row(
                 children: [
-                  Icon(Icons.search, color: Colors.grey.shade500, size: 20),
+                  Icon(Icons.search,
+                      color: Colors.grey.shade500, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
@@ -1233,8 +1306,8 @@ class _TransferScreenState extends State<TransferScreen> {
                         hintText: 'Masukan no. handphone / nama',
                         border: InputBorder.none,
                         isDense: true,
-                        hintStyle:
-                            TextStyle(color: Colors.grey, fontSize: 14),
+                        hintStyle: TextStyle(
+                            color: Colors.grey, fontSize: 14),
                       ),
                     ),
                   ),
@@ -1260,7 +1333,8 @@ class _TransferScreenState extends State<TransferScreen> {
                   decoration: BoxDecoration(
                     color: kPrimary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kPrimary.withOpacity(0.3)),
+                    border: Border.all(
+                        color: kPrimary.withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [
@@ -1270,12 +1344,15 @@ class _TransferScreenState extends State<TransferScreen> {
                         decoration: BoxDecoration(
                             color: kPrimary.withOpacity(0.2),
                             shape: BoxShape.circle),
-                        child: const Icon(Icons.send_to_mobile_outlined,
-                            color: kPrimary, size: 20),
+                        child: const Icon(
+                            Icons.send_to_mobile_outlined,
+                            color: kPrimary,
+                            size: 20),
                       ),
                       const SizedBox(width: 12),
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
                         children: [
                           Text('Kirim ke nomor ini',
                               style: TextStyle(
@@ -1304,14 +1381,17 @@ class _TransferScreenState extends State<TransferScreen> {
             Expanded(
               child: _loadingContacts
                   ? const Center(
-                      child: CircularProgressIndicator(color: kPrimary))
+                      child: CircularProgressIndicator(
+                          color: kPrimary))
                   : _permissionDenied
                       ? Center(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
                             children: [
                               Icon(Icons.contacts_outlined,
-                                  size: 60, color: Colors.grey.shade300),
+                                  size: 60,
+                                  color: Colors.grey.shade300),
                               const SizedBox(height: 16),
                               Text('Izin kontak ditolak',
                                   style: TextStyle(
@@ -1319,7 +1399,8 @@ class _TransferScreenState extends State<TransferScreen> {
                                       color: Colors.grey.shade600)),
                               const SizedBox(height: 8),
                               Text(
-                                  'Ketik nomor HP secara manual\ndi kolom pencarian',
+                                  'Ketik nomor HP secara manual\n'
+                                  'di kolom pencarian',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.grey.shade400,
@@ -1336,12 +1417,14 @@ class _TransferScreenState extends State<TransferScreen> {
                           : Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border:
-                                    Border.all(color: Colors.grey.shade200),
+                                borderRadius:
+                                    BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: Colors.grey.shade200),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: Colors.black.withOpacity(0.04),
+                                      color: Colors.black
+                                          .withOpacity(0.04),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2))
                                 ],
@@ -1360,12 +1443,15 @@ class _TransferScreenState extends State<TransferScreen> {
                                   final initial =
                                       _getInitial(c.displayName);
                                   return InkWell(
-                                    borderRadius: BorderRadius.circular(16),
-                                    onTap: () =>
-                                        _goToNominal(c.displayName, phone),
+                                    borderRadius:
+                                        BorderRadius.circular(16),
+                                    onTap: () => _goToNominal(
+                                        c.displayName, phone),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 12),
+                                      padding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12),
                                       child: Row(
                                         children: [
                                           CircleAvatar(
@@ -1374,7 +1460,8 @@ class _TransferScreenState extends State<TransferScreen> {
                                                 _avatarBg(initial),
                                             child: Text(initial,
                                                 style: TextStyle(
-                                                    color: _avatarFg(initial),
+                                                    color: _avatarFg(
+                                                        initial),
                                                     fontWeight:
                                                         FontWeight.w700,
                                                     fontSize: 16)),
@@ -1382,17 +1469,19 @@ class _TransferScreenState extends State<TransferScreen> {
                                           const SizedBox(width: 12),
                                           Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                CrossAxisAlignment
+                                                    .start,
                                             children: [
                                               Text(c.displayName,
                                                   style: const TextStyle(
                                                       fontWeight:
-                                                          FontWeight.w600,
+                                                          FontWeight
+                                                              .w600,
                                                       fontSize: 14)),
                                               Text(phone,
                                                   style: TextStyle(
-                                                      color: Colors
-                                                          .grey.shade500,
+                                                      color: Colors.grey
+                                                          .shade500,
                                                       fontSize: 12)),
                                             ],
                                           ),
@@ -1412,9 +1501,9 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  INPUT NOMINAL
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class NominalTransferScreen extends StatefulWidget {
   final String metode;
@@ -1433,7 +1522,8 @@ class NominalTransferScreen extends StatefulWidget {
       _NominalTransferScreenState();
 }
 
-class _NominalTransferScreenState extends State<NominalTransferScreen> {
+class _NominalTransferScreenState
+    extends State<NominalTransferScreen> {
   final TextEditingController _ctrl = TextEditingController();
   String _nominal = '';
 
@@ -1443,10 +1533,12 @@ class _NominalTransferScreenState extends State<NominalTransferScreen> {
     final parts = name.split(' ');
     if (parts.length >= 2) {
       final first = parts[0];
-      final last = parts.last;
-      return '${first.substring(0, min(3, first.length))}***${last.substring(max(0, last.length - 2))}';
+      final last  = parts.last;
+      return '${first.substring(0, min(3, first.length))}***'
+          '${last.substring(max(0, last.length - 2))}';
     }
-    return '${name.substring(0, 3)}***${name.substring(max(3, name.length - 2))}';
+    return '${name.substring(0, 3)}***'
+        '${name.substring(max(3, name.length - 2))}';
   }
 
   String _fmt(int amount) => amount
@@ -1462,8 +1554,8 @@ class _NominalTransferScreenState extends State<NominalTransferScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar:
-          _buildAppBar('Ke ${widget.metode}', showBack: true, context: context),
+      appBar: _buildAppBar('Ke ${widget.metode}',
+          showBack: true, context: context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -1498,10 +1590,12 @@ class _NominalTransferScreenState extends State<NominalTransferScreen> {
                     children: [
                       Text(_maskName(widget.namaPenerima),
                           style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 15)),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15)),
                       Text(widget.nomorPenerima,
                           style: TextStyle(
-                              color: Colors.grey.shade500, fontSize: 13)),
+                              color: Colors.grey.shade500,
+                              fontSize: 13)),
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -1537,16 +1631,20 @@ class _NominalTransferScreenState extends State<NominalTransferScreen> {
                 hintText: '0',
                 prefixText: 'Rp  ',
                 prefixStyle: const TextStyle(
-                    fontWeight: FontWeight.w700, color: Colors.black87),
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300)),
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade300)),
                 focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: kPrimary, width: 2)),
+                    borderSide:
+                        const BorderSide(color: kPrimary, width: 2)),
                 enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300)),
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade300)),
               ),
             ),
             const SizedBox(height: 16),
@@ -1565,8 +1663,8 @@ class _NominalTransferScreenState extends State<NominalTransferScreen> {
                     decoration: BoxDecoration(
                       color: kPrimary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(20),
-                      border:
-                          Border.all(color: kPrimary.withOpacity(0.3)),
+                      border: Border.all(
+                          color: kPrimary.withOpacity(0.3)),
                     ),
                     child: Text('Rp ${_fmt(amt)}',
                         style: TextStyle(
@@ -1616,15 +1714,15 @@ class _NominalTransferScreenState extends State<NominalTransferScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  PIN SCREEN
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class PinScreen extends StatefulWidget {
   final String metode;
   final String namaPenerima;
   final String nomorPenerima;
-  final int nominal;
+  final int    nominal;
 
   const PinScreen({
     super.key,
@@ -1674,7 +1772,8 @@ class _PinScreenState extends State<PinScreen> {
       content: Text(msg),
       backgroundColor: color,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12)),
     ));
   }
 
@@ -1682,13 +1781,14 @@ class _PinScreenState extends State<PinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Keuangan', showBack: true, context: context),
+      appBar:
+          _buildAppBar('Keuangan', showBack: true, context: context),
       body: Column(
         children: [
           const Spacer(),
           const Text('Masukan PIN',
-              style:
-                  TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1699,8 +1799,9 @@ class _PinScreenState extends State<PinScreen> {
                 height: 14,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color:
-                      i < _pin.length ? kPrimary : Colors.grey.shade300,
+                  color: i < _pin.length
+                      ? kPrimary
+                      : Colors.grey.shade300,
                 ),
               );
             }),
@@ -1753,7 +1854,8 @@ class _PinScreenState extends State<PinScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: keys.map((key) {
-        if (key.isEmpty) return const SizedBox(width: 80, height: 60);
+        if (key.isEmpty)
+          return const SizedBox(width: 80, height: 60);
         return GestureDetector(
           onTap: () => _onKey(key),
           child: Container(
@@ -1779,15 +1881,15 @@ class _PinScreenState extends State<PinScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  STRUK WIDGET
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 class StrukWidget extends StatelessWidget {
   final String metode;
   final String namaPenerima;
   final String nomorPenerima;
-  final int nominal;
+  final int    nominal;
   final String idTrx;
   final String noTrx;
   final String tanggal;
@@ -1808,7 +1910,8 @@ class StrukWidget extends StatelessWidget {
       amount
           .toString()
           .replaceAllMapped(
-              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+              (m) => '${m[1]}.');
 
   @override
   Widget build(BuildContext context) {
@@ -1820,8 +1923,8 @@ class StrukWidget extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+            padding: const EdgeInsets.symmetric(
+                vertical: 28, horizontal: 24),
             decoration: const BoxDecoration(color: kPrimaryDark),
             child: Column(
               children: [
@@ -1969,7 +2072,8 @@ class StrukWidget extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text('Transaksi terenkripsi & aman',
                         style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade400)),
+                            fontSize: 11,
+                            color: Colors.grey.shade400)),
                   ],
                 ),
               ],
@@ -2058,15 +2162,16 @@ class _ZigzagPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  RINCIAN TRANSAKSI
-// ══════════════════════════════════════════════
+//  FIX: Kurangi saldo di UserData saat transfer berhasil
+// ══════════════════════════════════════════════════════════════
 
 class RincianTransaksiScreen extends StatefulWidget {
   final String metode;
   final String namaPenerima;
   final String nomorPenerima;
-  final int nominal;
+  final int    nominal;
 
   const RincianTransaksiScreen({
     super.key,
@@ -2081,8 +2186,10 @@ class RincianTransaksiScreen extends StatefulWidget {
       _RincianTransaksiScreenState();
 }
 
-class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
-  final ScreenshotController _screenshotController = ScreenshotController();
+class _RincianTransaksiScreenState
+    extends State<RincianTransaksiScreen> {
+  final ScreenshotController _screenshotController =
+      ScreenshotController();
   bool _isProcessing = false;
 
   late final String _idTrx;
@@ -2093,13 +2200,23 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
   @override
   void initState() {
     super.initState();
-    _idTrx = _generateId();
-    _noTrx = _generateNoTrx();
-    _tanggal = _formatTanggal();
-    _maskedName = _maskName(widget.namaPenerima);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _idTrx       = _generateId();
+    _noTrx       = _generateNoTrx();
+    _tanggal     = _formatTanggal();
+    _maskedName  = _maskName(widget.namaPenerima);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Catat riwayat
       RiwayatStore.tambahTransfer(
           widget.metode, _maskedName, widget.nominal);
+
+      // FIX: Kurangi saldo di UserData setelah transfer
+      final userData = UserData();
+      await userData.load();
+      final saldoBaru =
+          (userData.saldo - widget.nominal).clamp(0.0, double.infinity);
+      userData.saldo = saldoBaru;
+      await userData.simpan();
     });
   }
 
@@ -2107,7 +2224,8 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
       'Rp. ' +
       amount
           .toString()
-          .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          .replaceAllMapped(
+              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
               (m) => '${m[1]}.');
 
   String _maskName(String name) {
@@ -2116,21 +2234,26 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
     final parts = name.split(' ');
     if (parts.length >= 2) {
       final first = parts[0];
-      final last = parts.last;
-      return '${first.substring(0, min(3, first.length))}***${last.substring(max(0, last.length - 2))}';
+      final last  = parts.last;
+      return '${first.substring(0, min(3, first.length))}***'
+          '${last.substring(max(0, last.length - 2))}';
     }
-    return '${name.substring(0, 3)}***${name.substring(max(3, name.length - 2))}';
+    return '${name.substring(0, 3)}***'
+        '${name.substring(max(3, name.length - 2))}';
   }
 
   String _generateId() {
     final now = DateTime.now();
-    return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour}${now.minute}${now.second}';
+    return '${now.year}${now.month.toString().padLeft(2, '0')}'
+        '${now.day.toString().padLeft(2, '0')}'
+        '${now.hour}${now.minute}${now.second}';
   }
 
   String _generateNoTrx() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final r = Random();
-    return List.generate(8, (_) => chars[r.nextInt(chars.length)]).join();
+    return List.generate(8, (_) => chars[r.nextInt(chars.length)])
+        .join();
   }
 
   String _formatTanggal() {
@@ -2140,7 +2263,9 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
       'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
     ];
     return '${now.day} ${bln[now.month]} ${now.year} - '
-        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
   }
 
   Future<Uint8List?> _captureStruk() async {
@@ -2193,13 +2318,14 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
             const SizedBox(width: 10),
             Expanded(
                 child: Text(
-                    'Struk disimpan ke ${Platform.isAndroid ? "Download" : "Dokumen"}',
+                    'Struk disimpan ke '
+                    '${Platform.isAndroid ? "Download" : "Dokumen"}',
                     style: const TextStyle(fontSize: 13))),
           ]),
           backgroundColor: kPrimary,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
         ));
       }
     } catch (e) {
@@ -2208,8 +2334,8 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
           content: Text('Gagal mengunduh struk: $e'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
         ));
       }
     } finally {
@@ -2241,8 +2367,8 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
           content: Text('Gagal berbagi struk: $e'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
         ));
       }
     } finally {
@@ -2254,7 +2380,8 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Keuangan', showBack: true, context: context),
+      appBar:
+          _buildAppBar('Keuangan', showBack: true, context: context),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -2285,8 +2412,10 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
                           color: kPrimary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(Icons.compare_arrows_rounded,
-                            color: kPrimary, size: 28),
+                        child: const Icon(
+                            Icons.compare_arrows_rounded,
+                            color: kPrimary,
+                            size: 28),
                       ),
                       const SizedBox(height: 16),
                       Text(_fmt(widget.nominal),
@@ -2371,9 +2500,10 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton.icon(
-                onPressed: () =>
-                    Navigator.popUntil(context, (route) => route.isFirst),
-                icon: const Icon(Icons.home_rounded, color: Colors.white),
+                onPressed: () => Navigator.popUntil(
+                    context, (route) => route.isFirst),
+                icon: const Icon(Icons.home_rounded,
+                    color: Colors.white),
                 label: const Text('Kembali ke Dashboard',
                     style: TextStyle(
                         color: Colors.white,
@@ -2456,9 +2586,9 @@ class _RincianTransaksiScreenState extends State<RincianTransaksiScreen> {
   }
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 //  SHARED AppBar
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 
 PreferredSizeWidget _buildAppBar(
   String title, {
@@ -2478,21 +2608,19 @@ PreferredSizeWidget _buildAppBar(
               } else if (Navigator.canPop(context)) {
                 Navigator.pop(context);
               } else {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.popUntil(
+                    context, (route) => route.isFirst);
               }
             },
             icon: Container(
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(10),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black87, width: 2),
               ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 16,
-                color: Colors.black87,
-              ),
+              child: const Icon(Icons.arrow_back_ios_new_rounded,
+                  size: 16, color: Colors.black87),
             ),
           )
         : null,

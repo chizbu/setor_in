@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'edukasi_screen.dart';
 import 'profil_screen.dart';
-import 'target_sampah_screen.dart';
+import 'misi_page_screen.dart';
 import 'setor_sampah_screen.dart';
 import 'keuangan_screen.dart';
 import 'cek_bank_sampah_screen.dart';
-import 'notifikasi_screen.dart'; // ← TAMBAHAN
+import 'notifikasi_screen.dart';
 import 'user_data.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -30,7 +30,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.initState();
     _animCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 600));
-    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _fadeAnim =
+        CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
     _loadData();
   }
 
@@ -46,6 +47,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       setState(() => _isLoading = false);
       _animCtrl.forward();
     }
+  }
+
+  // ── Reload paksa UserData (singleton) lalu rebuild ──
+  Future<void> _reloadUserData() async {
+    // Reset flag agar load() membaca ulang dari SharedPreferences
+    _userData.resetLoadFlag();
+    await _userData.load();
+    if (mounted) setState(() {});
   }
 
   void _onNavTap(int index) {
@@ -123,14 +132,15 @@ class _DashboardScreenState extends State<DashboardScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildLogo(),
-                _buildNotifButton(), // ← sudah di-fix di bawah
+                _buildNotifButton(),
               ],
             ),
             const SizedBox(height: 16),
             GestureDetector(
               onTap: () => setState(() => _currentIndex = 3),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(30),
@@ -141,11 +151,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                     CircleAvatar(
                       radius: 18,
                       backgroundColor: Colors.white,
-                      backgroundImage: !_isLoading && _userData.fotoProfil != null
-                          ? FileImage(_userData.fotoProfil!)
-                          : null,
+                      backgroundImage:
+                          !_isLoading && _userData.fotoProfil != null
+                              ? FileImage(_userData.fotoProfil!)
+                              : null,
                       child: (_isLoading || _userData.fotoProfil == null)
-                          ? const Icon(Icons.person, color: kPrimary, size: 20)
+                          ? const Icon(Icons.person,
+                              color: kPrimary, size: 20)
                           : null,
                     ),
                     const SizedBox(width: 8),
@@ -153,7 +165,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Selamat datang 👋',
-                            style: TextStyle(color: Colors.white70, fontSize: 11)),
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 11)),
                         Text(
                           _isLoading ? 'Loading...' : _userData.nama,
                           style: const TextStyle(
@@ -164,7 +177,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ],
                     ),
                     const SizedBox(width: 6),
-                    const Icon(Icons.chevron_right, color: Colors.white70, size: 18),
+                    const Icon(Icons.chevron_right,
+                        color: Colors.white70, size: 18),
                   ],
                 ),
               ),
@@ -191,7 +205,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           WidgetSpan(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 1),
-              child: Icon(Icons.recycling, color: Colors.white, size: 22),
+              child:
+                  Icon(Icons.recycling, color: Colors.white, size: 22),
             ),
           ),
           TextSpan(text: 'R.IN'),
@@ -200,7 +215,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  // ─── FIX: tambah GestureDetector untuk buka NotifikasiScreen ───
   Widget _buildNotifButton() {
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -242,7 +256,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.25)),
       ),
       child: Column(
         children: [
@@ -254,15 +269,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.account_balance_wallet_outlined,
-                            color: Colors.white70, size: 16),
+                        const Icon(
+                            Icons.account_balance_wallet_outlined,
+                            color: Colors.white70,
+                            size: 16),
                         const SizedBox(width: 4),
                         const Text('Saldo',
-                            style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 12)),
                         const SizedBox(width: 6),
                         GestureDetector(
-                          onTap: () =>
-                              setState(() => _showSaldo = !_showSaldo),
+                          onTap: () => setState(
+                              () => _showSaldo = !_showSaldo),
                           child: Icon(
                             _showSaldo
                                 ? Icons.visibility_outlined
@@ -288,8 +306,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -302,8 +320,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: Colors.white70, size: 14),
                         SizedBox(width: 4),
                         Text('Koin',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 11)),
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 11)),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -326,12 +344,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: _buildSaldoButton(
                   icon: Icons.swap_horiz_rounded,
                   label: 'Tukarkan Koin',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TukarKoinScreen(koin: _userData.koin),
-                    ),
-                  ),
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            TukarKoinScreen(koin: _userData.koin),
+                      ),
+                    );
+                    // ── Reload setelah tukar koin ──
+                    await _reloadUserData();
+                  },
                 ),
               ),
               const SizedBox(width: 10),
@@ -362,7 +385,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+          border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -370,7 +394,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             const SizedBox(height: 4),
             Text(label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 10)),
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 10)),
           ],
         ),
       ),
@@ -379,17 +404,26 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildQuickMenu() {
     final menus = [
-      _MenuItem(Icons.recycling_rounded, 'Setor\nSampah', kPrimary, () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const SetorSampahScreen()));
+      _MenuItem(Icons.recycling_rounded, 'Setor\nSampah', kPrimary,
+          () async {
+        await Navigator.push(context,
+            MaterialPageRoute(
+                builder: (_) => const SetorSampahScreen()));
+        // Reload koin/saldo setelah setor sampah
+        await _reloadUserData();
       }),
-      _MenuItem(Icons.flag_rounded, 'Target\nSampah', kInfo, () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const TargetSampahScreen()));
+      _MenuItem(Icons.flag_rounded, 'Target\nSampah', kInfo, () async {
+        // ── KUNCI FIX DASHBOARD: reload setelah kembali dari misi ──
+        await Navigator.push(context,
+            MaterialPageRoute(
+                builder: (_) => const MisiPageScreen()));
+        await _reloadUserData(); // ← koin dari reward misi masuk ke UI
       }),
-      _MenuItem(Icons.location_on_rounded, 'Cek Bank\nSampah', kWarning, () {
+      _MenuItem(
+          Icons.location_on_rounded, 'Cek Bank\nSampah', kWarning, () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const CekBankSampahScreen()));
+            MaterialPageRoute(
+                builder: (_) => const CekBankSampahScreen()));
       }),
     ];
 
@@ -400,11 +434,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         children: [
           const Text('Menu Utama',
               style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: kText)),
           const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: menus.map((m) => _buildMenuCard(m)).toList(),
+            children:
+                menus.map((m) => _buildMenuCard(m)).toList(),
           ),
         ],
       ),
@@ -448,7 +485,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         children: [
           const Text('Ringkasan',
               style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: kText)),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -509,7 +548,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(fontSize: 11, color: kTextSoft)),
+                    style: const TextStyle(
+                        fontSize: 11, color: kTextSoft)),
                 const SizedBox(height: 2),
                 Text(value,
                     style: const TextStyle(
@@ -526,9 +566,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildAktivitas() {
     final aktivitas = [
-      _AktivitasItem('Setor Plastik', '2.3 kg • +46 koin', '12 Apr', kPrimary),
-      _AktivitasItem('Setor Kertas', '1.0 kg • +15 koin', '8 Apr', kInfo),
-      _AktivitasItem('Setor Logam', '0.8 kg • +32 koin', '1 Apr', kWarning),
+      _AktivitasItem(
+          'Setor Plastik', '2.3 kg • +46 koin', '12 Apr', kPrimary),
+      _AktivitasItem(
+          'Setor Kertas', '1.0 kg • +15 koin', '8 Apr', kInfo),
+      _AktivitasItem(
+          'Setor Logam', '0.8 kg • +32 koin', '1 Apr', kWarning),
     ];
 
     return Padding(
@@ -573,7 +616,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Container(
@@ -583,8 +627,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   color: item.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child:
-                    Icon(Icons.recycling_rounded, color: item.color, size: 22),
+                child: Icon(Icons.recycling_rounded,
+                    color: item.color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -598,18 +642,22 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: kText)),
                     const SizedBox(height: 2),
                     Text(item.subtitle,
-                        style:
-                            const TextStyle(fontSize: 12, color: kTextSoft)),
+                        style: const TextStyle(
+                            fontSize: 12, color: kTextSoft)),
                   ],
                 ),
               ),
               Text(item.date,
-                  style: const TextStyle(fontSize: 11, color: kTextSoft)),
+                  style: const TextStyle(
+                      fontSize: 11, color: kTextSoft)),
             ],
           ),
         ),
         if (!isLast)
-          const Divider(height: 1, indent: 72, color: Color(0xFFF0F0F0)),
+          const Divider(
+              height: 1,
+              indent: 72,
+              color: Color(0xFFF0F0F0)),
       ],
     );
   }
@@ -643,7 +691,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     SizedBox(height: 6),
                     Text(
                       'Pisahkan sampah organik & anorganik untuk mendapatkan lebih banyak koin!',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      style: TextStyle(
+                          color: Colors.white70, fontSize: 12),
                     ),
                     SizedBox(height: 10),
                     Text('Pelajari lebih lanjut →',
@@ -687,13 +736,15 @@ class _DashboardScreenState extends State<DashboardScreen>
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.home_rounded, 'Beranda', 0),
             _buildNavItem(Icons.menu_book_outlined, 'Edukasi', 1),
-            _buildNavItem(Icons.account_balance_wallet_outlined, 'Keuangan', 2),
+            _buildNavItem(
+                Icons.account_balance_wallet_outlined, 'Keuangan', 2),
             _buildNavItem(Icons.person_outline, 'Profil', 3),
           ],
         ),
@@ -707,7 +758,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       onTap: () => _onNavTap(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isActive ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(30),
@@ -715,7 +767,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: Row(
           children: [
             Icon(icon,
-                color: isActive ? kPrimary : Colors.white70, size: 22),
+                color: isActive ? kPrimary : Colors.white70,
+                size: 22),
             if (isActive) ...[
               const SizedBox(width: 6),
               Text(label,
@@ -744,5 +797,6 @@ class _AktivitasItem {
   final String subtitle;
   final String date;
   final Color color;
-  const _AktivitasItem(this.title, this.subtitle, this.date, this.color);
+  const _AktivitasItem(
+      this.title, this.subtitle, this.date, this.color);
 }

@@ -131,7 +131,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       backgroundColor: kBg,
       body: Column(
         children: [
-          _buildHeader(),
+          _buildAppBar(),
           Expanded(
             child: _buildBody(),
           ),
@@ -140,44 +140,33 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     );
   }
 
-  Widget _buildHeader() {
+    Widget _buildAppBar() {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: kGradientPrimary,
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black87, width: 2),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Notifikasi',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              child: const Icon(Icons.arrow_back_ios_new_rounded,
+                  size: 16, color: Colors.black87),
+            ),
+          ),
+          const Expanded(
+            child: Text(
+              'Notifikasi',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 17, fontWeight: FontWeight.w800, color: Colors.black87),
+            ),
+          ),
               if (_unreadCount > 0)
                 GestureDetector(
                   onTap: _markAllRead,
@@ -190,8 +179,6 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                   ),
                 ),
             ],
-          ),
-        ),
       ),
     );
   }
