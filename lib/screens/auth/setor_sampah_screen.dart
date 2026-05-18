@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MODEL
-// ─────────────────────────────────────────────────────────────────────────────
 class JenisSampah {
   final String id;
   final String nama;
@@ -22,9 +19,6 @@ class JenisSampah {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ENTRY POINT
-// ─────────────────────────────────────────────────────────────────────────────
 class SetorSampahScreen extends StatelessWidget {
   const SetorSampahScreen({super.key});
 
@@ -34,9 +28,6 @@ class SetorSampahScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RIWAYAT NASABAH
-// ─────────────────────────────────────────────────────────────────────────────
 class _RiwayatNasabahScreen extends StatelessWidget {
   const _RiwayatNasabahScreen();
 
@@ -97,16 +88,16 @@ class _RiwayatNasabahScreen extends StatelessWidget {
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Container(
-            width: 36,
-            height: 36,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: kBg,
-              borderRadius: BorderRadius.circular(10),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black87, width: 2),
             ),
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 16,
-              color: kText,
+              color: Colors.black87,
             ),
           ),
         ),
@@ -132,7 +123,6 @@ class _RiwayatNasabahScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-
           ..._riwayat.map(
             (r) => GestureDetector(
               onTap: () => _showBillDetail(context, r),
@@ -312,8 +302,6 @@ class _RiwayatNasabahScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Kode transaksi
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -344,8 +332,6 @@ class _RiwayatNasabahScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // Detail transaksi
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
@@ -363,8 +349,6 @@ class _RiwayatNasabahScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // Total
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -405,7 +389,6 @@ class _RiwayatNasabahScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
