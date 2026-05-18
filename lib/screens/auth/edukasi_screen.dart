@@ -3,7 +3,6 @@ import 'app_theme.dart';
 import 'edukasi_detail_screen.dart';
 import 'kategori_detail_screen.dart';
 
-// ─── DATA KATEGORI SAMPAH ─────────────────────────────────────────────────────
 final List<Map<String, dynamic>> kategoriSampahList = [
   {
     'label': 'Kertas',
@@ -134,7 +133,6 @@ final List<Map<String, dynamic>> kategoriSampahList = [
   },
 ];
 
-// ─── DATA MODUL ───────────────────────────────────────────────────────────────
 final List<Map<String, dynamic>> modulList = [
   {
     'title': 'Daur Ulang Plastik di Rumah',
@@ -308,7 +306,6 @@ final List<Map<String, dynamic>> modulList = [
   },
 ];
 
-// ─── SCREEN UTAMA ─────────────────────────────────────────────────────────────
 class EdukasiScreen extends StatelessWidget {
   final VoidCallback? onBack;
   const EdukasiScreen({super.key, this.onBack});
@@ -330,11 +327,11 @@ class EdukasiScreen extends StatelessWidget {
             }
           },
           icon: Container(
-            width: 36,
-            height: 36,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(10),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black87, width: 2),
             ),
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
@@ -390,7 +387,6 @@ class EdukasiScreen extends StatelessWidget {
   }
 }
 
-// ─── KATEGORI ROW ─────────────────────────────────────────────────────────────
 class _KategoriRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -447,7 +443,6 @@ class _KategoriRow extends StatelessWidget {
   }
 }
 
-// ─── MODUL LIST ───────────────────────────────────────────────────────────────
 class _ModulList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
