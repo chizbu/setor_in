@@ -28,14 +28,19 @@ jobs:
       - name: 📦 Install Dependencies
         run: flutter pub get
 
+      # Split per ABI supaya tiap APK < 50 MB (batas upload Telegram Bot API)
       - name: 🏗️ Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --split-per-abi
+
+      - name: 📏 Cek ukuran APK
+        run: |
+          ls -lh build/app/outputs/flutter-apk/
+          echo "Telegram limit: 50 MB per file"
 
       - name: 📤 Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          # Hapus 'setor_in/' karena sudah ada di working-directory
           path: build/app/outputs/flutter-apk/*.apk
 
       - name: 🚀 Create Release
@@ -43,17 +48,18 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "Release ${{ github.ref_name }}"
-          # Hapus 'setor_in/'
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Kirim APK arm64 (HP Android modern); ukuran jauh lebih kecil dari fat APK
       - name: 📲 Send APK to Telegram
         uses: appleboy/telegram-action@v1.0.1
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          # Hapus 'setor_in/'
-          document: build/app/outputs/flutter-apk/app-release.apk
+          document: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           message: |
-            📦 Ini adalah file APK hasil build terbaru dari branch main.
+            📦 APK Setor.in (build ${{ github.sha }} · branch ${{ github.ref_name }})
+            📱 Arsitektur: arm64-v8a (Android 64-bit, mayoritas HP modern)
+            ⚠️ Bukan fat APK — jika HP sangat lama (32-bit saja), minta build armeabi-v7a.
