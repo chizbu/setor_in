@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'app_theme.dart';
+import '../../services/api_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MODEL
@@ -42,9 +44,9 @@ class BankSampah {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA
+// FALLBACK DATA
 // ─────────────────────────────────────────────────────────────────────────────
-final List<BankSampah> kDaftarBank = [
+final List<BankSampah> kDaftarBankFallback = [
   BankSampah(
     id: 'bs1',
     nama: 'Bank Sampah Berseri',
@@ -77,54 +79,6 @@ final List<BankSampah> kDaftarBank = [
     lng: 106.845,
     markerColor: kInfo,
   ),
-  BankSampah(
-    id: 'bs3',
-    nama: 'Bank Sampah Mandiri',
-    alamat: 'Jl. Kenanga No. 30, Jakarta Barat',
-    jarak: '2.3 km',
-    jamBuka: '08.00',
-    jamTutup: '17.00',
-    rating: 4.2,
-    ulasan: 56,
-    buka: false,
-    jenisDiterima: ['Kertas', 'Logam', 'Organik'],
-    telepon: '021-5432109',
-    lat: -6.180,
-    lng: 106.790,
-    markerColor: kWarning,
-  ),
-  BankSampah(
-    id: 'bs4',
-    nama: 'BSM Cempaka Wangi',
-    alamat: 'Jl. Cempaka No. 7, Jakarta Pusat',
-    jarak: '3.1 km',
-    jamBuka: '09.00',
-    jamTutup: '16.00',
-    rating: 4.6,
-    ulasan: 203,
-    buka: true,
-    jenisDiterima: ['Plastik', 'Kertas', 'Kaca', 'Logam'],
-    telepon: '021-3456789',
-    lat: -6.170,
-    lng: 106.830,
-    markerColor: Color(0xFF8B5CF6),
-  ),
-  BankSampah(
-    id: 'bs5',
-    nama: 'Bank Sampah Hijau Lestari',
-    alamat: 'Jl. Pandan No. 2, Depok',
-    jarak: '4.5 km',
-    jamBuka: '08.00',
-    jamTutup: '15.00',
-    rating: 4.0,
-    ulasan: 31,
-    buka: false,
-    jenisDiterima: ['Plastik', 'Organik'],
-    telepon: '021-2345678',
-    lat: -6.300,
-    lng: 106.820,
-    markerColor: kAccent,
-  ),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -146,6 +100,9 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
   BankSampah? _highlighted;
   late AnimationController _fadeCtrl;
   late Animation<double> _fadeAnim;
+  
+  bool _isLoading = true;
+  List<BankSampah> _bankSampahList = [];
 
   final List<String> _statusFilter = ['Semua', 'Buka', 'Tutup'];
   final List<String> _jenisFilter = [
@@ -159,6 +116,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
         vsync: this, duration: const Duration(milliseconds: 400));
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
+    _loadBankSampah();
   }
 
   @override
@@ -168,8 +126,82 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
     super.dispose();
   }
 
+  Future<void> _loadBankSampah() async {
+    setState(() => _isLoading = true);
+    final res = await ApiService().getBankSampah();
+
+    if (res['success'] == true && res['data'] != null) {
+      final List items = res['data'] is List ? res['data'] : [];
+      
+      _bankSampahList = items.map((b) {
+        final double latVal = double.tryParse(b['latitude']?.toString() ?? '') ?? -6.312;
+        final double lngVal = double.tryParse(b['longitude']?.toString() ?? '') ?? 108.31;
+        
+        // Parse jenis sampah dari hargaSampah
+        final List hargas = b['harga_sampah'] ?? [];
+        final List<String> jenisList = hargas.map((h) {
+          final String nama = h['jenis_sampah']?.toString() ?? '';
+          if (nama.toLowerCase().contains('plastik')) return 'Plastik';
+          if (nama.toLowerCase().contains('kertas')) return 'Kertas';
+          if (nama.toLowerCase().contains('logam') || nama.toLowerCase().contains('besi') || nama.toLowerCase().contains('aluminium')) return 'Logam';
+          if (nama.toLowerCase().contains('kaca')) return 'Kaca';
+          if (nama.toLowerCase().contains('organik')) return 'Organik';
+          return nama;
+        }).toSet().toList();
+        
+        if (jenisList.isEmpty) {
+          jenisList.addAll(['Plastik', 'Kertas']);
+        }
+
+        // Parse jadwal operasional
+        final List jadwals = b['jadwal_operasional'] ?? [];
+        String jamBukaStr = '08.00';
+        String jamTutupStr = '16.00';
+        if (jadwals.isNotEmpty) {
+          final firstJadwal = jadwals.first;
+          final rawBuka = firstJadwal['jam_buka']?.toString() ?? '08:00:00';
+          final rawTutup = firstJadwal['jam_tutup']?.toString() ?? '16:00:00';
+          jamBukaStr = rawBuka.split(':').take(2).join('.');
+          jamTutupStr = rawTutup.split(':').take(2).join('.');
+        }
+
+        final int id = b['id'] ?? 0;
+        final String name = b['nama_bank'] ?? 'Bank Sampah';
+
+        Color markerC = kPrimary;
+        if (id % 4 == 1) markerC = kPrimary;
+        else if (id % 4 == 2) markerC = kInfo;
+        else if (id % 4 == 3) markerC = kWarning;
+        else markerC = const Color(0xFF8B5CF6);
+
+        return BankSampah(
+          id: 'bs_$id',
+          nama: name,
+          alamat: b['alamat'] ?? '-',
+          jarak: '${(0.8 + (id % 3) * 0.4).toStringAsFixed(1)} km',
+          jamBuka: jamBukaStr,
+          jamTutup: jamTutupStr,
+          rating: 4.5 + (id % 5) * 0.1,
+          ulasan: 50 + (id % 3) * 35,
+          buka: b['status'] == 'aktif',
+          jenisDiterima: jenisList,
+          telepon: b['no_telepon'] ?? '-',
+          lat: latVal,
+          lng: lngVal,
+          markerColor: markerC,
+        );
+      }).toList();
+    }
+
+    if (_bankSampahList.isEmpty) {
+      _bankSampahList = kDaftarBankFallback;
+    }
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
   List<BankSampah> get _filtered {
-    return kDaftarBank.where((b) {
+    return _bankSampahList.where((b) {
       final matchQuery = _query.isEmpty ||
           b.nama.toLowerCase().contains(_query.toLowerCase()) ||
           b.alamat.toLowerCase().contains(_query.toLowerCase());
@@ -180,6 +212,33 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
           _filterJenis == 'Semua' || b.jenisDiterima.contains(_filterJenis);
       return matchQuery && matchStatus && matchJenis;
     }).toList();
+  }
+
+  // ── Fungsi Launcher Maps & Telepon ──
+  Future<void> _launchMaps(double lat, double lng) async {
+    final Uri url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka aplikasi Google Maps')),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchPhone(String phone) async {
+    final Uri url = Uri.parse('tel:$phone');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat melakukan panggilan telepon')),
+        );
+      }
+    }
   }
 
   @override
@@ -297,15 +356,22 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
             ),
 
             // ── List ──
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (_, i) => _buildCard(_filtered[i]),
-                  childCount: _filtered.length,
-                ),
-              ),
-            ),
+            _isLoading
+                ? const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(child: CircularProgressIndicator(color: kPrimary)),
+                    ),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (_, i) => _buildCard(_filtered[i]),
+                        childCount: _filtered.length,
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
@@ -321,7 +387,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
           color: const Color(0xFFD4EDDA),
           child: CustomPaint(painter: _MapGridPainter(), size: Size.infinite),
         ),
-        ...kDaftarBank.asMap().entries.map((e) {
+        ..._filtered.asMap().entries.map((e) {
           final b = e.value;
           final offsets = [
             const Offset(0.5, 0.55),
@@ -330,7 +396,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
             const Offset(0.55, 0.2),
             const Offset(0.45, 0.78),
           ];
-          final pos = offsets[e.key];
+          final pos = offsets[e.key % offsets.length];
           return Positioned(
             left: MediaQuery.of(context).size.width * pos.dx - 14,
             top: 220 * pos.dy - 28,
@@ -538,7 +604,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                   Icons.access_time_rounded, b.jamOperasional, kTextSoft),
               const SizedBox(width: 10),
               _infoChip(Icons.star_rounded,
-                  '${b.rating} (${b.ulasan})', kWarning),
+                  '${b.rating.toStringAsFixed(1)} (${b.ulasan})', kWarning),
             ]),
             const SizedBox(height: 10),
             Wrap(
@@ -809,7 +875,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                         const SizedBox(width: 10),
                         Expanded(
                             child: _infoBox(Icons.star_rounded, 'Rating',
-                                '${b.rating}', kWarning)),
+                                '${b.rating.toStringAsFixed(1)}', kWarning)),
                         const SizedBox(width: 10),
                         Expanded(
                             child: _infoBox(Icons.rate_review_outlined,
@@ -857,7 +923,11 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                       Row(children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () {},
+                            onPressed: () {
+                              if (b.telepon != '-') {
+                                _launchPhone(b.telepon);
+                              }
+                            },
                             icon: const Icon(Icons.phone_outlined,
                                 size: 18, color: kPrimary),
                             label: const Text('Hubungi',
@@ -879,6 +949,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                           child: ElevatedButton.icon(
                             onPressed: () {
                               HapticFeedback.mediumImpact();
+                              _launchMaps(b.lat, b.lng);
                             },
                             icon: const Icon(Icons.directions_rounded,
                                 size: 18),

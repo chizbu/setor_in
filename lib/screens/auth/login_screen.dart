@@ -3,6 +3,7 @@ import 'app_theme.dart';
 import 'register_screen.dart';
 import 'resetpassword_screen.dart';
 import 'dashboard_screen.dart';
+import '../../services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -24,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleMasuk() {
+  Future<void> _handleMasuk() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -35,12 +37,39 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const DashboardScreen()),
-    );
+    setState(() {
+      _isLoading = true;
+    });
 
-    // TODO: Hubungkan ke API login
+    final apiService = ApiService();
+    final result = await apiService.login(email, password);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success'] == true) {
+      // Login sukses
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login berhasil!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
+    } else {
+      // Login gagal
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Login gagal'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildLabel(String text) {
@@ -175,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _handleMasuk,
+                  onPressed: _isLoading ? null : _handleMasuk,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimary,
                     foregroundColor: Colors.white,
@@ -184,10 +213,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Masuk',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Masuk',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),

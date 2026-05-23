@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'edukasi_detail_screen.dart';
 import 'kategori_detail_screen.dart';
+import '../../services/api_service.dart';
 
 final List<Map<String, dynamic>> kategoriSampahList = [
   {
@@ -133,7 +134,8 @@ final List<Map<String, dynamic>> kategoriSampahList = [
   },
 ];
 
-final List<Map<String, dynamic>> modulList = [
+// ── Modul lokal sebagai fallback jika API belum ada konten ──
+final List<Map<String, dynamic>> _fallbackModulList = [
   {
     'title': 'Daur Ulang Plastik di Rumah',
     'image': 'assets/images/modul_plastik.jpg',
@@ -145,26 +147,6 @@ final List<Map<String, dynamic>> modulList = [
         'heading': 'Mengapa Plastik Perlu Didaur Ulang?',
         'body':
             'Plastik adalah salah satu material yang paling sulit terurai di alam. Sebuah botol plastik bisa bertahan hingga 450 tahun di lingkungan. Di Indonesia, sekitar 6,8 juta ton sampah plastik dihasilkan setiap tahun, dan sebagian besar berakhir di TPA atau bahkan di lautan.\n\nDaur ulang plastik di rumah bukan sekadar tren — ini adalah langkah nyata yang bisa kita ambil untuk mengurangi dampak lingkungan dari rutinitas harian kita.',
-      },
-      {
-        'heading': 'Mengenal Kode Resin Plastik',
-        'body':
-            'Sebelum mendaur ulang, penting untuk mengenal 7 jenis kode resin plastik yang tertera di bagian bawah produk:\n\n• Kode 1 (PET) — botol air mineral, mudah didaur ulang\n• Kode 2 (HDPE) — galon, kemasan detergen, bernilai tinggi\n• Kode 4 (LDPE) — kantong plastik, bisa didaur ulang\n• Kode 5 (PP) — sedotan, wadah makanan, bisa didaur ulang\n• Kode 3, 6, 7 — hindari dan jangan campur dengan yang lain\n\nPlastik dengan kode berbeda tidak boleh dicampur karena akan menurunkan kualitas hasil daur ulang.',
-      },
-      {
-        'heading': 'Langkah Daur Ulang di Rumah',
-        'body':
-            '1. Kumpulkan dan pisahkan — sediakan wadah khusus untuk plastik, jauhkan dari sampah organik.\n\n2. Bersihkan — cuci plastik bekas makanan atau minuman agar tidak berjamur dan berbau.\n\n3. Keringkan — plastik basah akan merusak kualitas bahan daur ulang.\n\n4. Gepengkan atau potong kecil — ini menghemat ruang penyimpanan.\n\n5. Setorkan ke bank sampah atau pengepul — cari jadwal setor rutin setiap minggu.',
-      },
-      {
-        'heading': 'Ide Kreatif Reuse Plastik',
-        'body':
-            'Sebelum mendaur ulang, coba gunakan kembali (reuse) terlebih dahulu:\n\n• Botol plastik → pot tanaman vertikal\n• Kantong kresek → tempat sampah kecil atau wadah belanja ulang\n• Kemasan sachet → bahan kerajinan tangan seperti tas anyaman\n• Botol shampo → dispenser kecil atau tempat alat tulis\n\nDengan kreativitas, plastik bekas bisa memiliki nilai guna kembali sebelum akhirnya disetorkan.',
-      },
-      {
-        'heading': 'Dampak Nyata dari Aksi Kecilmu',
-        'body':
-            'Mendaur ulang 1 ton plastik menghemat energi setara 5.774 kWh listrik dan mengurangi emisi CO₂ sebesar 1,5 ton. Bayangkan jika seluruh rumah tangga di Indonesia melakukan hal yang sama — perubahan besar dimulai dari dapur dan ruang tamu kita.',
       },
     ],
   },
@@ -178,137 +160,70 @@ final List<Map<String, dynamic>> modulList = [
       {
         'heading': 'Sampah Organik: Masalah atau Peluang?',
         'body':
-            'Sekitar 60% sampah rumah tangga di Indonesia adalah sampah organik — sisa sayuran, nasi, kulit buah, dan ampas masakan. Jika langsung dibuang ke TPA, sampah organik menghasilkan gas metana yang 25 kali lebih merusak daripada CO₂.\n\nNamun di tangan yang tepat, sampah organik bisa berubah menjadi kompos berkualitas tinggi yang menyuburkan tanaman — gratis dan ramah lingkungan.',
-      },
-      {
-        'heading': 'Metode Pengomposan Rumahan',
-        'body':
-            'Ada tiga cara mudah membuat kompos di rumah:\n\n• Composting Aerobik — wadah terbuka dengan lubang udara, aduk setiap 3 hari, selesai dalam 4–8 minggu\n• Vermikomposting — menggunakan cacing tanah, sangat efisien, kompos jadi dalam 2–4 minggu\n• Bokashi — fermentasi dengan bantuan EM4 (effective microorganism), cocok untuk dapur kecil\n\nPilih metode yang paling sesuai dengan luas rumah dan rutinitas harianmu.',
-      },
-      {
-        'heading': 'Cara Membuat Kompos Aerobik',
-        'body':
-            '1. Siapkan wadah berlubang atau tong kompos berukuran 50–100 liter.\n\n2. Masukkan bahan coklat (daun kering, kardus robek) sebagai lapisan dasar.\n\n3. Tambahkan bahan hijau (sisa sayuran, buah) di atasnya dengan rasio 1:2.\n\n4. Siram sedikit air jika terlalu kering.\n\n5. Aduk setiap 2–3 hari untuk menjaga sirkulasi udara.\n\n6. Setelah 4–8 minggu, kompos siap digunakan saat sudah berwarna coklat gelap dan berbau tanah.',
-      },
-      {
-        'heading': 'Yang Boleh dan Tidak Boleh Dikompos',
-        'body':
-            'Boleh dikompos:\n• Sisa sayuran dan buah\n• Ampas kopi dan teh\n• Kulit telur\n• Daun kering dan potongan rumput\n• Nasi dan roti basi\n\nJangan dikompos:\n• Daging, ikan, atau tulang (menarik hama)\n• Produk susu\n• Minyak dan lemak\n• Tanaman sakit atau berjamur\n• Kotoran hewan peliharaan berbahan daging',
-      },
-      {
-        'heading': 'Manfaat Kompos untuk Tanamanmu',
-        'body':
-            'Kompos rumahan mengandung nitrogen, fosfor, dan kalium alami yang memperbaiki struktur tanah, meningkatkan kemampuan tanah menahan air, dan mendorong pertumbuhan mikroorganisme baik.\n\nCukup campurkan 20% kompos dengan 80% tanah tanam — tanaman sayuranmu akan tumbuh lebih sehat tanpa pupuk kimia.',
-      },
-    ],
-  },
-  {
-    'title': 'Cara Memilah Sampah Kertas',
-    'image': 'assets/images/modul_kertas.jpg',
-    'kategori': 'Kertas',
-    'durasi': '5 menit',
-    'penulis': 'Tim Setor.in',
-    'artikel': [
-      {
-        'heading': 'Kenapa Kertas Harus Dipilah?',
-        'body':
-            'Indonesia mengonsumsi sekitar 7 juta ton kertas per tahun. Industri kertas adalah salah satu penyumbang deforestasi terbesar karena setiap ton kertas baru membutuhkan 17 batang pohon.\n\nDengan memilah dan mendaur ulang kertas, kita tidak hanya mengurangi tumpukan sampah, tapi juga secara langsung membantu menjaga hutan.',
-      },
-      {
-        'heading': 'Jenis-Jenis Kertas yang Bisa Didaur Ulang',
-        'body':
-            'Tidak semua kertas bisa didaur ulang. Berikut panduan singkatnya:\n\nBISA didaur ulang:\n• Koran dan majalah\n• Kertas HVS dan fotokopi\n• Kardus dan karton\n• Amplop dan paper bag\n• Buku bekas (tanpa hard cover)\n\nTIDAK bisa didaur ulang:\n• Tisu dan kertas toilet (sudah terkontaminasi)\n• Kertas berlapis plastik atau aluminium (bungkus mi instan, dll)\n• Struk kasir berbahan thermal\n• Kertas berminyak atau bekas makanan',
-      },
-      {
-        'heading': 'Langkah Memilah Kertas di Rumah',
-        'body':
-            '1. Sediakan dus atau kantong khusus untuk kertas bersih di dapur atau ruang kerja.\n\n2. Setiap ada kertas bekas, segera masukkan — jangan biarkan tercampur sampah basah.\n\n3. Pisahkan kardus dari kertas tipis karena harga setor dan proses daur ulangnya berbeda.\n\n4. Lipat kardus menjadi pipih agar hemat tempat.\n\n5. Keluarkan klip logam, staples, atau lakban sebelum disetor.\n\n6. Setorkan ke bank sampah saat sudah terkumpul minimal 1–2 kg.',
-      },
-      {
-        'heading': 'Nilai Ekonomi Sampah Kertas',
-        'body':
-            'Sampah kertas punya nilai jual yang lumayan:\n• Kertas HVS campuran: Rp 800–1.200/kg\n• Kardus: Rp 1.500–2.000/kg\n• Koran: Rp 700–1.000/kg\n\nDengan mengumpulkan kertas dari satu rumah tangga selama sebulan, kamu bisa menghasilkan 5–10 kg atau sekitar Rp 5.000–20.000 — kecil tapi konsisten dan bermakna.',
-      },
-      {
-        'heading': 'Tips Mengurangi Sampah Kertas',
-        'body':
-            'Pilah itu penting, tapi mengurangi jauh lebih baik:\n\n• Gunakan kertas bolak-balik sebelum dibuang\n• Pilih tagihan digital daripada cetak\n• Bawa tas belanja sendiri untuk menghindari paper bag\n• Kirim ucapan lewat pesan digital, bukan kartu cetak\n• Cetak dokumen hanya saat benar-benar perlu',
-      },
-    ],
-  },
-  {
-    'title': 'Mengelola Sampah Logam',
-    'image': 'assets/images/modul_logam.jpg',
-    'kategori': 'Logam',
-    'durasi': '6 menit',
-    'penulis': 'Tim Setor.in',
-    'artikel': [
-      {
-        'heading': 'Logam Bekas: Sampah Bernilai Tinggi',
-        'body':
-            'Sampah logam adalah salah satu sampah paling bernilai dalam dunia daur ulang. Aluminium, besi, tembaga, dan kuningan bisa didaur ulang berkali-kali tanpa kehilangan sifat aslinya.\n\nMendaur ulang aluminium, misalnya, hanya membutuhkan 5% energi dibanding memproduksi aluminium baru dari bijih bauksit. Ini penghematan energi yang luar biasa.',
-      },
-      {
-        'heading': 'Mengenal Jenis Logam Rumah Tangga',
-        'body':
-            'Logam yang paling sering kita temui di rumah:\n\n• Aluminium — kaleng minuman, foil, rangka jendela\n• Besi/Baja — kaleng makanan, paku, peralatan dapur\n• Tembaga — kabel listrik, pipa air, koin lama\n• Seng — atap rumah, ember, baskom\n• Kuningan — kunci, engsel pintu\n\nCara membedakan: magnet akan menempel pada besi/baja, tapi tidak pada aluminium, tembaga, atau kuningan.',
-      },
-      {
-        'heading': 'Cara Memilah dan Menyimpan Logam',
-        'body':
-            '1. Pisahkan logam dari sampah lain ke dalam wadah tersendiri.\n\n2. Gunakan tes magnet untuk membedakan besi (feromagnetik) dan non-besi.\n\n3. Bersihkan sisa makanan atau cairan dari kaleng sebelum disimpan.\n\n4. Gepengkan kaleng aluminium untuk menghemat ruang.\n\n5. Simpan di tempat kering — logam basah bisa berkarat dan menurunkan nilai jualnya.\n\n6. Kumpulkan dalam jumlah cukup (minimal 2–3 kg) sebelum disetor agar lebih efisien.',
-      },
-      {
-        'heading': 'Harga Logam Bekas di Pasaran',
-        'body':
-            'Berikut kisaran harga logam bekas (dapat bervariasi per daerah):\n\n• Aluminium: Rp 10.000–15.000/kg\n• Tembaga: Rp 60.000–80.000/kg\n• Kuningan: Rp 30.000–45.000/kg\n• Besi tua: Rp 1.500–3.000/kg\n• Seng: Rp 3.000–5.000/kg\n\nTembaga dan aluminium adalah yang paling menguntungkan. Jika rumahmu ada renovasi atau penggantian kabel/pipa, jangan buang — setor ke bank sampah logam.',
-      },
-      {
-        'heading': 'Keamanan Dalam Mengelola Logam',
-        'body':
-            'Beberapa hal yang perlu diperhatikan saat mengelola sampah logam:\n\n• Gunakan sarung tangan saat memegang logam bekas yang tajam\n• Jangan membakar logam — asapnya beracun\n• Hati-hati dengan baterai dan aki bekas — mengandung bahan kimia berbahaya, setor ke tempat khusus\n• Logam dari peralatan listrik yang masih bisa diperbaiki sebaiknya didonasikan dulu',
-      },
-    ],
-  },
-  {
-    'title': 'Sampah Elektronik (E-Waste)',
-    'image': 'assets/images/modul_elektronik.jpg',
-    'kategori': 'Elektronik',
-    'durasi': '10 menit',
-    'penulis': 'Tim Setor.in',
-    'artikel': [
-      {
-        'heading': 'Apa Itu E-Waste dan Mengapa Berbahaya?',
-        'body':
-            'E-waste atau sampah elektronik adalah perangkat elektronik yang sudah tidak dipakai — mulai dari ponsel lama hingga kulkas rusak. Indonesia menghasilkan sekitar 2,5 juta ton e-waste per tahun, tapi kurang dari 10% yang ditangani dengan benar.\n\nE-waste mengandung bahan berbahaya seperti timbal, merkuri, kadmium, dan arsen. Jika dibuang sembarangan, zat-zat ini meresap ke tanah dan air tanah, mencemari ekosistem dan mengancam kesehatan manusia.',
-      },
-      {
-        'heading': 'Apa Saja yang Termasuk E-Waste?',
-        'body':
-            'E-waste mencakup lebih dari yang kita kira:\n\n• Perangkat komunikasi: ponsel, tablet, laptop, telepon rumah\n• Peralatan rumah tangga elektronik: AC, kulkas, mesin cuci, microwave\n• Perangkat hiburan: TV, speaker, kamera, konsol game\n• Aksesori: charger, kabel, earphone, mouse, keyboard\n• Perlengkapan kantor: printer, scanner, mesin fotokopi\n• Baterai berbagai jenis',
-      },
-      {
-        'heading': 'Langkah Sebelum Membuang Perangkat',
-        'body':
-            'Sebelum menyingkirkan perangkat elektronik, lakukan ini:\n\n1. Pertimbangkan perbaikan — apakah masih bisa diperbaiki?\n\n2. Donasikan — ponsel lama yang masih nyala bisa sangat berguna bagi orang lain.\n\n3. Jual kembali — marketplace seperti Tokopedia atau OLX menerima barang bekas elektronik.\n\n4. Hapus semua data pribadi — factory reset ponsel/laptop sebelum diserahkan ke siapapun.\n\n5. Lepaskan baterai jika memungkinkan — baterai memerlukan penanganan terpisah.',
-      },
-      {
-        'heading': 'Cara Membuang E-Waste dengan Benar',
-        'body':
-            'JANGAN taruh e-waste di tempat sampah biasa. Gunakan jalur resmi berikut:\n\n• Drop point e-waste resmi — banyak tersedia di mall, kantor pos, atau gerai operator seluler\n• Program take-back produsen — merek seperti Samsung, Apple, dan Xiaomi punya program daur ulang resminya\n• Bank sampah elektronik — cari yang terdekat lewat aplikasi atau website bank sampah daerahmu\n• Event daur ulang komunitas — sering diadakan oleh LSM lingkungan atau pemerintah daerah',
-      },
-      {
-        'heading': 'Bahan Berharga dalam E-Waste',
-        'body':
-            'Di balik bahayanya, e-waste menyimpan logam berharga:\n\n• 1 ton ponsel bekas mengandung ±300 gram emas — jauh lebih banyak dari 1 ton bijih emas\n• Tembaga, perak, palladium, dan kobalt juga terkandung dalam jumlah signifikan\n\nIndustri urban mining — yaitu mengekstrak logam berharga dari e-waste — kini berkembang pesat. Dengan membuang e-waste ke tempat yang benar, kamu turut mendukung industri ini.',
+            'Sekitar 60% sampah rumah tangga di Indonesia adalah sampah organik. Jika langsung dibuang ke TPA, sampah organik menghasilkan gas metana yang 25 kali lebih merusak daripada CO₂.\n\nNamun di tangan yang tepat, sampah organik bisa berubah menjadi kompos berkualitas tinggi.',
       },
     ],
   },
 ];
 
-class EdukasiScreen extends StatelessWidget {
+class EdukasiScreen extends StatefulWidget {
   final VoidCallback? onBack;
   const EdukasiScreen({super.key, this.onBack});
+
+  @override
+  State<EdukasiScreen> createState() => _EdukasiScreenState();
+}
+
+class _EdukasiScreenState extends State<EdukasiScreen> {
+  String? _selectedKategori;
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _modulFromApi = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEdukasi();
+  }
+
+  Future<void> _loadEdukasi() async {
+    setState(() => _isLoading = true);
+    final res = await ApiService().getEdukasi();
+
+    if (res['success'] == true && res['data'] != null) {
+      final rawData = res['data'];
+      // API returns paginated data with 'data' key
+      final List items = rawData is Map ? (rawData['data'] ?? []) : (rawData is List ? rawData : []);
+      
+      _modulFromApi = items.map((e) {
+        return <String, dynamic>{
+          'title': e['judul'] ?? '',
+          'image': '', // API konten belum punya gambar
+          'kategori': e['kategori'] ?? '',
+          'durasi': '5 menit',
+          'penulis': 'Admin Setor.in',
+          'artikel': [
+            {
+              'heading': e['judul'] ?? '',
+              'body': e['isi'] ?? '',
+            }
+          ],
+        };
+      }).toList();
+    }
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  List<Map<String, dynamic>> get _displayedModul {
+    // Gunakan data dari API jika ada, fallback ke lokal
+    final source = _modulFromApi.isNotEmpty ? _modulFromApi : _fallbackModulList;
+    
+    if (_selectedKategori == null) return source;
+    return source.where((m) {
+      final kat = (m['kategori'] as String?)?.toLowerCase() ?? '';
+      return kat == _selectedKategori!.toLowerCase();
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -320,8 +235,8 @@ class EdukasiScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           onPressed: () {
-            if (onBack != null) {
-              onBack!();
+            if (widget.onBack != null) {
+              widget.onBack!();
             } else if (Navigator.canPop(context)) {
               Navigator.pop(context);
             }
@@ -368,28 +283,70 @@ class EdukasiScreen extends StatelessWidget {
               ),
             ),
           ),
-          _KategoriRow(),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 22, 20, 12),
-            child: Text(
-              'Modul',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
+          _buildKategoriRow(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedKategori != null
+                      ? 'Modul — $_selectedKategori'
+                      : 'Modul',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (_selectedKategori != null)
+                  GestureDetector(
+                    onTap: () => setState(() => _selectedKategori = null),
+                    child: const Text(
+                      'Tampilkan semua',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: kPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          _ModulList(),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(40),
+              child: Center(child: CircularProgressIndicator(color: kPrimary)),
+            )
+          else if (_displayedModul.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(40),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.menu_book_outlined,
+                        size: 48, color: Colors.grey.shade300),
+                    const SizedBox(height: 12),
+                    Text(
+                      _selectedKategori != null
+                          ? 'Belum ada modul untuk kategori $_selectedKategori'
+                          : 'Belum ada modul edukasi',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._displayedModul.map((m) => _ModulCard(modul: m)),
         ],
       ),
     );
   }
-}
 
-class _KategoriRow extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildKategoriRow() {
     return SizedBox(
       height: 88,
       child: ListView.builder(
@@ -399,8 +356,15 @@ class _KategoriRow extends StatelessWidget {
         itemBuilder: (context, i) {
           final k = kategoriSampahList[i];
           final color = k['color'] as Color;
+          final label = k['label'] as String;
+          final isSelected = _selectedKategori == label;
           return GestureDetector(
-            onTap: () => Navigator.push(
+            onTap: () {
+              setState(() {
+                _selectedKategori = isSelected ? null : label;
+              });
+            },
+            onLongPress: () => Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => KategoriDetailScreen(data: k),
@@ -416,18 +380,23 @@ class _KategoriRow extends StatelessWidget {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.13),
+                      color: isSelected
+                          ? color.withValues(alpha: 0.25)
+                          : color.withValues(alpha: 0.13),
                       borderRadius: BorderRadius.circular(14),
+                      border: isSelected
+                          ? Border.all(color: color, width: 2)
+                          : null,
                     ),
                     child: Icon(k['icon'] as IconData, color: color, size: 26),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    k['label'],
-                    style: const TextStyle(
+                    label,
+                    style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? color : Colors.black87,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
@@ -443,21 +412,13 @@ class _KategoriRow extends StatelessWidget {
   }
 }
 
-class _ModulList extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: modulList.map((m) => _ModulCard(modul: m)).toList(),
-    );
-  }
-}
-
 class _ModulCard extends StatelessWidget {
   final Map<String, dynamic> modul;
   const _ModulCard({required this.modul});
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = (modul['image'] as String?)?.isNotEmpty == true;
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -484,17 +445,14 @@ class _ModulCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
-                modul['image'] as String,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.grey.shade300,
-                  child: Center(
-                    child: Icon(Icons.image_outlined,
-                        size: 40, color: Colors.grey.shade500),
-                  ),
-                ),
-              ),
+              if (hasImage)
+                Image.asset(
+                  modul['image'] as String,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _fallbackCover(),
+                )
+              else
+                _fallbackCover(),
               Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -510,6 +468,28 @@ class _ModulCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // Kategori badge
+              if ((modul['kategori'] as String?)?.isNotEmpty == true)
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      modul['kategori'] as String,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               Positioned(
                 left: 16,
                 right: 16,
@@ -528,6 +508,22 @@ class _ModulCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _fallbackCover() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0D9146), Color(0xFF26D077)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(Icons.menu_book_rounded,
+            size: 48, color: Colors.white.withValues(alpha: 0.3)),
       ),
     );
   }

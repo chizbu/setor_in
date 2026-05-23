@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
+import '../../services/api_service.dart';
 
 class NotifikasiScreen extends StatefulWidget {
   const NotifikasiScreen({super.key});
@@ -9,95 +10,115 @@ class NotifikasiScreen extends StatefulWidget {
 }
 
 class _NotifikasiScreenState extends State<NotifikasiScreen> {
+  bool _isLoading = true;
+  List<_NotifItem> _notifications = [];
   String _activeFilter = 'semua';
   String _activeTab = 'belum';
 
-  final List<_NotifItem> _notifications = [
-    _NotifItem(
-      id: 1,
-      unread: true,
-      cat: 'setor',
-      iconData: Icons.recycling_rounded,
-      iconColor: kPrimary,
-      title: 'Setor sampah berhasil!',
-      desc: 'Kamu menyetor 2.3 kg plastik. Koin +46 ditambahkan ke akunmu.',
-      highlight: ['2.3 kg plastik', '+46'],
-      time: '2 menit lalu',
-      badgeLabel: 'Setor',
-      badgeColor: kPrimary,
-      group: 'hari-ini',
-    ),
-    _NotifItem(
-      id: 2,
-      unread: true,
-      cat: 'koin',
-      iconData: Icons.monetization_on_outlined,
-      iconColor: kWarning,
-      title: 'Penukaran koin sukses',
-      desc: '120 koin berhasil ditukar menjadi saldo Rp 6.000.',
-      highlight: ['120 koin', 'Rp 6.000'],
-      time: '1 jam lalu',
-      badgeLabel: 'Koin',
-      badgeColor: kWarning,
-      group: 'hari-ini',
-    ),
-    _NotifItem(
-      id: 3,
-      unread: true,
-      cat: 'info',
-      iconData: Icons.flag_rounded,
-      iconColor: kInfo,
-      title: 'Target sampah hampir tercapai',
-      desc: 'Kamu sudah mencapai 80% dari target bulan ini. Yuk setor lagi!',
-      highlight: ['80%'],
-      time: '3 jam lalu',
-      badgeLabel: 'Target',
-      badgeColor: kInfo,
-      group: 'hari-ini',
-    ),
-    _NotifItem(
-      id: 4,
-      unread: false,
-      cat: 'setor',
-      iconData: Icons.recycling_rounded,
-      iconColor: kPrimary,
-      title: 'Setor kertas berhasil',
-      desc: 'Kamu menyetor 1.0 kg kertas. Koin +15 ditambahkan.',
-      highlight: ['1.0 kg kertas', '+15'],
-      time: 'Kemarin, 10:30',
-      badgeLabel: 'Setor',
-      badgeColor: kPrimary,
-      group: 'kemarin',
-    ),
-    _NotifItem(
-      id: 5,
-      unread: false,
-      cat: 'promo',
-      iconData: Icons.local_offer_rounded,
-      iconColor: kDanger,
-      title: 'Promo akhir bulan!',
-      desc: 'Setor sampah plastik minggu ini dan dapatkan bonus 2x koin. Jangan lewatkan!',
-      highlight: ['bonus 2x koin'],
-      time: 'Kemarin, 08:00',
-      badgeLabel: 'Promo',
-      badgeColor: kDanger,
-      group: 'kemarin',
-    ),
-    _NotifItem(
-      id: 6,
-      unread: false,
-      cat: 'info',
-      iconData: Icons.location_on_rounded,
-      iconColor: const Color(0xFF888780),
-      title: 'Bank Sampah terdekat dibuka',
-      desc: 'Bank Sampah Maju Jaya buka hari Sabtu–Minggu 08.00–12.00.',
-      highlight: [],
-      time: '2 hari lalu',
-      badgeLabel: 'Info',
-      badgeColor: kInfo,
-      group: 'lalu',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifikasi();
+  }
+
+  Future<void> _loadNotifikasi() async {
+    setState(() => _isLoading = true);
+    final res = await ApiService().getNotifikasi();
+
+    if (res['success'] == true && res['data'] != null) {
+      final rawData = res['data'];
+      // API returns paginated data with 'data' key inside
+      final List items = rawData is Map ? (rawData['data'] ?? []) : (rawData is List ? rawData : []);
+      
+      _notifications = items.map((n) {
+        final createdAt = n['created_at'] ?? '';
+        return _NotifItem(
+          id: n['id'] ?? 0,
+          unread: (n['status_notifikasi'] ?? '') == 'belum_dibaca',
+          cat: _categorizeByCat(n['judul'] ?? ''),
+          iconData: _iconForCat(_categorizeByCat(n['judul'] ?? '')),
+          iconColor: _colorForCat(_categorizeByCat(n['judul'] ?? '')),
+          title: n['judul'] ?? '',
+          desc: n['pesan'] ?? '',
+          time: _formatTime(createdAt),
+          badgeLabel: _badgeLabelForCat(_categorizeByCat(n['judul'] ?? '')),
+          badgeColor: _colorForCat(_categorizeByCat(n['judul'] ?? '')),
+          group: _groupForTime(createdAt),
+        );
+      }).toList();
+    }
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  // ── Helper: Kategorisasi otomatis dari judul notifikasi ──
+  String _categorizeByCat(String judul) {
+    final lower = judul.toLowerCase();
+    if (lower.contains('setor') || lower.contains('sampah')) return 'setor';
+    if (lower.contains('koin') || lower.contains('saldo') || lower.contains('tukar')) return 'koin';
+    if (lower.contains('misi') || lower.contains('hadiah') || lower.contains('reward')) return 'info';
+    if (lower.contains('promo') || lower.contains('bonus')) return 'promo';
+    return 'info';
+  }
+
+  IconData _iconForCat(String cat) {
+    switch (cat) {
+      case 'setor': return Icons.recycling_rounded;
+      case 'koin': return Icons.monetization_on_outlined;
+      case 'promo': return Icons.local_offer_rounded;
+      default: return Icons.info_outline_rounded;
+    }
+  }
+
+  Color _colorForCat(String cat) {
+    switch (cat) {
+      case 'setor': return kPrimary;
+      case 'koin': return kWarning;
+      case 'promo': return kDanger;
+      default: return kInfo;
+    }
+  }
+
+  String _badgeLabelForCat(String cat) {
+    switch (cat) {
+      case 'setor': return 'Setor';
+      case 'koin': return 'Koin';
+      case 'promo': return 'Promo';
+      default: return 'Info';
+    }
+  }
+
+  String _formatTime(String dateStr) {
+    if (dateStr.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(dateStr);
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inMinutes < 60) return '${diff.inMinutes} menit lalu';
+      if (diff.inHours < 24) return '${diff.inHours} jam lalu';
+      if (diff.inDays == 1) return 'Kemarin';
+      if (diff.inDays < 7) return '${diff.inDays} hari lalu';
+      return '${dt.day}/${dt.month}/${dt.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  String _groupForTime(String dateStr) {
+    if (dateStr.isEmpty) return 'lalu';
+    try {
+      final dt = DateTime.parse(dateStr);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final dtDay = DateTime(dt.year, dt.month, dt.day);
+      if (dtDay == today) return 'hari-ini';
+      if (dtDay == yesterday) return 'kemarin';
+      return 'lalu';
+    } catch (_) {
+      return 'lalu';
+    }
+  }
 
   List<_NotifItem> get _filtered {
     var items = _notifications.where((n) {
@@ -133,7 +154,9 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         children: [
           _buildAppBar(),
           Expanded(
-            child: _buildBody(),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: kPrimary))
+                : _buildBody(),
           ),
         ],
       ),
@@ -144,41 +167,47 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black87, width: 2),
-              ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: Colors.black87),
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'Notifikasi',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w800, color: Colors.black87),
-            ),
-          ),
-              if (_unreadCount > 0)
-                GestureDetector(
-                  onTap: _markAllRead,
-                  child: const Text(
-                    'Tandai semua dibaca',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black87, width: 2),
                 ),
-            ],
+                child: const Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 16, color: Colors.black87),
+              ),
+            ),
+            const Expanded(
+              child: Text(
+                'Notifikasi',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w800, color: Colors.black87),
+              ),
+            ),
+                if (_unreadCount > 0)
+                  GestureDetector(
+                    onTap: _markAllRead,
+                    child: const Text(
+                      'Tandai semua dibaca',
+                      style: TextStyle(
+                        color: kPrimary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 38),
+              ],
+        ),
       ),
     );
   }
@@ -341,12 +370,22 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                 size: 48, color: kTextSoft.withValues(alpha: 0.4)),
             const SizedBox(height: 12),
             Text(
-              _activeTab == 'belum'
-                  ? 'Tidak ada notifikasi\nyang belum dibaca'
-                  : 'Tidak ada notifikasi',
+              _notifications.isEmpty
+                  ? 'Belum ada notifikasi'
+                  : _activeTab == 'belum'
+                      ? 'Tidak ada notifikasi\nyang belum dibaca'
+                      : 'Tidak ada notifikasi',
               textAlign: TextAlign.center,
               style: const TextStyle(color: kTextSoft, fontSize: 13),
             ),
+            if (_notifications.isEmpty) ...[
+              const SizedBox(height: 4),
+              const Text(
+                'Notifikasi akan muncul saat ada\naktivitas di akunmu',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: kTextSoft, fontSize: 11),
+              ),
+            ],
           ],
         ),
       );
@@ -454,7 +493,10 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        _buildHighlightedText(item.desc, item.highlight),
+        Text(
+          item.desc,
+          style: const TextStyle(fontSize: 12, color: kTextSoft, height: 1.5),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -483,55 +525,6 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       ],
     );
   }
-
-  Widget _buildHighlightedText(String text, List<String> highlights) {
-    if (highlights.isEmpty) {
-      return Text(
-        text,
-        style: const TextStyle(fontSize: 12, color: kTextSoft, height: 1.5),
-      );
-    }
-
-    final spans = <TextSpan>[];
-    String remaining = text;
-
-    while (remaining.isNotEmpty) {
-      int earliest = remaining.length;
-      String? matched;
-
-      for (final h in highlights) {
-        final idx = remaining.indexOf(h);
-        if (idx != -1 && idx < earliest) {
-          earliest = idx;
-          matched = h;
-        }
-      }
-
-      if (matched == null) {
-        spans.add(TextSpan(text: remaining));
-        break;
-      }
-
-      if (earliest > 0) {
-        spans.add(TextSpan(text: remaining.substring(0, earliest)));
-      }
-      spans.add(TextSpan(
-        text: matched,
-        style: const TextStyle(
-          color: kPrimary,
-          fontWeight: FontWeight.w600,
-        ),
-      ));
-      remaining = remaining.substring(earliest + matched.length);
-    }
-
-    return RichText(
-      text: TextSpan(
-        style: const TextStyle(fontSize: 12, color: kTextSoft, height: 1.5),
-        children: spans,
-      ),
-    );
-  }
 }
 
 class _NotifItem {
@@ -542,7 +535,6 @@ class _NotifItem {
   final Color iconColor;
   final String title;
   final String desc;
-  final List<String> highlight;
   final String time;
   final String badgeLabel;
   final Color badgeColor;
@@ -556,7 +548,6 @@ class _NotifItem {
     required this.iconColor,
     required this.title,
     required this.desc,
-    required this.highlight,
     required this.time,
     required this.badgeLabel,
     required this.badgeColor,

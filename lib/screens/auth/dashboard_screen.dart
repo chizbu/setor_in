@@ -8,6 +8,8 @@ import 'keuangan_screen.dart';
 import 'cek_bank_sampah_screen.dart';
 import 'notifikasi_screen.dart';
 import 'user_data.dart';
+import '../../services/api_service.dart';
+import 'aktivitas_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -41,20 +43,47 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
+  List<_AktivitasItem> _aktivitasList = [];
+
   Future<void> _loadData() async {
-    await _userData.load();
+    setState(() => _isLoading = true);
+    
+    // Coba ambil data dari API
+    final res = await ApiService().getDashboardData();
+    
+    if (res['success']) {
+      final data = res['data'];
+      _userData.nama = data['user']['nama'] ?? 'User';
+      _userData.saldo = (data['keuangan']['saldo'] ?? 0).toDouble();
+      _userData.koin = data['keuangan']['koin'] ?? 0;
+      _userData.totalSetor = data['ringkasan']['total_setor'] ?? 0;
+      _userData.beratTotal = (data['ringkasan']['berat_total'] ?? 0).toDouble();
+      
+      // Parse aktivitas
+      if (data['aktivitas'] != null) {
+        _aktivitasList = (data['aktivitas'] as List).map((e) {
+           return _AktivitasItem(
+              e['title'] ?? '',
+              e['subtitle'] ?? '',
+              e['date'] ?? '',
+              kPrimary 
+           );
+        }).toList();
+      }
+    } else {
+      // Jika API gagal (misal koneksi error), gunakan data lokal sementara
+      await _userData.load();
+    }
+
     if (mounted) {
       setState(() => _isLoading = false);
       _animCtrl.forward();
     }
   }
 
-  // ── Reload paksa UserData (singleton) lalu rebuild ──
+  // ── Reload data dari API lalu rebuild ──
   Future<void> _reloadUserData() async {
-    // Reset flag agar load() membaca ulang dari SharedPreferences
-    _userData.resetLoadFlag();
-    await _userData.load();
-    if (mounted) setState(() {});
+    await _loadData();
   }
 
   void _onNavTap(int index) {
@@ -510,13 +539,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildStatCard(
-            icon: Icons.eco_rounded,
-            label: 'CO₂ Tersimpan',
-            value: '2.4 kg',
-            color: kAccent,
-          ),
+
+
         ],
       ),
     );
@@ -565,14 +589,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildAktivitas() {
-    final aktivitas = [
-      _AktivitasItem(
-          'Setor Plastik', '2.3 kg • +46 koin', '12 Apr', kPrimary),
-      _AktivitasItem(
-          'Setor Kertas', '1.0 kg • +15 koin', '8 Apr', kInfo),
-      _AktivitasItem(
-          'Setor Logam', '0.8 kg • +32 koin', '1 Apr', kWarning),
-    ];
+    final aktivitas = _aktivitasList;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -588,7 +605,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                       fontWeight: FontWeight.w700,
                       color: kText)),
               GestureDetector(
-                onTap: () => setState(() => _currentIndex = 2),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AktivitasScreen()),
+                  ).then((_) => _reloadUserData());
+                },
                 child: const Text('Lihat semua',
                     style: TextStyle(
                         fontSize: 12,
@@ -599,13 +621,54 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
           const SizedBox(height: 12),
           Container(
+            width: double.infinity,
             decoration: AppTheme.cardDecoration,
-            child: Column(
-              children: aktivitas.asMap().entries.map((e) {
-                final isLast = e.key == aktivitas.length - 1;
-                return _buildAktivitasItem(e.value, isLast);
-              }).toList(),
-            ),
+            child: aktivitas.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Belum ada aktivitas terbaru',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: kText,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Ayo mulai setor sampah pertamamu!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: kTextSoft, fontSize: 11),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SetorSampahScreen()));
+                          _reloadUserData();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Setor Sekarang →',
+                            style: TextStyle(fontSize: 11)),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: aktivitas.asMap().entries.map((e) {
+                    final isLast = e.key == aktivitas.length - 1;
+                    return _buildAktivitasItem(e.value, isLast);
+                  }).toList(),
+                ),
           ),
         ],
       ),

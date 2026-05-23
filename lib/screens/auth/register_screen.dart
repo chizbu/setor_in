@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'login_screen.dart';
 import 'otp_screen.dart';
+import '../../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _obscurePassword = true;
   bool _obscureKonfirmasi = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -30,7 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleDaftar() {
+  Future<void> _handleDaftar() async {
     final nama = _namaController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -51,16 +53,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Navigasi ke OTP screen setelah validasi sukses
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OtpScreen(
-          email: email,
-          source: 'register',
-        ),
-      ),
+    setState(() {
+      _isLoading = true;
+    });
+
+    final apiService = ApiService();
+    final result = await apiService.register(
+      nama: nama,
+      email: email,
+      password: password,
+      passwordConfirmation: konfirmasi,
+      noTelepon: phone,
     );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Berhasil. Cek email Anda.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Navigasi ke OTP screen setelah validasi & simpan ke DB sukses
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OtpScreen(
+            email: email,
+            source: 'register',
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildLabel(String text) {
@@ -236,7 +271,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _handleDaftar,
+                  onPressed: _isLoading ? null : _handleDaftar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimary,
                     foregroundColor: Colors.white,
@@ -245,10 +280,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Daftar',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Daftar',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),

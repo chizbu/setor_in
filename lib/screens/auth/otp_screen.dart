@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'login_screen.dart';
 import 'new_password_screen.dart'; // ← tambahkan import ini
+import '../../services/api_service.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -25,6 +26,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   int _secondsRemaining = 45;
   bool _canResend = false;
+  bool _isLoading = false;
   Timer? _timer;
 
   @override
@@ -60,7 +62,7 @@ class _OtpScreenState extends State<OtpScreen> {
     }
   }
 
-  void _handleConfirm() {
+  Future<void> _handleConfirm() async {
     final otp = _controllers.map((c) => c.text).join();
     if (otp.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,32 +71,50 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
 
-    // TODO: Hubungkan ke API verifikasi OTP
-    if (widget.source == 'register') {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final apiService = ApiService();
+    final result = await apiService.verifyOtp(widget.email, otp);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success'] == true) {
+      if (widget.source == 'register') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Akun berhasil diaktifkan! Silakan masuk.'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      } else if (widget.source == 'reset_password') {
+        // ✅ Navigasi ke halaman buat password baru
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => NewPasswordScreen(
+              email: widget.email,
+              otp: otp,
+            ),
+          ),
+        );
+      }
+    } else {
+      // Tampilkan error (OTP salah/expired)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Akun berhasil dibuat! Silakan masuk.'),
-          backgroundColor: kPrimary,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
-    } else if (widget.source == 'reset_password') {
-      // ✅ Navigasi ke halaman buat password baru
-      // Kirim email & otp agar bisa dipakai saat submit password baru ke API
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => NewPasswordScreen(
-            email: widget.email,
-            otp: otp,
-          ),
+          content: Text(result['message']),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -279,7 +299,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _handleConfirm,
+                  onPressed: _isLoading ? null : _handleConfirm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimary,
                     foregroundColor: Colors.white,
@@ -288,13 +308,22 @@ class _OtpScreenState extends State<OtpScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Konfirmasi',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Konfirmasi',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],

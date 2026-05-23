@@ -4,6 +4,7 @@ import 'edit_profil_screen.dart';
 import 'user_data.dart';
 import 'login_screen.dart';
 import 'bantuan_screen.dart'; // ← tambahkan import ini
+import '../../services/api_service.dart';
 
 class ProfilScreen extends StatefulWidget {
   final VoidCallback? onUpdate;
@@ -15,6 +16,41 @@ class ProfilScreen extends StatefulWidget {
 
 class _ProfilScreenState extends State<ProfilScreen> {
   final UserData _userData = UserData();
+  bool _isLoading = true;
+  String _nama = '';
+  String _email = '';
+  String _noTelpon = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfil();
+  }
+
+  Future<void> _loadProfil() async {
+    setState(() => _isLoading = true);
+    final res = await ApiService().getProfil();
+
+    if (res['success'] == true && res['data'] != null) {
+      final data = res['data'];
+      _nama = data['nama'] ?? 'User';
+      _email = data['email'] ?? '-';
+      _noTelpon = data['no_telepon'] ?? '-';
+      
+      // Sync ke UserData singleton juga
+      _userData.nama = _nama;
+      _userData.email = _email;
+      _userData.noTelpon = _noTelpon;
+    } else {
+      // Fallback ke data lokal
+      await _userData.load();
+      _nama = _userData.nama;
+      _email = _userData.email;
+      _noTelpon = _userData.noTelpon;
+    }
+
+    if (mounted) setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,120 +77,126 @@ class _ProfilScreenState extends State<ProfilScreen> {
             const Divider(height: 1, color: Colors.black12),
             const SizedBox(height: 28),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 56,
-                          backgroundColor: Colors.grey.shade200,
-                          backgroundImage: _userData.fotoProfil != null
-                              ? FileImage(_userData.fotoProfil!)
-                              : null,
-                          child: _userData.fotoProfil == null
-                              ? Icon(Icons.person,
-                                  size: 56, color: Colors.grey.shade400)
-                              : null,
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    EditProfilScreen(userData: _userData),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: kPrimary))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              CircleAvatar(
+                                radius: 56,
+                                backgroundColor: Colors.grey.shade200,
+                                backgroundImage: _userData.fotoProfil != null
+                                    ? FileImage(_userData.fotoProfil!)
+                                    : null,
+                                child: _userData.fotoProfil == null
+                                    ? Icon(Icons.person,
+                                        size: 56, color: Colors.grey.shade400)
+                                    : null,
                               ),
-                            );
-                            widget.onUpdate?.call();
-                            setState(() {});
-                          },
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: kPrimary,
-                              shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(Icons.edit,
-                                size: 14, color: Colors.white),
+                              GestureDetector(
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          EditProfilScreen(userData: _userData),
+                                    ),
+                                  );
+                                  widget.onUpdate?.call();
+                                  // Reload profil dari API setelah edit
+                                  _loadProfil();
+                                },
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: kPrimary,
+                                    shape: BoxShape.circle,
+                                    border:
+                                        Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: const Icon(Icons.edit,
+                                      size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(_userData.nama,
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87)),
-                    const SizedBox(height: 4),
-                    Text(_userData.email,
-                        style: TextStyle(
-                            fontSize: 14, color: Colors.grey.shade500)),
-                    const SizedBox(height: 32),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: const Text('Personal Info',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87)),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInfoItem(
-                      icon: Icons.location_on_outlined,
-                      title: 'Nomor Telpon',
-                      subtitle: _userData.noTelpon,
-                    ),
-                    const Divider(height: 1, color: Colors.black12),
-                    // ✅ Notifikasi dihapus
-                    // ✅ Bantuan sekarang navigasi ke BantuanScreen
-                    _buildMenuItem(
-                      icon: Icons.help_outline,
-                      label: 'Bantuan',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const BantuanScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const Divider(height: 1, color: Colors.black12),
-                    const SizedBox(height: 36),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const LoginScreen()),
-                          (route) => false,
-                        );
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.logout, color: Colors.red, size: 20),
-                          SizedBox(width: 8),
-                          Text('Keluar',
+                          const SizedBox(height: 14),
+                          Text(_nama,
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87)),
+                          const SizedBox(height: 4),
+                          Text(_email,
                               style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.w600)),
+                                  fontSize: 14, color: Colors.grey.shade500)),
+                          const SizedBox(height: 32),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: const Text('Personal Info',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87)),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildInfoItem(
+                            icon: Icons.location_on_outlined,
+                            title: 'Nomor Telpon',
+                            subtitle: _noTelpon,
+                          ),
+                          const Divider(height: 1, color: Colors.black12),
+                          // ✅ Notifikasi dihapus
+                          // ✅ Bantuan sekarang navigasi ke BantuanScreen
+                          _buildMenuItem(
+                            icon: Icons.help_outline,
+                            label: 'Bantuan',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const BantuanScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          const Divider(height: 1, color: Colors.black12),
+                          const SizedBox(height: 36),
+                          GestureDetector(
+                            onTap: () async {
+                              await ApiService().logout();
+                              if (mounted) {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const LoginScreen()),
+                                  (route) => false,
+                                );
+                              }
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.logout, color: Colors.red, size: 20),
+                                SizedBox(width: 8),
+                                Text('Keluar',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
