@@ -14,6 +14,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   List<_NotifItem> _notifications = [];
   String _activeFilter = 'semua';
   String _activeTab = 'belum';
+  int? _confirmingTransaksiId;
 
   @override
   void initState() {
@@ -32,18 +33,27 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       
       _notifications = items.map((n) {
         final createdAt = n['created_at'] ?? '';
+        final tipe = n['tipe']?.toString() ?? '';
+        final idTransaksi = n['id_transaksi'];
+        final perluKonfirmasi = n['memerlukan_konfirmasi'] == true ||
+            n['memerlukan_konfirmasi'] == 1;
+
         return _NotifItem(
           id: n['id'] ?? 0,
           unread: (n['status_notifikasi'] ?? '') == 'belum_dibaca',
-          cat: _categorizeByCat(n['judul'] ?? ''),
-          iconData: _iconForCat(_categorizeByCat(n['judul'] ?? '')),
-          iconColor: _colorForCat(_categorizeByCat(n['judul'] ?? '')),
+          cat: _categorizeByCat(n['judul'] ?? '', tipe: tipe),
+          iconData: _iconForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
+          iconColor: _colorForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
           title: n['judul'] ?? '',
           desc: n['pesan'] ?? '',
           time: _formatTime(createdAt),
-          badgeLabel: _badgeLabelForCat(_categorizeByCat(n['judul'] ?? '')),
-          badgeColor: _colorForCat(_categorizeByCat(n['judul'] ?? '')),
+          badgeLabel: _badgeLabelForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
+          badgeColor: _colorForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
           group: _groupForTime(createdAt),
+          idTransaksi: idTransaksi is int
+              ? idTransaksi
+              : int.tryParse(idTransaksi?.toString() ?? ''),
+          memerlukanKonfirmasi: perluKonfirmasi && idTransaksi != null,
         );
       }).toList();
     }
@@ -52,7 +62,8 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   }
 
   // ── Helper: Kategorisasi otomatis dari judul notifikasi ──
-  String _categorizeByCat(String judul) {
+  String _categorizeByCat(String judul, {String tipe = ''}) {
+    if (tipe == 'transaksi') return 'setor';
     final lower = judul.toLowerCase();
     if (lower.contains('setor') || lower.contains('sampah')) return 'setor';
     if (lower.contains('koin') || lower.contains('saldo') || lower.contains('tukar')) return 'koin';
@@ -123,13 +134,14 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   List<_NotifItem> get _filtered {
     var items = _notifications.where((n) {
       final matchCat = _activeFilter == 'semua' || n.cat == _activeFilter;
-      final matchTab = _activeTab == 'semua' || n.unread;
+      final matchTab = _activeTab == 'semua' || n.unread || n.memerlukanKonfirmasi;
       return matchCat && matchTab;
     }).toList();
     return items;
   }
 
-  int get _unreadCount => _notifications.where((n) => n.unread).length;
+  int get _unreadCount =>
+      _notifications.where((n) => n.unread || n.memerlukanKonfirmasi).length;
 
   void _markAllRead() {
     setState(() {
@@ -142,8 +154,40 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   void _readItem(int id) {
     setState(() {
       final n = _notifications.firstWhere((x) => x.id == id);
-      n.unread = false;
+      if (!n.memerlukanKonfirmasi) {
+        n.unread = false;
+      }
     });
+  }
+
+  Future<void> _konfirmasiSetoran(_NotifItem item) async {
+    final idTransaksi = item.idTransaksi;
+    if (idTransaksi == null) return;
+
+    setState(() => _confirmingTransaksiId = idTransaksi);
+
+    final res = await ApiService().konfirmasiTransaksi(idTransaksi);
+
+    if (!mounted) return;
+
+    setState(() => _confirmingTransaksiId = null);
+
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['message'] ?? 'Setoran berhasil dikonfirmasi'),
+          backgroundColor: kPrimary,
+        ),
+      );
+      await _loadNotifikasi();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['message'] ?? 'Gagal mengonfirmasi'),
+          backgroundColor: kDanger,
+        ),
+      );
+    }
   }
 
   @override
@@ -429,41 +473,81 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   }
 
   Widget _buildNotifItem(_NotifItem item) {
-    return GestureDetector(
-      onTap: () => _readItem(item.id),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: item.unread
-              ? kPrimary.withValues(alpha: 0.05)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: item.unread
-                ? kPrimary.withValues(alpha: 0.2)
-                : const Color(0xFFEEEEEE),
-            width: 0.5,
+    final isConfirming = _confirmingTransaksiId == item.idTransaksi;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: item.unread || item.memerlukanKonfirmasi
+            ? kPrimary.withValues(alpha: 0.05)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: item.memerlukanKonfirmasi
+              ? kPrimary.withValues(alpha: 0.35)
+              : item.unread
+                  ? kPrimary.withValues(alpha: 0.2)
+                  : const Color(0xFFEEEEEE),
+          width: item.memerlukanKonfirmasi ? 1.2 : 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GestureDetector(
+            onTap: () => _readItem(item.id),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildIcon(item),
+                const SizedBox(width: 12),
+                Expanded(child: _buildContent(item)),
+                if (item.unread)
+                  Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: const BoxDecoration(
+                      color: kPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildIcon(item),
-            const SizedBox(width: 12),
-            Expanded(child: _buildContent(item)),
-            if (item.unread)
-              Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.only(top: 4),
-                decoration: const BoxDecoration(
-                  color: kPrimary,
-                  shape: BoxShape.circle,
+          if (item.memerlukanKonfirmasi) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isConfirming ? null : () => _konfirmasiSetoran(item),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
                 ),
+                child: isConfirming
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Konfirmasi Setoran',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                      ),
               ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -539,6 +623,8 @@ class _NotifItem {
   final String badgeLabel;
   final Color badgeColor;
   final String group;
+  final int? idTransaksi;
+  final bool memerlukanKonfirmasi;
 
   _NotifItem({
     required this.id,
@@ -552,5 +638,7 @@ class _NotifItem {
     required this.badgeLabel,
     required this.badgeColor,
     required this.group,
+    this.idTransaksi,
+    this.memerlukanKonfirmasi = false,
   });
 }

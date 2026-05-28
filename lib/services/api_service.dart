@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Ganti IP di bawah dengan IP Address Komputer Anda di Jaringan Wi-Fi
   // 192.168.1.6 adalah IP Wi-Fi Anda saat ini dari hasil ipconfig.
-  static const String baseUrl = 'http://192.168.1.6:8000/api';
+  static const String baseUrl = 'http://10.124.33.87:8000/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -264,6 +264,39 @@ class ApiService {
         return {'success': true, 'data': data['data']};
       }
       return {'success': false, 'message': data['message'] ?? 'Gagal mengambil data bank sampah'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
+  }
+
+  /// POST /api/nasabah/transaksi/{id}/konfirmasi — Konfirmasi setoran dari petugas
+  Future<Map<String, dynamic>> konfirmasiTransaksi(int idTransaksi) async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/nasabah/transaksi/$idTransaksi/konfirmasi'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Setoran berhasil dikonfirmasi',
+          'data': data['data'],
+        };
+      }
+
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Gagal mengonfirmasi transaksi',
+      };
     } catch (e) {
       return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
     }

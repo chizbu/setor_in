@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'app_theme.dart';
 import 'user_data.dart';
 import '../../services/api_service.dart';
@@ -16,6 +17,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
   bool _isLoading = true;
   String _nama = '';
   String _noTelpon = '';
+  String _qrCode = '';
   List<Map<String, dynamic>> _hargaList = [];
   late AnimationController _animCtrl;
 
@@ -44,10 +46,14 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
       final p = profileRes['data'];
       _nama = p['nama'] ?? 'Nasabah SetorIn';
       _noTelpon = p['no_telepon'] ?? '-';
+      final userId = p['id'];
+      _qrCode = p['qr_code']?.toString() ??
+          (userId != null ? 'SETORIN:NASABAH:$userId' : '');
     } else {
       await _userData.load();
       _nama = _userData.nama;
       _noTelpon = _userData.noTelpon;
+      _qrCode = '';
     }
 
     // 2. Ambil daftar harga dari API bank-sampah
@@ -91,6 +97,99 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
     }
 
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _showQrDialog() {
+    if (_qrCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('QR Code belum tersedia. Coba muat ulang halaman.')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'QR Kartu Nasabah',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: kText),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Tunjukkan ke petugas Bank Sampah untuk di-scan',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: kTextSoft),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: QrImageView(
+                  data: _qrCode,
+                  size: 240,
+                  backgroundColor: Colors.white,
+                  errorCorrectionLevel: QrErrorCorrectLevel.M,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _nama,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _noTelpon,
+                style: const TextStyle(fontSize: 12, color: kTextSoft),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: TextButton.styleFrom(
+                    backgroundColor: kPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQrWidget({required double size}) {
+    if (_qrCode.isEmpty) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: const Center(
+          child: Icon(Icons.qr_code_2_rounded, size: 48, color: Colors.black26),
+        ),
+      );
+    }
+
+    return QrImageView(
+      data: _qrCode,
+      size: size,
+      backgroundColor: Colors.white,
+      errorCorrectionLevel: QrErrorCorrectLevel.M,
+    );
   }
 
   @override
@@ -267,13 +366,16 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                           ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
+                      GestureDetector(
+                        onTap: _showQrDialog,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 24),
                         ),
-                        child: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 24),
                       ),
                     ],
                   ),
@@ -296,11 +398,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Custom Painter QR Code
-                            CustomPaint(
-                              painter: _QrCodePainter(),
-                              size: const Size(100, 100),
-                            ),
+                            _buildQrWidget(size: 100),
                             // Scanning Line Animation
                             AnimatedBuilder(
                               animation: _animCtrl,
@@ -548,48 +646,4 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
       ),
     );
   }
-}
-
-// ── CUSTOM PAINTER QR CODE MOCKUP ──
-class _QrCodePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black87
-      ..strokeWidth = 3
-      ..style = PaintingStyle.fill;
-
-    // Corner 1 (Top-Left Finder)
-    canvas.drawRect(const Rect.fromLTWH(0, 0, 24, 24), paint);
-    canvas.drawRect(const Rect.fromLTWH(4, 4, 16, 16), Paint()..color = Colors.white);
-    canvas.drawRect(const Rect.fromLTWH(8, 8, 8, 8), paint);
-
-    // Corner 2 (Top-Right Finder)
-    canvas.drawRect(Rect.fromLTWH(size.width - 24, 0, 24, 24), paint);
-    canvas.drawRect(Rect.fromLTWH(size.width - 20, 4, 16, 16), Paint()..color = Colors.white);
-    canvas.drawRect(Rect.fromLTWH(size.width - 16, 8, 8, 8), paint);
-
-    // Corner 3 (Bottom-Left Finder)
-    canvas.drawRect(Rect.fromLTWH(0, size.height - 24, 24, 24), paint);
-    canvas.drawRect(Rect.fromLTWH(4, size.height - 20, 16, 16), Paint()..color = Colors.white);
-    canvas.drawRect(Rect.fromLTWH(8, size.height - 16, 8, 8), paint);
-
-    // QR Code Static Matrix Pixels (Mockup data points)
-    final points = [
-      const Offset(36, 10), const Offset(44, 4), const Offset(52, 12), const Offset(60, 8), const Offset(68, 16),
-      const Offset(10, 36), const Offset(18, 44), const Offset(36, 36), const Offset(48, 40), const Offset(56, 32),
-      const Offset(64, 44), const Offset(72, 36), const Offset(12, 56), const Offset(20, 64), const Offset(40, 52),
-      const Offset(44, 60), const Offset(52, 56), const Offset(60, 68), const Offset(68, 52), const Offset(76, 60),
-      const Offset(36, 76), const Offset(48, 72), const Offset(56, 80), const Offset(64, 76), const Offset(72, 84),
-      const Offset(80, 12), const Offset(84, 28), const Offset(88, 36), const Offset(92, 48), const Offset(84, 60),
-      const Offset(88, 72), const Offset(92, 84), const Offset(80, 92), const Offset(36, 92), const Offset(44, 92),
-    ];
-
-    for (final p in points) {
-      canvas.drawRect(Rect.fromLTWH(p.dx, p.dy, 6, 6), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
