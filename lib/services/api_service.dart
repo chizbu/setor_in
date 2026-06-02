@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Ganti IP di bawah dengan IP Address Komputer Anda di Jaringan Wi-Fi
   // 192.168.1.6 adalah IP Wi-Fi Anda saat ini dari hasil ipconfig.
-  static const String baseUrl = 'http://10.124.33.87:8000/api';
+  static const String baseUrl = 'https://setorin.my.id/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
