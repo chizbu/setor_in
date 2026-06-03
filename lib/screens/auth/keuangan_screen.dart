@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'user_data.dart'; // ← TAMBAHAN: import UserData
+import '../../services/api_service.dart';
 
 // ══════════════════════════════════════════════════════════════
 //  MODEL RIWAYAT TRANSAKSI
@@ -26,6 +27,7 @@ class RiwayatTransaksi {
   final String tanggal;
   final String nominal;
   final bool isPlus;
+  final String status;
 
   const RiwayatTransaksi({
     required this.jenis,
@@ -34,6 +36,7 @@ class RiwayatTransaksi {
     required this.tanggal,
     required this.nominal,
     required this.isPlus,
+    this.status = 'disetujui',
   });
 }
 
@@ -66,6 +69,7 @@ class RiwayatStore {
       tanggal: _nowStr(),
       nominal: '+Rp ${_fmt(saldo)}',
       isPlus: true,
+      status: 'disetujui',
     ));
   }
 
@@ -77,6 +81,7 @@ class RiwayatStore {
       tanggal: _nowStr(),
       nominal: '-Rp ${_fmt(nominal)}',
       isPlus: false,
+      status: 'pending',
     ));
   }
 }
@@ -107,18 +112,68 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
     _loadData();
   }
 
-  /// Load UserData lalu rebuild UI
+  /// Load Data dari API lalu rebuild UI
   Future<void> _loadData() async {
-    _userData.resetLoadFlag();
-    await _userData.load();
+    setState(() => _isLoading = true);
+    try {
+      final res = await ApiService().getSaldo();
+      if (res['success']) {
+        final data = res['data'];
+        
+        // Parse jumlah saldo dengan aman
+        dynamic jumlahSaldoRaw = data['saldo'] != null ? data['saldo']['jumlah_saldo'] : 0;
+        double saldoParsed = 0;
+        if (jumlahSaldoRaw is num) saldoParsed = jumlahSaldoRaw.toDouble();
+        if (jumlahSaldoRaw is String) saldoParsed = double.tryParse(jumlahSaldoRaw) ?? 0;
+        
+        _userData.saldo = saldoParsed;
+        _userData.koin = data['total_koin'] ?? 0;
+        await _userData.simpan(); // Sinkronisasi lokal
+        
+        if (data['riwayat_penarikan'] != null) {
+          // Hapus riwayat transfer lokal sebelumnya agar tidak duplikat dengan API
+          RiwayatStore.data.removeWhere((r) => r.jenis == JenisTransaksi.transfer);
+          
+          final listPenarikan = data['riwayat_penarikan'] as List;
+          for (var p in listPenarikan) {
+            final tglStr = p['tgl_pengajuan'] ?? p['created_at'] ?? '';
+            final tgl = tglStr.isNotEmpty ? tglStr.substring(0, 10) : ''; 
+            RiwayatStore.data.add(RiwayatTransaksi(
+              jenis: JenisTransaksi.transfer,
+              judul: 'Transfer ke ${p['metode_bayar']}',
+              subjudul: p['no_rekening'] ?? '-',
+              tanggal: tgl,
+              nominal: '-Rp ${_fmtNominal(p['jumlah_tarik'] ?? 0)}',
+              isPlus: false,
+              status: p['status'] ?? 'pending',
+            ));
+          }
+        }
+      } else {
+        // Fallback lokal jika API gagal
+        _userData.resetLoadFlag();
+        await _userData.load();
+      }
+    } catch (e) {
+      // Jika terjadi error parsing, jangan biarkan loading berputar terus
+      _userData.resetLoadFlag();
+      await _userData.load();
+    }
+    
     if (mounted) setState(() => _isLoading = false);
+  }
+  
+  String _fmtNominal(dynamic val) {
+    int v = 0;
+    if (val is int) v = val;
+    if (val is double) v = val.toInt();
+    if (val is String) v = int.tryParse(val) ?? 0;
+    return RiwayatStore._fmt(v);
   }
 
   /// Dipanggil setiap kali kembali dari sub-screen agar data fresh
   Future<void> _reloadData() async {
-    _userData.resetLoadFlag();
-    await _userData.load();
-    if (mounted) setState(() {});
+    await _loadData();
   }
 
   // ── Getter shortcut ──────────────────────────────────────
@@ -277,6 +332,17 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                   color: item.isPlus ? kPrimary : Colors.red,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                item.status.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: item.status == 'pending' 
+                      ? Colors.orange 
+                      : (item.status == 'ditolak' ? Colors.red : kPrimary),
                 ),
               ),
               const SizedBox(height: 2),
@@ -750,6 +816,17 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               ),
               const SizedBox(height: 2),
               Text(
+                item.status.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: item.status == 'pending' 
+                      ? Colors.orange 
+                      : (item.status == 'ditolak' ? Colors.red : kPrimary),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
                 item.tanggal.contains(',')
                     ? item.tanggal.split(',').last.trim()
                     : item.tanggal,
@@ -987,20 +1064,26 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
     );
   }
 
-  // ── FIX: Simpan perubahan koin & saldo ke UserData ──────
+  // ── FIX: Simpan perubahan koin & saldo ke API dan UserData ──────
   Future<void> _tukarKoin() async {
-    // 1. Catat ke riwayat transaksi
-    RiwayatStore.tambahTukarKoin(_jumlahKoin, _saldoDidapat);
+    // Tampilkan loading manual / disable tombol sebentar
+    final apiService = ApiService();
+    final res = await apiService.tukarKoin(_jumlahKoin);
 
-    // 2. Update UserData (koin berkurang, saldo bertambah)
-    final userData = UserData();
-    await userData.load();
-    userData.koin  -= _jumlahKoin;   // kurangi koin
-    userData.saldo += _saldoDidapat; // tambah saldo rupiah
-    await userData.simpan();         // persist ke SharedPreferences
+    if (!mounted) return;
 
-    // 3. Tampilkan snackbar
-    if (mounted) {
+    if (res['success']) {
+      // 1. Catat ke riwayat transaksi lokal
+      RiwayatStore.tambahTukarKoin(_jumlahKoin, _saldoDidapat);
+
+      // 2. Update UserData (koin berkurang, saldo bertambah)
+      final userData = UserData();
+      await userData.load();
+      userData.koin  -= _jumlahKoin;   // kurangi koin
+      userData.saldo += _saldoDidapat; // tambah saldo rupiah
+      await userData.simpan();         // persist ke SharedPreferences
+
+      // 3. Tampilkan snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1014,6 +1097,17 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
         ),
       );
       Navigator.pop(context);
+    } else {
+      // Tampilkan error jika gagal
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['message'] ?? 'Gagal menukar koin'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 
@@ -1749,22 +1843,50 @@ class _PinScreenState extends State<PinScreen> {
     }
   }
 
-  void _konfirmasi() {
+  bool _isLoading = false;
+
+  Future<void> _konfirmasi() async {
     if (_pin.length < _pinLength) {
       _snack('Masukkan PIN 6 digit', Colors.red);
       return;
     }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RincianTransaksiScreen(
-          metode: widget.metode,
-          namaPenerima: widget.namaPenerima,
-          nomorPenerima: widget.nomorPenerima,
-          nominal: widget.nominal,
-        ),
-      ),
+    
+    setState(() => _isLoading = true);
+    
+    final res = await ApiService().ajukanPenarikan(
+      jumlahTarik: widget.nominal.toDouble(),
+      metodeBayar: widget.metode,
+      noRekening: widget.nomorPenerima,
     );
+    
+    if (!mounted) return;
+    
+    setState(() => _isLoading = false);
+
+    if (res['success']) {
+      // Catat ke riwayat lokal sementara
+      RiwayatStore.tambahTransfer(widget.metode, widget.namaPenerima, widget.nominal);
+      
+      // Update saldo lokal
+      final userData = UserData();
+      await userData.load();
+      userData.saldo -= widget.nominal;
+      await userData.simpan();
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RincianTransaksiScreen(
+            metode: widget.metode,
+            namaPenerima: widget.namaPenerima,
+            nomorPenerima: widget.nomorPenerima,
+            nominal: widget.nominal,
+          ),
+        ),
+      );
+    } else {
+      _snack(res['message'] ?? 'Penarikan gagal', Colors.red);
+    }
   }
 
   void _snack(String msg, Color color) {
@@ -1829,7 +1951,7 @@ class _PinScreenState extends State<PinScreen> {
               height: 52,
               child: ElevatedButton(
                 onPressed:
-                    _pin.length == _pinLength ? _konfirmasi : null,
+                    (_pin.length == _pinLength && !_isLoading) ? _konfirmasi : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
                   disabledBackgroundColor: Colors.grey.shade300,
@@ -1837,11 +1959,20 @@ class _PinScreenState extends State<PinScreen> {
                       borderRadius: BorderRadius.circular(30)),
                   elevation: 0,
                 ),
-                child: const Text('Konfirmasi',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600)),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Konfirmasi',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600)),
               ),
             ),
           ),

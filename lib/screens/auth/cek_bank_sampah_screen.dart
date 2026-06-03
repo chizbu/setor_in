@@ -9,6 +9,7 @@ import '../../services/api_service.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 class BankSampah {
   final String id;
+  final int idInt; // ID integer asli dari database (untuk API call)
   final String nama;
   final String alamat;
   final String jarak;
@@ -25,6 +26,7 @@ class BankSampah {
 
   const BankSampah({
     required this.id,
+    this.idInt = 0,
     required this.nama,
     required this.alamat,
     required this.jarak,
@@ -176,6 +178,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
 
         return BankSampah(
           id: 'bs_$id',
+          idInt: id,
           nama: name,
           alamat: b['alamat'] ?? '-',
           jarak: '${(0.8 + (id % 3) * 0.4).toStringAsFixed(1)} km',
@@ -920,6 +923,28 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                                   ))
                               .toList()),
                       const SizedBox(height: 24),
+                      // Tombol Pilih Sebagai Mitra
+                      if (b.buka && b.idInt > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _pilihMitra(b),
+                              icon: const Icon(Icons.handshake_rounded, size: 18),
+                              label: const Text('Pilih Sebagai Mitra',
+                                  style: TextStyle(fontWeight: FontWeight.w700)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF15803D),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                        ),
                       Row(children: [
                         Expanded(
                           child: OutlinedButton.icon(
@@ -1009,6 +1034,55 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                   fontWeight: FontWeight.w600,
                   color: kText))),
     ]);
+  }
+
+  // ── PILIH MITRA ─────────────────────────────────────────────────────────────
+  Future<void> _pilihMitra(BankSampah b) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Pilih Bank Sampah Mitra',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+        content: Text(
+          'Apakah Anda yakin ingin menjadikan "${b.nama}" sebagai bank sampah mitra Anda?',
+          style: const TextStyle(fontSize: 14, color: kTextSoft),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal', style: TextStyle(color: kTextSoft)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('Ya, Pilih'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Tutup detail sheet
+    if (mounted) Navigator.pop(context);
+
+    final res = await ApiService().pilihBankSampah(b.idInt);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(res['message'] ?? (res['success'] ? 'Berhasil' : 'Gagal')),
+        backgroundColor: res['success'] == true ? kPrimary : kDanger,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 }
 

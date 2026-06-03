@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
 import 'user_data.dart';
+import '../../services/api_service.dart';
 
 class EditProfilScreen extends StatefulWidget {
   final UserData userData;
@@ -19,6 +20,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   File? _fotoSementara;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -119,24 +121,52 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
   }
 
   Future<void> _handleSimpan() async {
-    if (_formKey.currentState!.validate()) {
-      widget.userData.nama = _namaController.text.trim();
-      widget.userData.email = _emailController.text.trim();
-      widget.userData.noTelpon = _noTelponController.text.trim();
-      widget.userData.fotoProfil = _fotoSementara;
-      await widget.userData.simpan();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Profil berhasil diperbarui'),
-            backgroundColor: kPrimary,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-        Navigator.pop(context);
-      }
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+
+    final nama = _namaController.text.trim();
+    final email = _emailController.text.trim();
+    final noTelpon = _noTelponController.text.trim();
+
+    // Kirim ke server via API
+    final res = await ApiService().updateProfil({
+      'nama': nama,
+      'email': email,
+      'no_telepon': noTelpon,
+    });
+
+    // Update data lokal juga
+    widget.userData.nama = nama;
+    widget.userData.email = email;
+    widget.userData.noTelpon = noTelpon;
+    widget.userData.fotoProfil = _fotoSementara;
+    await widget.userData.simpan();
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Profil berhasil diperbarui'),
+          backgroundColor: kPrimary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['message'] ?? 'Gagal memperbarui profil di server'),
+          backgroundColor: kWarning,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      // Tetap pop meskipun API gagal — data lokal sudah terupdate
+      Navigator.pop(context);
     }
   }
 
@@ -259,17 +289,25 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _handleSimpan,
+                  onPressed: _isSaving ? null : _handleSimpan,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimary,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: kPrimary.withValues(alpha: 0.6),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30)),
                   ),
-                  child: const Text('Simpan Perubahan',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 22, height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Text('Simpan Perubahan',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
               const SizedBox(height: 20),

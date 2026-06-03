@@ -170,7 +170,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                           const SizedBox(height: 36),
                           GestureDetector(
                             onTap: () async {
-                              await ApiService().logout();
+                              await ApiService().logoutServer();
                               if (mounted) {
                                 Navigator.pushAndRemoveUntil(
                                   context,

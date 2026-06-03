@@ -302,6 +302,89 @@ class ApiService {
     }
   }
 
+  /// POST /api/nasabah/bank-sampah/pilih — Pilih bank sampah sebagai mitra
+  Future<Map<String, dynamic>> pilihBankSampah(int idBankSampah) async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/nasabah/bank-sampah/pilih'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'id_bank_sampah': idBankSampah}),
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'message': data['message'] ?? 'Bank sampah berhasil dipilih'};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Gagal memilih bank sampah'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
+  }
+
+  /// POST /api/logout — Logout dan hapus token di server
+  Future<Map<String, dynamic>> logoutServer() async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        // Tetap hapus data lokal meski token tidak ada
+        await logout();
+        return {'success': true, 'message': 'Berhasil keluar'};
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/logout'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      // Hapus data lokal apapun response dari server
+      await logout();
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'message': data['message'] ?? 'Berhasil keluar'};
+      }
+      return {'success': true, 'message': 'Berhasil keluar'};
+    } catch (e) {
+      // Tetap hapus lokal meski request gagal (misal offline)
+      await logout();
+      return {'success': true, 'message': 'Berhasil keluar (offline)'};
+    }
+  }
+
+  /// GET /api/nasabah/transaksi — Riwayat transaksi penyetoran
+  Future<Map<String, dynamic>> getRiwayatTransaksi({int page = 1}) async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/nasabah/transaksi?page=$page'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'data': data['data']};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Gagal mengambil riwayat transaksi'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
+  }
+
   // Fungsi untuk mengambil token (bisa dipanggil di fungsi lain yang butuh token)
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -315,5 +398,86 @@ class ApiService {
     await prefs.remove('user_name');
     await prefs.remove('user_email');
     await prefs.remove('user_role');
+  }
+
+  /// GET /api/nasabah/saldo — Ambil saldo, koin, dan riwayat penarikan
+  Future<Map<String, dynamic>> getSaldo() async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/nasabah/saldo'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'data': data['data']};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Gagal mengambil saldo'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
+  }
+
+  /// POST /api/nasabah/saldo/tukar-koin — Tukar koin menjadi saldo
+  Future<Map<String, dynamic>> tukarKoin(int jumlahKoin) async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/nasabah/saldo/tukar-koin'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'jumlah_koin': jumlahKoin}),
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'message': data['message']};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Gagal menukar koin'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
+  }
+
+  /// POST /api/nasabah/saldo/tarik — Ajukan penarikan saldo
+  Future<Map<String, dynamic>> ajukanPenarikan({
+    required double jumlahTarik,
+    required String metodeBayar,
+    required String noRekening,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/nasabah/saldo/tarik'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'jumlah_tarik': jumlahTarik,
+          'metode_bayar': metodeBayar,
+          'no_rekening': noRekening,
+        }),
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'message': data['message']};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Gagal mengajukan penarikan'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
   }
 }
