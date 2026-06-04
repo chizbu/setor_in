@@ -13,10 +13,12 @@ class UserData {
   File?  fotoProfil;
 
   // ── Field yang dipakai di dashboard ──
-  int    koin        = 0;
-  double saldo       = 0;
-  int    totalSetor  = 0;
-  double beratTotal  = 0;
+  int    koin            = 0;
+  double saldo           = 0;
+  double saldoTertahan   = 0;
+  int    totalSetor      = 0;
+  double beratTotal      = 0;
+  bool   hasPin          = false;
 
   bool _sudahLoad = false;
 
@@ -37,10 +39,12 @@ class UserData {
     email    = prefs.getString('email')    ?? 'user@gmail.com';
     noTelpon = prefs.getString('noTelpon') ?? '088888888888';
 
-    koin       = prefs.getInt('koin')          ?? 0;
-    saldo      = prefs.getDouble('saldo')      ?? 0;
-    totalSetor = prefs.getInt('totalSetor')    ?? 0;
-    beratTotal = prefs.getDouble('beratTotal') ?? 0;
+    koin           = prefs.getInt('koin')              ?? 0;
+    saldo          = prefs.getDouble('saldo')          ?? 0;
+    saldoTertahan  = prefs.getDouble('saldoTertahan')  ?? 0;
+    totalSetor     = prefs.getInt('totalSetor')        ?? 0;
+    beratTotal     = prefs.getDouble('beratTotal')     ?? 0;
+    hasPin         = prefs.getBool('hasPin')            ?? false;
 
     final fotoPath = prefs.getString('fotoProfil');
     if (fotoPath != null && File(fotoPath).existsSync()) {
@@ -58,10 +62,12 @@ class UserData {
     await prefs.setString('email',    email);
     await prefs.setString('noTelpon', noTelpon);
 
-    await prefs.setInt('koin',           koin);
-    await prefs.setDouble('saldo',       saldo);
-    await prefs.setInt('totalSetor',     totalSetor);
-    await prefs.setDouble('beratTotal',  beratTotal);
+    await prefs.setInt('koin',              koin);
+    await prefs.setDouble('saldo',          saldo);
+    await prefs.setDouble('saldoTertahan',  saldoTertahan);
+    await prefs.setInt('totalSetor',        totalSetor);
+    await prefs.setDouble('beratTotal',     beratTotal);
+    await prefs.setBool('hasPin',           hasPin);
 
     if (fotoProfil != null) {
       await prefs.setString('fotoProfil', fotoProfil!.path);
@@ -97,14 +103,16 @@ class UserData {
   Future<void> reset() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    nama       = 'User';
-    email      = 'user@gmail.com';
-    noTelpon   = '088888888888';
-    fotoProfil = null;
-    koin       = 0;
-    saldo      = 0;
-    totalSetor = 0;
-    beratTotal = 0;
-    _sudahLoad = false;
+    nama           = 'User';
+    email          = 'user@gmail.com';
+    noTelpon       = '088888888888';
+    fotoProfil     = null;
+    koin           = 0;
+    saldo          = 0;
+    saldoTertahan  = 0;
+    totalSetor     = 0;
+    beratTotal     = 0;
+    hasPin         = false;
+    _sudahLoad     = false;
   }
 }

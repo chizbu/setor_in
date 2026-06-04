@@ -447,11 +447,12 @@ class ApiService {
     }
   }
 
-  /// POST /api/nasabah/saldo/tarik — Ajukan penarikan saldo
+  /// POST /api/nasabah/saldo/tarik — Ajukan penarikan saldo (dengan PIN)
   Future<Map<String, dynamic>> ajukanPenarikan({
     required double jumlahTarik,
     required String metodeBayar,
     required String noRekening,
+    required String pin,
   }) async {
     try {
       final token = await getToken();
@@ -468,6 +469,7 @@ class ApiService {
           'jumlah_tarik': jumlahTarik,
           'metode_bayar': metodeBayar,
           'no_rekening': noRekening,
+          'pin': pin,
         }),
       );
       
@@ -480,4 +482,37 @@ class ApiService {
       return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
     }
   }
+
+  /// POST /api/nasabah/saldo/set-pin — Set atau ubah PIN transaksi
+  Future<Map<String, dynamic>> setPin({
+    required String pin,
+    String? pinLama,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) return {'success': false, 'message': 'Token tidak tersedia'};
+      
+      final body = <String, dynamic>{'pin': pin};
+      if (pinLama != null) body['pin_lama'] = pinLama;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/nasabah/saldo/set-pin'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {'success': true, 'message': data['message']};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Gagal menyimpan PIN'};
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server: $e'};
+    }
+  }
 }
+

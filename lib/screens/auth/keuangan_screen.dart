@@ -13,6 +13,8 @@ import 'package:path_provider/path_provider.dart';
 
 import 'user_data.dart'; // ← TAMBAHAN: import UserData
 import '../../services/api_service.dart';
+import 'tukar_koin_success_screen.dart';
+import 'buat_pin_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 //  MODEL RIWAYAT TRANSAKSI
@@ -128,6 +130,13 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
         
         _userData.saldo = saldoParsed;
         _userData.koin = data['total_koin'] ?? 0;
+        
+        // Parse saldo_tertahan dan has_pin
+        dynamic tertahanRaw = data['saldo_tertahan'] ?? 0;
+        if (tertahanRaw is num) _userData.saldoTertahan = tertahanRaw.toDouble();
+        if (tertahanRaw is String) _userData.saldoTertahan = double.tryParse(tertahanRaw) ?? 0;
+        _userData.hasPin = data['has_pin'] == true;
+        
         await _userData.simpan(); // Sinkronisasi lokal
         
         if (data['riwayat_penarikan'] != null) {
@@ -242,6 +251,28 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   ),
                 ],
               ),
+              // ── Saldo Tertahan (jika ada) ──
+              if (!_isLoading && _userData.saldoTertahan > 0) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.hourglass_top_rounded, color: Colors.amber, size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Saldo diproses: Rp ${_userData.saldoTertahan.toStringAsFixed(0)}',
+                        style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -269,6 +300,15 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               icon: Icons.compare_arrows_rounded,
               label: 'Transfer',
               onTap: () async {
+                // Cek apakah sudah punya PIN
+                if (!_userData.hasPin) {
+                  final created = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BuatPinScreen()),
+                  );
+                  if (created != true) return; // user batal
+                  await _reloadData(); // refresh hasPin
+                }
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1066,48 +1106,54 @@ class _TukarKoinScreenState extends State<TukarKoinScreen> {
 
   // ── FIX: Simpan perubahan koin & saldo ke API dan UserData ──────
   Future<void> _tukarKoin() async {
-    // Tampilkan loading manual / disable tombol sebentar
+    // Simpan nilai sebelum proses
+    final koinDitukar = _jumlahKoin;
+    final saldoDidapat = _saldoDidapat;
+
+    // Langsung navigate ke halaman proses/sukses
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TukarKoinSuccessScreen(
+          koinDitukar: koinDitukar,
+          saldoDidapat: saldoDidapat,
+          sisaKoin: (widget.koin - koinDitukar).clamp(0, widget.koin),
+        ),
+      ),
+    );
+
+    // Proses API di background
     final apiService = ApiService();
-    final res = await apiService.tukarKoin(_jumlahKoin);
+    final res = await apiService.tukarKoin(koinDitukar);
 
     if (!mounted) return;
 
     if (res['success']) {
       // 1. Catat ke riwayat transaksi lokal
-      RiwayatStore.tambahTukarKoin(_jumlahKoin, _saldoDidapat);
+      RiwayatStore.tambahTukarKoin(koinDitukar, saldoDidapat);
 
       // 2. Update UserData (koin berkurang, saldo bertambah)
       final userData = UserData();
       await userData.load();
-      userData.koin  -= _jumlahKoin;   // kurangi koin
-      userData.saldo += _saldoDidapat; // tambah saldo rupiah
+      userData.koin  -= koinDitukar;   // kurangi koin
+      
+      // Cegah koin menjadi negatif di UI lokal
+      if (userData.koin < 0) userData.koin = 0;
+      
+      userData.saldo += saldoDidapat; // tambah saldo rupiah
       await userData.simpan();         // persist ke SharedPreferences
-
-      // 3. Tampilkan snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$_jumlahKoin koin berhasil ditukar menjadi '
-            'Rp ${_fmt(_saldoDidapat)}',
-          ),
-          backgroundColor: kPrimary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      Navigator.pop(context);
     } else {
-      // Tampilkan error jika gagal
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res['message'] ?? 'Gagal menukar koin'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      // Jika gagal, tampilkan error (user sudah di success screen)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message'] ?? 'Gagal menukar koin'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     }
   }
 
@@ -1857,6 +1903,7 @@ class _PinScreenState extends State<PinScreen> {
       jumlahTarik: widget.nominal.toDouble(),
       metodeBayar: widget.metode,
       noRekening: widget.nomorPenerima,
+      pin: _pin,
     );
     
     if (!mounted) return;
@@ -1866,12 +1913,6 @@ class _PinScreenState extends State<PinScreen> {
     if (res['success']) {
       // Catat ke riwayat lokal sementara
       RiwayatStore.tambahTransfer(widget.metode, widget.namaPenerima, widget.nominal);
-      
-      // Update saldo lokal
-      final userData = UserData();
-      await userData.load();
-      userData.saldo -= widget.nominal;
-      await userData.simpan();
 
       Navigator.pushReplacement(
         context,
@@ -1886,6 +1927,7 @@ class _PinScreenState extends State<PinScreen> {
       );
     } else {
       _snack(res['message'] ?? 'Penarikan gagal', Colors.red);
+      setState(() => _pin = '');
     }
   }
 
