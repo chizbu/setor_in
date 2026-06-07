@@ -1,0 +1,276 @@
+[33mcommit 3de2229dbe43c5fa37a98687317c14f2da76158c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Sun Jun 7 14:09:22 2026 +0700
+
+    ini udah, sok di akses
+
+[33mcommit c561b37de2524a9b3f656a17ca5a44b9cca4e37a[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Thu Jun 4 23:10:17 2026 +0700
+
+    banyak perubahan yang terjadi, adalah pokoknya
+
+[33mcommit 3a9f1b0e809b390e35a4f80f69c1148548875464[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Wed Jun 3 12:39:50 2026 +0700
+
+    ayo bisa
+
+[33mcommit a56006bca24996886620f49fe774bcda4cd67125[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Tue Jun 2 22:19:39 2026 +0700
+
+    yo bisa
+
+[33mcommit 3490ee200f11da98cca7013c296e95bfa857375c[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Thu May 28 21:21:55 2026 +0700
+
+    ini aku coba masukin lagi codingannya
+
+[33mcommit 7b771dbaea70e0bed6969594f16461950a567b8f[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Sat May 23 13:33:30 2026 +0700
+
+    benerin error deploy
+
+[33mcommit 5f6cbc5133ddb7730e66b8443f789ef56fdb9131[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Sat May 23 13:00:43 2026 +0700
+
+    benerin error deploy
+
+[33mcommit 121c39735113dbfbe0943b8d409588e7fda89b9d[m
+Author: haris3n <haris3n@gmail.com>
+Date:   Sat May 23 11:33:01 2026 +0700
+
+    segini dulu yah, buat ngerjain DPL
+
+[33mcommit cacf55fc90449e583b374142c850326554c84b49[m
+Merge: 84debe4 9e50b72
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Mon May 18 10:50:57 2026 +0700
+
+    Merge pull request #10 from chizbu/eca
+    
+    udah dibenerin headernya
+
+[33mcommit 9e50b7215e1f337768fd076c43cfbc7a3897f149[m[33m ([m[1;31morigin/eca[m[33m)[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Mon May 18 10:49:53 2026 +0700
+
+    udah dibenerin headernya
+
+[33mcommit 84debe4d6248917d45d6d83c15f8e04a3826860b[m
+Merge: 7f01851 cfaa591
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Tue May 12 08:24:16 2026 +0700
+
+    Merge pull request #9 from chizbu/eca
+    
+    rubah bahahaa
+
+[33mcommit cfaa591a0677f93ff44d873e6f11fd974c5565a0[m
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Tue May 12 08:19:23 2026 +0700
+
+    rubah bahahaa
+
+[33mcommit 7f01851fa4f4ad4269d2edcf3a50baee13e3868a[m
+Merge: 5e4acbd 77815ad
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Fri May 8 21:40:13 2026 +0700
+
+    Merge pull request #8 from chizbu/eca
+    
+    updatean terbaru
+
+[33mcommit 77815adbadfc1b8927989823cb4a3daf85887a1b[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Fri May 8 21:38:09 2026 +0700
+
+    updatean terbaru
+
+[33mcommit 5e4acbd9427dfd654b67fb308cb23dec57ede1e1[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu May 7 10:32:16 2026 +0700
+
+    Update flutter.yml path
+
+[33mcommit 92f61cd802b658c82c03f630fe33100bcdf581a9[m
+Merge: 903abdd a42794b
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Tue May 5 09:50:28 2026 +0700
+
+    Merge pull request #7 from chizbu/eca
+    
+    updatean agiii
+
+[33mcommit a42794b211433a7485a7228ced0ed55270cfccd8[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Tue May 5 09:49:43 2026 +0700
+
+    updatean agiii
+
+[33mcommit 903abdd77344a48aa7517164451cf6c4c335149b[m
+Merge: 95911cb aa7e6f6
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Mon May 4 11:04:13 2026 +0700
+
+    Merge pull request #6 from chizbu/eca
+    
+    updatean baru
+
+[33mcommit aa7e6f6dda5126267536afc5099882784c3f7889[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Mon May 4 11:03:17 2026 +0700
+
+    updatean baru
+
+[33mcommit 95911cbcbf8f71b5b83750668666d100c2d2967a[m
+Merge: 40b9413 880b287
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Sat May 2 20:54:24 2026 +0700
+
+    Merge pull request #5 from chizbu/eca
+    
+    edukasi
+
+[33mcommit 880b2872235dea75a6c65441fc6029b009720a9b[m
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Sat May 2 20:53:24 2026 +0700
+
+    edukasi
+
+[33mcommit 40b941381f576afa3d3959da757b1559ec3da9ef[m
+Merge: a3fa128 5e24f26
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 12:14:49 2026 +0700
+
+    fix
+
+[33mcommit a3fa128b4eca1fdea8f76adc4e389a45360ebc42[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 12:12:19 2026 +0700
+
+    fix
+
+[33mcommit 5e24f26cb2ccd6a63565d4f88f9ff7965ab46094[m
+Merge: 7e39473 62b74f7
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Thu Apr 30 12:03:30 2026 +0700
+
+    Merge pull request #4 from chizbu/eca
+    
+    yo
+
+[33mcommit 62b74f72272026b1fe8305b30f602ad1c32449d7[m
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Thu Apr 30 12:02:16 2026 +0700
+
+    yo
+
+[33mcommit 7e394730820d9559df9af5e5876d2c252b41f571[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 11:56:45 2026 +0700
+
+    fix
+
+[33mcommit ee312edc9abaf190b657a5442fa53ce1d76bf89d[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 11:34:07 2026 +0700
+
+    test versi
+
+[33mcommit 96788c47bd6bd22658a653b213f7a64104a6f1ab[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 11:26:10 2026 +0700
+
+    test
+
+[33mcommit 6278ab9a07e838c7f08e30bc3332f3a0eb995417[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 11:03:08 2026 +0700
+
+    test
+
+[33mcommit 49dc0a5fbbd44b9d845d65a1a4b9099d1f5c051c[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 10:57:00 2026 +0700
+
+    test
+
+[33mcommit f3bddd8d9d4118bb50126a22c02196b61657f68f[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 10:31:06 2026 +0700
+
+    test
+
+[33mcommit 2892d7895d2f3addb38403c4bde0334edfcee105[m
+Author: sitinurkhodijah428 <sitinurkhodijah428@gmail.com>
+Date:   Thu Apr 30 00:22:42 2026 +0700
+
+    deploy flutter  dan Telegram
+
+[33mcommit 21143c701959763f7be11839524e415995b7621f[m
+Merge: 3597a45 c0755a7
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Sun Apr 26 00:48:18 2026 +0700
+
+    Merge pull request #3 from chizbu/eca
+    
+    nambahin tampilan fitur
+
+[33mcommit c0755a7ab08a135be78cecbe9df9935dcc299e14[m[33m ([m[1;33mtag: [m[1;33mv1.0.0[m[33m)[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Sun Apr 26 00:46:55 2026 +0700
+
+    nambahin tampilan fitur
+
+[33mcommit 3597a456fcced9880b04dad0033fcbc8fcda469c[m
+Merge: 0aa32a5 34882ac
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Thu Apr 23 11:21:49 2026 +0700
+
+    Merge pull request #2 from chizbu/eca
+    
+    update kode
+
+[33mcommit 34882ac92764f7ce6568829c9aff86f8a35dbeed[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Thu Apr 23 11:20:44 2026 +0700
+
+    update kode
+
+[33mcommit 0aa32a5dfea4777baf4ecf8f52f09788d27c5c3b[m
+Merge: b0b276d 6ed9b86
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Fri Apr 10 09:04:27 2026 +0700
+
+    Merge pull request #1 from chizbu/eca
+    
+    update proyek
+
+[33mcommit 6ed9b861a7853aff5d37df122db79309f83bad08[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Fri Apr 10 09:00:21 2026 +0700
+
+    update proyek
+
+[33mcommit 5ba7c723941c4056fd9c0930fba0bc3377fa9757[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Fri Apr 10 08:48:21 2026 +0700
+
+    push file
+
+[33mcommit c4d043dfd21ca655f352c84285924ac529063ecd[m
+Author: nesyanurul-ai <nesyanurul56@gmail.com>
+Date:   Thu Apr 2 11:19:40 2026 +0700
+
+    coding di branch eca
+
+[33mcommit b0b276d6e48068bc6ca4c73433108aef313ce44d[m
+Author: chizbu <chizbu0606@gmail.com>
+Date:   Mon Mar 30 10:50:52 2026 +0700
+
+    first commit
