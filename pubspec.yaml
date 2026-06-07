@@ -57,8 +57,15 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/logo.png"
-  adaptive_icon_background: "#FFFFFF"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  
+  # Nonaktifkan adaptive icon, pakai icon biasa
+  adaptive_icon_background: "#f0fdf4"
   adaptive_icon_foreground: "assets/images/logo.png"
+  
+  # iOS specific
+  ios_content_mode: "scaleAspectFit"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
