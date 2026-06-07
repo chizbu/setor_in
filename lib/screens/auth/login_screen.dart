@@ -44,6 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final apiService = ApiService();
     final result = await apiService.login(email, password);
 
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
@@ -138,19 +140,21 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.black26),
+              if (Navigator.canPop(context)) ...[
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black26),
+                    ),
+                    child: const Icon(Icons.chevron_left, size: 24),
                   ),
-                  child: const Icon(Icons.chevron_left, size: 24),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
               const Text(
                 'Selamat Datang Kembali\ndi Setor.in',
                 style: TextStyle(

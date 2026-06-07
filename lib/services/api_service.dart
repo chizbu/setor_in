@@ -3,6 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
+  ApiService._internal();
+
   // Ganti IP di bawah dengan IP Address Komputer Anda di Jaringan Wi-Fi
   // 192.168.1.6 adalah IP Wi-Fi Anda saat ini dari hasil ipconfig.
   static const String baseUrl = 'https://setorin.my.id/api';

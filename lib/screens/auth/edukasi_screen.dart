@@ -138,7 +138,7 @@ final List<Map<String, dynamic>> kategoriSampahList = [
 final List<Map<String, dynamic>> _fallbackModulList = [
   {
     'title': 'Daur Ulang Plastik di Rumah',
-    'image': 'assets/images/modul_plastik.jpg',
+    'image': 'assets/images/modul_plastik.png',
     'kategori': 'Plastik',
     'durasi': '7 menit',
     'penulis': 'Tim Setor.in',
@@ -152,7 +152,7 @@ final List<Map<String, dynamic>> _fallbackModulList = [
   },
   {
     'title': 'Cara Mengelola Sampah Organik dari Rumah',
-    'image': 'assets/images/modul_organik.jpg',
+    'image': 'assets/images/modul_organik.png',
     'kategori': 'Organik',
     'durasi': '8 menit',
     'penulis': 'Tim Setor.in',

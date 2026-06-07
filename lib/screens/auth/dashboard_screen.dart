@@ -91,20 +91,19 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildBody() {
-    switch (_currentIndex) {
-      case 1:
-        return EdukasiScreen(
+    return IndexedStack(
+      index: _currentIndex,
+      children: [
+        _buildHomeBody(),
+        EdukasiScreen(
           onBack: () => setState(() => _currentIndex = 0),
-        );
-      case 2:
-        return KeuanganScreen(
+        ),
+        KeuanganScreen(
           onBack: () => setState(() => _currentIndex = 0),
-        );
-      case 3:
-        return ProfilScreen(onUpdate: () => setState(() {}));
-      default:
-        return _buildHomeBody();
-    }
+        ),
+        ProfilScreen(onUpdate: () => setState(() {})),
+      ],
+    );
   }
 
   @override
@@ -120,22 +119,28 @@ class _DashboardScreenState extends State<DashboardScreen>
     return SafeArea(
       child: FadeTransition(
         opacity: _fadeAnim,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildQuickMenu(),
-              const SizedBox(height: 24),
-              _buildStatCards(),
-              const SizedBox(height: 24),
-              _buildAktivitas(),
-              const SizedBox(height: 24),
-              _buildTipsCard(),
-              const SizedBox(height: 100),
-            ],
+        child: RefreshIndicator(
+          onRefresh: _reloadUserData,
+          color: kPrimary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildQuickMenu(),
+                const SizedBox(height: 24),
+                _buildStatCards(),
+                const SizedBox(height: 24),
+                _buildAktivitas(),
+                const SizedBox(height: 24),
+                _buildTipsCard(),
+                const SizedBox(height: 100),
+              ],
+            ),
           ),
         ),
       ),
@@ -182,7 +187,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                       backgroundColor: Colors.white,
                       backgroundImage:
                           !_isLoading && _userData.fotoProfil != null
-                              ? FileImage(_userData.fotoProfil!)
+                              ? ResizeImage(
+                                  FileImage(_userData.fotoProfil!),
+                                  width: 80,
+                                )
                               : null,
                       child: (_isLoading || _userData.fotoProfil == null)
                           ? const Icon(Icons.person,

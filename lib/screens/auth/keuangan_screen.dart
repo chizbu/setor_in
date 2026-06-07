@@ -1,7 +1,5 @@
-import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'dart:math';
@@ -30,6 +28,10 @@ class RiwayatTransaksi {
   final String nominal;
   final bool isPlus;
   final String status;
+  final String? id;
+  final String? metodeBayar;
+  final String? noRekening;
+  final DateTime? waktu;
 
   const RiwayatTransaksi({
     required this.jenis,
@@ -39,6 +41,10 @@ class RiwayatTransaksi {
     required this.nominal,
     required this.isPlus,
     this.status = 'disetujui',
+    this.id,
+    this.metodeBayar,
+    this.noRekening,
+    this.waktu,
   });
 }
 
@@ -63,6 +69,40 @@ class RiwayatStore {
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
   }
 
+  static String _fmtDate(String tglStr) {
+    if (tglStr.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(tglStr).toLocal();
+      const bln = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+          'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+      return '${dt.day} ${bln[dt.month]} ${dt.year}, '
+          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      // If parsing fails, try parsing manually from "YYYY-MM-DD HH:MM:SS"
+      try {
+        final cleaned = tglStr.trim();
+        final parts = cleaned.split(' ');
+        final dateParts = parts[0].split('-');
+        final year = int.parse(dateParts[0]);
+        final month = int.parse(dateParts[1]);
+        final day = int.parse(dateParts[2]);
+        int hour = 0;
+        int minute = 0;
+        if (parts.length > 1) {
+          final timeParts = parts[1].split(':');
+          hour = int.parse(timeParts[0]);
+          minute = int.parse(timeParts[1]);
+        }
+        const bln = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+            'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+        return '$day ${bln[month]} $year, '
+            '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+      } catch (_) {
+        return tglStr;
+      }
+    }
+  }
+
   static void tambahTukarKoin(int koin, int saldo) {
     tambah(RiwayatTransaksi(
       jenis: JenisTransaksi.tukarKoin,
@@ -72,6 +112,10 @@ class RiwayatStore {
       nominal: '+Rp ${_fmt(saldo)}',
       isPlus: true,
       status: 'disetujui',
+      id: 'TK-${DateTime.now().millisecondsSinceEpoch}',
+      metodeBayar: 'Koin',
+      noRekening: '$koin Koin',
+      waktu: DateTime.now(),
     ));
   }
 
@@ -84,6 +128,10 @@ class RiwayatStore {
       nominal: '-Rp ${_fmt(nominal)}',
       isPlus: false,
       status: 'pending',
+      id: 'TR-${DateTime.now().millisecondsSinceEpoch}',
+      metodeBayar: metode,
+      noRekening: penerima,
+      waktu: DateTime.now(),
     ));
   }
 }
@@ -146,7 +194,8 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
           final listPenarikan = data['riwayat_penarikan'] as List;
           for (var p in listPenarikan) {
             final tglStr = p['tgl_pengajuan'] ?? p['created_at'] ?? '';
-            final tgl = tglStr.isNotEmpty ? tglStr.substring(0, 10) : ''; 
+            final tgl = RiwayatStore._fmtDate(tglStr); 
+            final waktu = DateTime.tryParse(tglStr) ?? DateTime.now();
             RiwayatStore.data.add(RiwayatTransaksi(
               jenis: JenisTransaksi.transfer,
               judul: 'Transfer ke ${p['metode_bayar']}',
@@ -155,9 +204,48 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               nominal: '-Rp ${_fmtNominal(p['jumlah_tarik'] ?? 0)}',
               isPlus: false,
               status: p['status'] ?? 'pending',
+              id: p['id']?.toString() ?? 'TR-${p['id']}',
+              metodeBayar: p['metode_bayar'],
+              noRekening: p['no_rekening'],
+              waktu: waktu,
             ));
           }
         }
+
+        if (data['riwayat_tukar_koin'] != null) {
+          // Hapus riwayat tukar koin lokal sebelumnya agar tidak duplikat dengan API
+          RiwayatStore.data.removeWhere((r) => r.jenis == JenisTransaksi.tukarKoin);
+          
+          final listTukarKoin = data['riwayat_tukar_koin'] as List;
+          for (var tk in listTukarKoin) {
+            final tglStr = tk['tgl_diperoleh'] ?? tk['created_at'] ?? '';
+            final tgl = RiwayatStore._fmtDate(tglStr);
+            final waktu = DateTime.tryParse(tglStr) ?? DateTime.now();
+            final koin = tk['jumlah_koin'] ?? 0;
+            final rupiah = tk['nilai_saldo'] ?? 0;
+            
+            RiwayatStore.data.add(RiwayatTransaksi(
+              jenis: JenisTransaksi.tukarKoin,
+              judul: 'Tukar Koin',
+              subjudul: '$koin koin → Rp ${_fmtNominal(rupiah)}',
+              tanggal: tgl,
+              nominal: '+Rp ${_fmtNominal(rupiah)}',
+              isPlus: true,
+              status: 'disetujui',
+              id: tk['id']?.toString() ?? 'TK-${tk['id']}',
+              metodeBayar: 'Koin',
+              noRekening: '$koin Koin',
+              waktu: waktu,
+            ));
+          }
+        }
+        
+        // Urutkan riwayat berdasarkan waktu descending (terbaru di atas)
+        RiwayatStore.data.sort((a, b) {
+          final tA = a.waktu ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final tB = b.waktu ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return tB.compareTo(tA);
+        });
       } else {
         // Fallback lokal jika API gagal
         _userData.resetLoadFlag();
@@ -176,7 +264,9 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
     int v = 0;
     if (val is int) v = val;
     if (val is double) v = val.toInt();
-    if (val is String) v = int.tryParse(val) ?? 0;
+    if (val is String) {
+      v = int.tryParse(val) ?? (double.tryParse(val)?.toInt() ?? 0);
+    }
     return RiwayatStore._fmt(v);
   }
 
@@ -308,7 +398,9 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   );
                   if (created != true) return; // user batal
                   await _reloadData(); // refresh hasPin
+                  if (!mounted) return;
                 }
+                if (!mounted) return;
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -332,69 +424,73 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
     final iconBg =
         isTransfer ? Colors.blue.shade50 : kPrimary.withOpacity(0.1);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: () => _showDetailTransaksi(context, item),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(iconData, color: iconColor, size: 20),
             ),
-            child: Icon(iconData, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.judul,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.subjudul,
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  item.judul,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 13),
+                  item.nominal,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: item.isPlus ? kPrimary : Colors.red,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  item.subjudul,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                  item.status.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: item.status == 'pending' 
+                        ? Colors.orange 
+                        : (item.status == 'ditolak' ? Colors.red : kPrimary),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.tanggal.contains(',')
+                      ? item.tanggal.split(',').last.trim()
+                      : item.tanggal,
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                item.nominal,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: item.isPlus ? kPrimary : Colors.red,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                item.status.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  color: item.status == 'pending' 
-                      ? Colors.orange 
-                      : (item.status == 'ditolak' ? Colors.red : kPrimary),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                item.tanggal.contains(',')
-                    ? item.tanggal.split(',').last.trim()
-                    : item.tanggal,
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -583,6 +679,32 @@ class RiwayatScreen extends StatefulWidget {
 
 class _RiwayatScreenState extends State<RiwayatScreen> {
   int _filterIndex = 0; // 0=Semua, 1=Tukar Koin, 2=Transfer
+  int _totalMasuk = 0;
+  int _totalKeluar = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateTotals();
+  }
+
+  void _calculateTotals() {
+    int masuk = 0;
+    int keluar = 0;
+    final list = _filtered;
+    final reg = RegExp(r'[^\d]');
+    for (final r in list) {
+      final angka = r.nominal.replaceAll(reg, '');
+      final val = int.tryParse(angka) ?? 0;
+      if (r.isPlus) {
+        masuk += val;
+      } else {
+        keluar += val;
+      }
+    }
+    _totalMasuk = masuk;
+    _totalKeluar = keluar;
+  }
 
   String _fmt(int n) => n
       .toString()
@@ -601,18 +723,6 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
     }
     return RiwayatStore.data;
   }
-
-  int get _totalMasuk =>
-      _filtered.where((r) => r.isPlus).fold(0, (sum, r) {
-        final angka = r.nominal.replaceAll(RegExp(r'[^\d]'), '');
-        return sum + (int.tryParse(angka) ?? 0);
-      });
-
-  int get _totalKeluar =>
-      _filtered.where((r) => !r.isPlus).fold(0, (sum, r) {
-        final angka = r.nominal.replaceAll(RegExp(r'[^\d]'), '');
-        return sum + (int.tryParse(angka) ?? 0);
-      });
 
   Map<String, List<RiwayatTransaksi>> get _grouped {
     final map = <String, List<RiwayatTransaksi>>{};
@@ -762,7 +872,14 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   Widget _chip(String label, int index) {
     final active = _filterIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _filterIndex = index),
+      onTap: () {
+        if (_filterIndex != index) {
+          setState(() {
+            _filterIndex = index;
+            _calculateTotals();
+          });
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding:
@@ -806,76 +923,80 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
   Widget _buildTile(RiwayatTransaksi item) {
     final isTransfer = item.jenis == JenisTransaksi.transfer;
-    return Padding(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: isTransfer
-                  ? Colors.blue.shade50
-                  : kPrimary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: () => _showDetailTransaksi(context, item),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: isTransfer
+                    ? Colors.blue.shade50
+                    : kPrimary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isTransfer
+                    ? Icons.compare_arrows_rounded
+                    : Icons.monetization_on_outlined,
+                color: isTransfer ? Colors.blue.shade400 : kPrimary,
+                size: 20,
+              ),
             ),
-            child: Icon(
-              isTransfer
-                  ? Icons.compare_arrows_rounded
-                  : Icons.monetization_on_outlined,
-              color: isTransfer ? Colors.blue.shade400 : kPrimary,
-              size: 20,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.judul,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 2),
+                  Text(item.subjudul,
+                      style: TextStyle(
+                          color: Colors.grey.shade500, fontSize: 11)),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(item.judul,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(
+                  item.nominal,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: item.isPlus ? kPrimary : Colors.red,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(item.subjudul,
-                    style: TextStyle(
-                        color: Colors.grey.shade500, fontSize: 11)),
+                Text(
+                  item.status.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: item.status == 'pending' 
+                        ? Colors.orange 
+                        : (item.status == 'ditolak' ? Colors.red : kPrimary),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.tanggal.contains(',')
+                      ? item.tanggal.split(',').last.trim()
+                      : item.tanggal,
+                  style: TextStyle(
+                      fontSize: 10, color: Colors.grey.shade400),
+                ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                item.nominal,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: item.isPlus ? kPrimary : Colors.red,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                item.status.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  color: item.status == 'pending' 
-                      ? Colors.orange 
-                      : (item.status == 'ditolak' ? Colors.red : kPrimary),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                item.tanggal.contains(',')
-                    ? item.tanggal.split(',').last.trim()
-                    : item.tanggal,
-                style: TextStyle(
-                    fontSize: 10, color: Colors.grey.shade400),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2810,5 +2931,216 @@ PreferredSizeWidget _buildAppBar(
       preferredSize: const Size.fromHeight(1),
       child: Divider(height: 1, color: Colors.grey.shade200),
     ),
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DETAIL TRANSAKSI MODAL
+// ══════════════════════════════════════════════════════════════
+
+void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      final isTransfer = item.jenis == JenisTransaksi.transfer;
+      final statusColor = item.status == 'pending'
+          ? Colors.orange
+          : (item.status == 'ditolak' ? Colors.red : kPrimary);
+
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Header: Receipt Title & Type
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: isTransfer ? Colors.blue.shade50 : kPrimaryLight,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    isTransfer ? Icons.compare_arrows_rounded : Icons.monetization_on_outlined,
+                    color: isTransfer ? Colors.blue.shade600 : kPrimary,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.judul,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: kText,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isTransfer ? 'Penarikan / Transfer Saldo' : 'Konversi / Tukar Koin',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: kTextSoft,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            
+            const Divider(color: Color(0xFFF1F5F9)),
+            const SizedBox(height: 16),
+
+            // Detail List
+            _buildDetailRow('Status', Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: statusColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Text(
+                item.status.toUpperCase(),
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  fontFamily: 'Poppins',
+                  letterSpacing: 0.5,
+                ),
+              ),
+            )),
+            
+            if (item.id != null) ...[
+              const SizedBox(height: 16),
+              _buildDetailRow('ID Transaksi', Text(
+                '#${item.id}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: kText,
+                  fontFamily: 'Poppins',
+                ),
+              )),
+            ],
+            
+            const SizedBox(height: 16),
+            _buildDetailRow('Tanggal', Text(
+              item.tanggal,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: kText,
+                fontFamily: 'Poppins',
+              ),
+            )),
+            
+            if (item.metodeBayar != null) ...[
+              const SizedBox(height: 16),
+              _buildDetailRow('Metode', Text(
+                item.metodeBayar!,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: kText,
+                  fontFamily: 'Poppins',
+                ),
+              )),
+            ],
+
+            if (item.noRekening != null) ...[
+              const SizedBox(height: 16),
+              _buildDetailRow(
+                isTransfer ? 'No. Rekening / E-Wallet' : 'Jumlah Koin',
+                Text(
+                  item.noRekening!,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: kText,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 16),
+            const Divider(color: Color(0xFFF1F5F9)),
+            const SizedBox(height: 16),
+
+            // Nominal
+            _buildDetailRow('Nominal', Text(
+              item.nominal,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: item.isPlus ? kPrimary : Colors.red,
+                fontFamily: 'Poppins',
+              ),
+            )),
+
+            const SizedBox(height: 30),
+
+            // Close button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text('Tutup'),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildDetailRow(String label, Widget valueWidget) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          color: kTextSoft,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          fontFamily: 'Poppins',
+        ),
+      ),
+      valueWidget,
+    ],
   );
 }

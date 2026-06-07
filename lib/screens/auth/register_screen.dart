@@ -66,6 +66,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       noTelepon: phone,
     );
 
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });

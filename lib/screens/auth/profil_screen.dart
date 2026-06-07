@@ -91,7 +91,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                 radius: 56,
                                 backgroundColor: Colors.grey.shade200,
                                 backgroundImage: _userData.fotoProfil != null
-                                    ? FileImage(_userData.fotoProfil!)
+                                    ? ResizeImage(
+                                        FileImage(_userData.fotoProfil!),
+                                        width: 250,
+                                      )
                                     : null,
                                 child: _userData.fotoProfil == null
                                     ? Icon(Icons.person,

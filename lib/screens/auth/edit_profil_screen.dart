@@ -223,7 +223,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                     radius: 56,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage: _fotoSementara != null
-                        ? FileImage(_fotoSementara!)
+                        ? ResizeImage(
+                            FileImage(_fotoSementara!),
+                            width: 250,
+                          )
                         : null,
                     child: _fotoSementara == null
                         ? Icon(Icons.person,
