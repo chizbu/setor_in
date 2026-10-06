@@ -1,9 +1,7 @@
-=====================================================================
-PRODUCT REQUIREMENTS DOCUMENT (PRD)
-SETOR.IN - PROYEK 3
-Aplikasi Mobile Nasabah, Web Petugas, dan Web Admin
-Mitra: Rumah Hijau
-=====================================================================
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+## SETOR.IN - PROYEK 3
+**Aplikasi Mobile Nasabah, Web Petugas, dan Web Admin**
+**Mitra: Rumah Hijau**
 
 Versi       : 1.0 (draft final untuk disetujui tim)
 Tanggal     : 24 September 2026
@@ -19,19 +17,17 @@ Keterangan penanda fase pada dokumen ini: [F0] [F1] [F2] [F3]
 (lihat Bagian 15).
 
 
-=====================================================================
-1. RINGKASAN & LATAR BELAKANG
-=====================================================================
+## 1. RINGKASAN & LATAR BELAKANG
 
 Setor.in adalah sistem bank sampah digital. Pada Proyek 2 aplikasi
 bersifat umum (banyak bank sampah, ada koin dan misi). Pada Proyek 3
 aplikasi dipersempit untuk satu mitra, yaitu Rumah Hijau.
 
 Alur bisnis Rumah Hijau:
-1. Nasabah menyetor sampah yang sudah bersih dan terpilah.
-2. Petugas menimbang dan menilai sampah dengan harga beli per jenis
+## 1. Nasabah menyetor sampah yang sudah bersih dan terpilah.
+## 2. Petugas menimbang dan menilai sampah dengan harga beli per jenis
    per kg. Nilainya menjadi saldo rupiah nasabah.
-3. Rumah Hijau menjual sampah ke pengepul dengan harga sedikit lebih
+## 3. Rumah Hijau menjual sampah ke pengepul dengan harga sedikit lebih
    tinggi. Contoh: beli botol Rp1.800/kg dari nasabah, jual ke
    pengepul Rp2.000/kg. Selisihnya menjadi pendapatan Rumah Hijau.
 
@@ -45,11 +41,9 @@ Kebutuhan mitra dan kebutuhan akademik:
   dites di lapangan sekitar satu kali per bulan.
 
 
-=====================================================================
-2. TUJUAN & RUANG LINGKUP
-=====================================================================
+## 2. TUJUAN & RUANG LINGKUP
 
-2.1 Tujuan
+### 2.1 Tujuan
 - Petugas Rumah Hijau dapat mencatat setoran nasabah dengan cepat dan
   akurat (scan QR, input jenis dan berat, verifikasi, struk).
 - Nasabah dapat melihat saldo, riwayat, harga sampah, jadwal setor,
@@ -59,7 +53,7 @@ Kebutuhan mitra dan kebutuhan akademik:
 - Mobile memiliki chatbot AI sebagai asisten smart waste management
   sekaligus customer support.
 
-2.2 Dalam lingkup
+### 2.2 Dalam lingkup
 - Mobile nasabah (Android, Bahasa Indonesia).
 - Web petugas (repo baru).
 - Web admin dan backend/API (repo lama, khusus admin).
@@ -68,7 +62,7 @@ Kebutuhan mitra dan kebutuhan akademik:
 - Tukar saldo berupa simulasi internal; Midtrans Payouts (Iris)
   sandbox bersifat opsional.
 
-2.3 Di luar lingkup
+### 2.3 Di luar lingkup
 - Landing page (sudah jadi; hanya perlu tautan unduh APK).
 - iOS dan bahasa selain Indonesia.
 - Pencairan uang sungguhan.
@@ -77,9 +71,7 @@ Kebutuhan mitra dan kebutuhan akademik:
 - Distribusi lewat Play Store (APK dibagikan lewat tautan).
 
 
-=====================================================================
-3. PERAN PENGGUNA & HAK AKSES
-=====================================================================
+## 3. PERAN PENGGUNA & HAK AKSES
 
 NASABAH (mobile)
 - Daftar dan login sendiri; melihat data milik sendiri saja.
@@ -99,9 +91,7 @@ ADMIN (web admin)
 - Tidak membuat atau mengubah setoran.
 
 
-=====================================================================
-4. ARSITEKTUR & STACK
-=====================================================================
+## 4. ARSITEKTUR & STACK
 
 + Mobile        : Flutter, Android saja (min. Android 8.0 / API 26).
 + Backend/API   : Laravel di repo setorin_backend; menyediakan REST API
@@ -125,14 +115,14 @@ ADMIN (web admin)
                   container/subdomain terpisah.
 
 Aturan dua repo Laravel dengan satu database:
-1. Migrasi HANYA ada di repo backend admin. Repo petugas tidak
+## 1. Migrasi HANYA ada di repo backend admin. Repo petugas tidak
    menjalankan migrate; hanya membaca skema yang sama.
-2. Nama guard Spatie Permission harus identik di kedua repo
+## 2. Nama guard Spatie Permission harus identik di kedua repo
    (mis. "web"), karena role tersimpan per guard.
-3. Logika verifikasi setoran (hitung total, snapshot harga, tambah
+## 3. Logika verifikasi setoran (hitung total, snapshot harga, tambah
    saldo) ditulis di satu tempat dan disalin persis ke repo lain
    bila diperlukan.
-4. Setiap perubahan saldo memakai DB::transaction dengan
+## 4. Setiap perubahan saldo memakai DB::transaction dengan
    lockForUpdate() pada baris saldo nasabah untuk mencegah race
    condition.
 
@@ -142,9 +132,7 @@ melayang; notifikasi lewat ikon di bagian atas; FAQ dan edit akun
 di Profil.
 
 
-=====================================================================
-5. PERUBAHAN DARI PROYEK 2
-=====================================================================
+## 5. PERUBAHAN DARI PROYEK 2
 
 DIHAPUS
 - Koin, misi, reward, harga koin (fitur dan tabel).
@@ -165,9 +153,7 @@ DITAMBAH
 - Web petugas versi baru (setoran, struk, pengepul, export).
 
 
-=====================================================================
-6. ATURAN BISNIS
-=====================================================================
+## 6. ATURAN BISNIS
 
 BR-01  Harga ditetapkan admin saja. Setiap jenis sampah punya harga
        beli (dibayar ke nasabah) dan harga jual (ke pengepul) per kg.
@@ -215,9 +201,7 @@ BR-19  Format tampilan: Rupiah "Rp1.800", berat "1,25 kg",
        tanggal "24 Sep 2026 14:05 WIB" (zona Asia/Jakarta).
 
 
-=====================================================================
-7. KEBUTUHAN FUNGSIONAL - MOBILE NASABAH
-=====================================================================
+## 7. KEBUTUHAN FUNGSIONAL - MOBILE NASABAH
 
 M-01 Registrasi [F1]
 - Field: nama, no. HP, alamat, email, password (min. 8 karakter) dan
@@ -313,9 +297,7 @@ M-17 Identitas visual [F1-F2]
   Desain detail disusun terpisah.
 
 
-=====================================================================
-8. KEBUTUHAN FUNGSIONAL - WEB PETUGAS
-=====================================================================
+## 8. KEBUTUHAN FUNGSIONAL - WEB PETUGAS
 
 P-01 Login petugas [F1]
 - Hanya role petugas yang aktif. Akun dibuat admin.
@@ -378,9 +360,7 @@ P-10 Jadwal setor [F2]
   buka/tutup darurat. Jadwal terdekat tampil di mobile (M-14).
 
 
-=====================================================================
-9. KEBUTUHAN FUNGSIONAL - WEB ADMIN
-=====================================================================
+## 9. KEBUTUHAN FUNGSIONAL - WEB ADMIN
 
 A-01 Login admin [F1]
 - Hanya role admin.
@@ -437,40 +417,36 @@ A-11 Desain [F2]
   Rumah Hijau.
 
 
-=====================================================================
-10. ALUR UTAMA
-=====================================================================
+## 10. ALUR UTAMA
 
-10.1 Registrasi nasabah
+### 10.1 Registrasi nasabah
 Isi form -> OTP email -> akun aktif -> QR dibuat -> masuk Beranda.
 Jalur Google: pilih akun Google -> lengkapi no. HP dan alamat ->
 QR dibuat -> Beranda.
 
-10.2 Setor sampah (di Rumah Hijau)
+### 10.2 Setor sampah (di Rumah Hijau)
 Nasabah menunjukkan QR -> petugas scan (atau cari manual) ->
 identitas tampil -> petugas menimbang, input jenis dan berat ->
 simpan (MENUNGGU_VERIFIKASI) -> verifikasi -> status SELESAI, saldo
 bertambah, struk tampil, nasabah menerima notifikasi.
 
-10.3 Tukar saldo
+### 10.3 Tukar saldo
 Nasabah mengisi form -> PIN -> saldo ditahan, status MENUNGGU ->
 admin menyetujui -> (simulasi) BERHASIL, atau (Payouts)
 DIPROSES -> BERHASIL/GAGAL -> notifikasi ke nasabah.
 Jika ditolak: alasan dikirim ke nasabah, saldo kembali.
 
-10.4 Jadwal setor
+### 10.4 Jadwal setor
 Petugas mengisi jadwal -> mobile menghitung dan menampilkan status
 BUKA/TUTUP serta jadwal terdekat -> nasabah dapat membuka petunjuk
 arah ke Rumah Hijau.
 
-10.5 Rekap ke pengepul
+### 10.5 Rekap ke pengepul
 Petugas membuka Data Pengepul -> memilih periode -> melihat total
 berat, nilai jual, dan estimasi selisih -> export XLSX bila perlu.
 
 
-=====================================================================
-11. MODEL DATA (RINGKAS)
-=====================================================================
+## 11. MODEL DATA (RINGKAS)
 
 Nama tabel final mengikuti skema hasil pembersihan di Fase 0.
 Tabel proyek 2 yang dihapus: koin, misi (dan progres), reward,
@@ -512,9 +488,7 @@ harga_coin, bank_sampah (dan relasinya).
   data_baru, ip, waktu.
 
 
-=====================================================================
-12. API MOBILE (USULAN KONTRAK, PREFIKS /api/v1)
-=====================================================================
+## 12. API MOBILE (USULAN KONTRAK, PREFIKS /api/v1)
 
 Auth
   POST /auth/register, /auth/verify-otp, /auth/resend-otp
@@ -547,9 +521,7 @@ dapat mengakses data sendiri); dokumentasikan lewat koleksi Postman
 sebelum Fase 1 dimulai agar mobile dan backend dapat paralel.
 
 
-=====================================================================
-13. INTEGRASI EKSTERNAL
-=====================================================================
+## 13. INTEGRASI EKSTERNAL
 
 - Gemini API : chatbot; API key hanya di server (.env); ada rate
   limit dan pesan fallback saat limit gratis tercapai. Karena tier
@@ -564,9 +536,7 @@ sebelum Fase 1 dimulai agar mobile dan backend dapat paralel.
   cukup. Pencairan uang sungguhan di luar lingkup.
 
 
-=====================================================================
-14. KEBUTUHAN NON-FUNGSIONAL
-=====================================================================
+## 14. KEBUTUHAN NON-FUNGSIONAL
 
 Keamanan
 - HTTPS di semua layanan. Password dan PIN di-hash (bcrypt).
@@ -596,9 +566,7 @@ Pemeliharaan
 - Migrasi hanya dari repo backend admin.
 
 
-=====================================================================
-15. FASE, TIMELINE, & USULAN PEMBAGIAN TUGAS
-=====================================================================
+## 15. FASE, TIMELINE, & USULAN PEMBAGIAN TUGAS
 
 [F0] Persiapan (24 Sep - awal Okt 2026)
 - Bersihkan skema database (hapus koin, misi, reward, bank sampah);
@@ -644,9 +612,7 @@ Usulan pembagian tugas (tukar sesuai kemampuan anggota):
            (sisi mobile), penyempurnaan desain.
 
 
-=====================================================================
-16. RISIKO & MITIGASI
-=====================================================================
+## 16. RISIKO & MITIGASI
 
 R1  Uji lapangan hanya sebulan sekali.
     -> Gladi bersih data dummy sebelum hari setor; siapkan cadangan
@@ -675,9 +641,7 @@ R9  Logo dan data mitra terlambat diterima.
     -> Pakai placeholder, ganti saat data tiba.
 
 
-=====================================================================
-17. KRITERIA PENERIMAAN
-=====================================================================
+## 17. KRITERIA PENERIMAAN
 
 F1 dianggap selesai bila:
 - Nasabah dapat daftar, verifikasi OTP, login, dan melihat QR serta
@@ -712,9 +676,7 @@ F3 dianggap selesai bila:
   berjalan mulus.
 
 
-=====================================================================
-18. DATA YANG DIBUTUHKAN DARI MITRA / TIM
-=====================================================================
+## 18. DATA YANG DIBUTUHKAN DARI MITRA / TIM
 
 - Logo Rumah Hijau (dari Haris).
 - Alamat lengkap dan koordinat Rumah Hijau.
@@ -725,36 +687,32 @@ F3 dianggap selesai bila:
   (sekitar 10).
 
 
-=====================================================================
-19. ASUMSI (BELUM DISEBUT EKSPLISIT OLEH PEMILIK PRODUK)
-=====================================================================
+## 19. ASUMSI (BELUM DISEBUT EKSPLISIT OLEH PEMILIK PRODUK)
 
 Bagian ini berisi keputusan default penyusun. Ubah bila tidak sesuai.
 
-1. Edit/batal setoran hanya sebelum verifikasi; batal wajib alasan.
-2. Dua tahap konfirmasi dilakukan petugas saja (BR-06).
-3. Snapshot harga dilakukan saat setoran DISIMPAN (bukan saat
+## 1. Edit/batal setoran hanya sebelum verifikasi; batal wajib alasan.
+## 2. Dua tahap konfirmasi dilakukan petugas saja (BR-06).
+## 3. Snapshot harga dilakukan saat setoran DISIMPAN (bukan saat
    verifikasi), agar total yang dilihat petugas dan nasabah tidak
    berubah di antara dua langkah.
-4. Edukasi berformat artikel + gambar sampul + tautan video opsional.
-5. Aplikasi dibagikan sebagai APK lewat tautan di landing page.
-6. Tombol WhatsApp opsional, tampil bila nomor tersedia.
-7. PIN 6 digit, terkunci 15 menit setelah 5 kali salah.
-8. OTP 6 digit, 5 menit, maks. 5 percobaan, jeda kirim ulang 60 detik.
-9. Berat 2 desimal; rupiah integer dengan pembulatan ke rupiah
+## 4. Edukasi berformat artikel + gambar sampul + tautan video opsional.
+## 5. Aplikasi dibagikan sebagai APK lewat tautan di landing page.
+## 6. Tombol WhatsApp opsional, tampil bila nomor tersedia.
+## 7. PIN 6 digit, terkunci 15 menit setelah 5 kali salah.
+## 8. OTP 6 digit, 5 menit, maks. 5 percobaan, jeda kirim ulang 60 detik.
+## 9. Berat 2 desimal; rupiah integer dengan pembulatan ke rupiah
    terdekat.
-10. Satu permintaan tukar saldo aktif per nasabah; tanpa biaya.
-11. Min. Android 8.0 (API 26).
-12. Rate limit chatbot 10 pesan/menit; riwayat chat disimpan lokal.
-13. Metrik dashboard admin dan cakupan audit log seperti A-09 dan
+## 10. Satu permintaan tukar saldo aktif per nasabah; tanpa biaya.
+## 11. Min. Android 8.0 (API 26).
+## 12. Rate limit chatbot 10 pesan/menit; riwayat chat disimpan lokal.
+## 13. Metrik dashboard admin dan cakupan audit log seperti A-09 dan
     A-10.
-14. Estimasi pengepul memakai harga jual snapshot per setoran.
-15. Field edit akun seperti M-16; email tidak dapat diubah.
+## 14. Estimasi pengepul memakai harga jual snapshot per setoran.
+## 15. Field edit akun seperti M-16; email tidak dapat diubah.
 
 
-=====================================================================
-20. PENGEMBANGAN LANJUTAN (DI LUAR PROYEK 3)
-=====================================================================
+## 20. PENGEMBANGAN LANJUTAN (DI LUAR PROYEK 3)
 
 - Fitur "daftarkan nasabah" oleh petugas untuk warga tanpa aplikasi.
 - Pencairan sungguhan lewat Midtrans Payouts (butuh akun bisnis dan
@@ -763,6 +721,4 @@ Bagian ini berisi keputusan default penyusun. Ubah bila tidak sesuai.
 - Pencatatan penjualan ke pengepul dan pengurangan stok.
 - Laporan bulanan otomatis dan grafik tren.
 
-=====================================================================
 AKHIR DOKUMEN
-=====================================================================

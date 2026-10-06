@@ -1,660 +1,1824 @@
----
-name: Setor.in — Rumah Hijau (Mobile Nasabah Android)
-platform: Android mobile only
-product_scope: Nasabah mobile app only
-orientation: portrait-first
-web_scope: none
-colors:
-  surface: '#FFFFFF'
-  surface-dim: '#F5F7FA'
-  surface-bright: '#FFFFFF'
-  surface-container-lowest: '#FFFFFF'
-  surface-container-low: '#FAFCFB'
-  surface-container: '#F5F7FA'
-  surface-container-high: '#EEF2EF'
-  surface-container-highest: '#E2E8E3'
-  on-surface: '#1A1A2E'
-  on-surface-variant: '#667085'
-  inverse-surface: '#1A1A2E'
-  inverse-on-surface: '#FFFFFF'
-  outline: '#98A2B3'
-  outline-variant: '#E4E7EC'
-  surface-tint: '#0D9146'
-  primary: '#0D9146'
-  on-primary: '#FFFFFF'
-  primary-container: '#E8F8EF'
-  on-primary-container: '#0A7A3A'
-  inverse-primary: '#26D077'
-  secondary: '#2F6F44'
-  on-secondary: '#FFFFFF'
-  secondary-container: '#EAF5EC'
-  on-secondary-container: '#194729'
-  tertiary: '#3B82F6'
-  on-tertiary: '#FFFFFF'
-  tertiary-container: '#DBEAFE'
-  on-tertiary-container: '#1E3A8A'
-  error: '#EF4444'
-  on-error: '#FFFFFF'
-  error-container: '#FEE2E2'
-  on-error-container: '#991B1B'
-  warning: '#F59E0B'
-  success: '#0D9146'
-  info: '#3B82F6'
-  background: '#F5F7FA'
-  on-background: '#1A1A2E'
-typography:
-  display-lg:
-    fontFamily: Poppins
-    fontSize: 32px
-    fontWeight: '700'
-    lineHeight: 40px
-    letterSpacing: -0.02em
-  headline-lg:
-    fontFamily: Poppins
-    fontSize: 26px
-    fontWeight: '700'
-    lineHeight: 34px
-    letterSpacing: -0.01em
-  headline-md:
-    fontFamily: Poppins
-    fontSize: 22px
-    fontWeight: '700'
-    lineHeight: 30px
-    letterSpacing: -0.01em
-  title-md:
-    fontFamily: Poppins
-    fontSize: 18px
-    fontWeight: '700'
-    lineHeight: 26px
-    letterSpacing: 0
-  body-lg:
-    fontFamily: Poppins
-    fontSize: 16px
-    fontWeight: '400'
-    lineHeight: 24px
-    letterSpacing: 0
-  body-md:
-    fontFamily: Poppins
-    fontSize: 14px
-    fontWeight: '400'
-    lineHeight: 21px
-    letterSpacing: 0
-  body-bold:
-    fontFamily: Poppins
-    fontSize: 14px
-    fontWeight: '600'
-    lineHeight: 21px
-    letterSpacing: 0
-  label:
-    fontFamily: Poppins
-    fontSize: 12px
-    fontWeight: '600'
-    lineHeight: 18px
-    letterSpacing: 0.01em
-  stat-lg:
-    fontFamily: Poppins
-    fontSize: 28px
-    fontWeight: '700'
-    lineHeight: 36px
-    letterSpacing: -0.02em
-rounded:
-  sm: 0.5rem
-  DEFAULT: 0.75rem
-  md: 1rem
-  lg: 1.25rem
-  xl: 1.5rem
-  full: 9999px
-spacing:
-  unit: 4px
-  xs: 4px
-  sm: 8px
-  md: 16px
-  lg: 24px
-  xl: 32px
-  xxl: 40px
-  gutter: 16px
-  margin-mobile: 20px
+# DESIGN.md — Setor.in Proyek 3
+
+> **Sumber desain:** PRD Setor.in Proyek 3 v1.0, draft final untuk disetujui tim, 24 September 2026.  
+> **Mitra:** Rumah Hijau  
+> **Cakupan:** Mobile Nasabah, Web Petugas, Web Admin  
+> **Dokumen ini:** menerjemahkan requirement PRD menjadi arahan UI/UX dan design system. Requirement bisnis dan acceptance criteria tetap mengacu pada PRD.
+
 ---
 
-# Design System: Setor.in — Rumah Hijau — Mobile Nasabah Android
+## 1. Tujuan Desain
+
+Setor.in adalah sistem bank sampah digital untuk Rumah Hijau. Desain harus membuat tiga pengalaman utama terasa sederhana dan berbeda sesuai perannya:
+
+1. **Nasabah — Mobile**
+   - Melihat saldo rupiah.
+   - Menunjukkan QR saat setor.
+   - Melihat harga sampah dan riwayat.
+   - Mengajukan tukar saldo.
+   - Mendapat edukasi, jadwal, notifikasi, FAQ, dan chatbot AI.
+
+2. **Petugas — Web**
+   - Melakukan proses setor secepat mungkin.
+   - Scan QR atau mencari nasabah.
+   - Menginput beberapa jenis sampah dan berat desimal.
+   - Memverifikasi transaksi.
+   - Menampilkan struk.
+   - Memantau transaksi dan rekap pengepul.
+
+3. **Admin — Web**
+   - Mengelola master data.
+   - Mengelola nasabah dan petugas.
+   - Mengatur harga beli/jual.
+   - Menyetujui/menolak tukar saldo.
+   - Mengelola edukasi dan audit log.
+
+### Prinsip utama
+
+- **Rupiah, bukan koin.**
+- **Rumah Hijau adalah satu-satunya mitra bank sampah dalam Proyek 3.**
+- **Status transaksi harus selalu terlihat jelas.**
+- **Primary action harus mudah ditemukan.**
+- **Input angka berat dan rupiah harus mudah dibaca.**
+- **UI tidak boleh membuat petugas melakukan langkah yang tidak diperlukan.**
+- **Bahasa antarmuka: Bahasa Indonesia.**
+- **Gunakan format WIB dan format rupiah sesuai PRD.**
+
+---
+
+# 2. Scope UI/UX
+
+## 2.1 Mobile Nasabah
+
+### Fase F1
+- Splash
+- Login
+- Registrasi
+- OTP
+- Lupa password
+- Beranda
+- QR nasabah
+- Harga sampah
+- Riwayat setoran
+- Detail setoran
+- Identitas visual Rumah Hijau
+
+### Fase F2
+- Google Sign-In
+- Tukar saldo
+- PIN
+- Notifikasi
+- Edukasi
+- FAQ
+- Lokasi & jadwal setor
+- Chatbot AI
+- Edit akun
+- Riwayat tukar saldo
+
+---
+
+## 2.2 Web Petugas
+
+### Fase F1
+- Login
+- Dashboard
+- Setoran Baru
+- Scan QR
+- Cari nasabah
+- Input multi-jenis sampah
+- Verifikasi setoran
+- Struk
+- Transaksi hari ini
+- Cek transaksi
+- Data pengepul
+- Export XLSX
+
+### Fase F2
+- Jadwal setor
+- Override buka/tutup darurat
+
+---
+
+## 2.3 Web Admin
+
+### Fase F1
+- Login
+- Dashboard minimum
+- Nasabah
+- Petugas
+- Jenis sampah & harga
+- Setoran
+- Data pengepul
+
+### Fase F2
+- Persetujuan tukar saldo
+- Edukasi
+- Dashboard lengkap
+- Audit log
+- Penyempurnaan identitas visual
+
+---
+
+# 3. Information Architecture
+
+## 3.1 Mobile
+
+Struktur navigasi utama:
+
+```text
+Mobile
+├── Beranda
+│   ├── Saldo tersedia
+│   ├── Saldo ditahan
+│   ├── QR
+│   ├── Status Rumah Hijau
+│   ├── Setoran terakhir
+│   └── Shortcut chatbot
+│
+├── Harga
+│   └── Daftar jenis sampah
+│
+├── QR
+│   └── QR nasabah + panduan setor
+│
+├── Edukasi
+│   ├── Filter kategori
+│   └── Detail artikel
+│
+└── Profil
+    ├── Data akun
+    ├── Riwayat transaksi
+    ├── Notifikasi
+    ├── FAQ
+    ├── Lokasi & jadwal
+    ├── PIN
+    └── Logout
+
+Floating Action
+└── Chatbot AI
+```
+
+Bottom navigation yang direkomendasikan:
 
-> **Strict scope:** This DESIGN.md defines the UI/UX for the **Setor.in Android mobile application used by Nasabah only**. It does **not** define Web Petugas, Web Admin, desktop, tablet, landscape, or responsive web layouts. Do not generate dashboard/web navigation patterns from this file.
+```text
+[ Beranda ] [ Harga ] [ QR ] [ Edukasi ] [ Profil ]
+```
 
-## 1. Visual Theme & Atmosphere
+QR ditempatkan sebagai pusat perhatian karena merupakan bagian penting dari alur setor.
+
+---
+
+## 3.2 Web Petugas
+
+```text
+Web Petugas
+├── Dashboard
+├── Setoran
+│   ├── Setoran Baru
+│   ├── Scan QR
+│   └── Transaksi
+├── Nasabah
+├── Data Pengepul
+├── Jadwal Setor
+└── Profil / Logout
+```
+
+**Catatan:** Scan QR merupakan bagian dari Setoran Baru, bukan proses terpisah yang membuat alur baru.
+
+---
+
+## 3.3 Web Admin
+
+```text
+Web Admin
+├── Dashboard
+├── Nasabah
+├── Petugas
+├── Jenis Sampah & Harga
+├── Setoran
+├── Data Pengepul
+├── Tukar Saldo
+├── Edukasi
+├── Audit Log
+└── Profil / Logout
+```
+
+---
+
+# 4. Design System
+
+## 4.1 Identitas Visual
+
+Logo utama menggunakan **logo Rumah Hijau** yang disediakan tim.
+
+Arah visual:
+
+- Natural
+- Bersih
+- Modern
+- Terpercaya
+- Ramah lingkungan
+- Tidak terlalu "kartun"
+- Tidak menggunakan visual koin/reward dari Proyek 2
+
+### Warna
 
-Setor.in Proyek 3 is a focused digital bank-sampah companion for **Rumah Hijau**. The visual direction should feel **fresh, trustworthy, practical, warm, and community-oriented** rather than gamified. The interface is built around one clear promise: users bring clean, sorted recyclable waste to Rumah Hijau, receive a transparent rupiah value based on weight and the active purchase price, and can track that value from one place.
+Karena PRD belum menetapkan hex color final, warna berikut merupakan **usulan design token**, bukan requirement bisnis.
+
+```text
+Primary      : #2E7D32
+Primary Dark : #1B5E20
+Primary Soft : #E8F5E9
 
-The redesign is intentionally a **major UI refresh of the previous Setor.in mobile application**, not a new unrelated visual identity. The target is a portrait-oriented Android phone experience; every screen, component, spacing decision, and interaction must be optimized for touch on a mobile device. Preserve the previous application's recognizable green foundation and rounded Material 3 language, but remove the visual emphasis on features that no longer exist in Proyek 3. The old product currently uses Poppins, green primary tones, soft cards, a green gradient header, and a pill-shaped bottom navigation. These patterns can be evolved, not discarded.
+Background   : #F7F9F7
+Surface      : #FFFFFF
 
-The visual hierarchy should prioritize **money, waste transactions, QR identity, operating status, and next actions**. Avoid decorative gamification, excessive gradients, dense dashboards, or generic recycling illustrations that compete with the actual task. Use real-world, understandable labels in Bahasa Indonesia.
+Text Primary : #1F2937
+Text Muted   : #6B7280
 
-## 2. Color Palette & Roles
+Success      : #2E7D32
+Warning      : #F59E0B
+Danger       : #DC2626
+Info         : #2563EB
 
-### Primary Foundation
+Border       : #E5E7EB
+```
 
-- **Rumah Hijau Green (#0D9146):** primary action color, active navigation, important links, success states, and brand emphasis.
-- **Deep Green (#0A7A3A):** darker brand anchor for high-emphasis surfaces, selected states, and strong contrast areas.
-- **Fresh Green (#26D077):** supportive accent for highlights and subtle progress/confirmation moments. Use sparingly; do not make every component gradient-based.
-- **Soft Green (#E8F8EF):** tinted container for selected states, informational callouts, chips, and subtle section backgrounds.
-- **Mist Background (#F5F7FA):** main app canvas; creates separation between white cards without becoming visually heavy.
-- **White Surface (#FFFFFF):** cards, bottom sheets, form fields, modal surfaces, and primary content containers.
+Jika warna resmi Rumah Hijau tersedia, warna resmi harus menggantikan token usulan di atas.
 
-### Accent & Interactive
+---
 
-- **Info Blue (#3B82F6):** neutral informational states such as date/schedule information, helper links, and status explanations.
-- **Warning Amber (#F59E0B):** warnings that require attention but are not errors, such as a closed schedule or pending action.
-- **Error Red (#EF4444):** validation errors, failed exchange requests, locked PIN state, destructive actions, and emergency warnings.
-- **Success Green (#0D9146):** completed setoran and successful saldo exchange. Keep semantics consistent with the primary brand green.
+## 4.2 Typography
 
-### Typography & Text Hierarchy
+Gunakan satu keluarga font yang konsisten pada satu platform.
 
-- **Primary Ink (#1A1A2E):** headings, important numerical values, primary body text.
-- **Secondary Ink (#667085):** supporting copy, timestamps, labels, and helper text.
-- **Outline (#98A2B3):** accessible field borders, dividers, and secondary control outlines.
-- **Outline Variant (#E4E7EC):** low-contrast separators and card borders.
+### Mobile
 
-### Functional States
+Rekomendasi:
 
-Use explicit text labels in addition to color so status remains understandable without color perception:
+- **Manrope** atau font sans-serif modern yang setara.
+- Hindari terlalu banyak weight.
 
-- BUKA → green badge + "Buka"
-- TUTUP → neutral/amber badge + "Tutup"
-- MENUNGGU_VERIFIKASI → amber badge + "Menunggu verifikasi"
-- SELESAI → green badge + "Selesai"
-- DIBATALKAN → red/neutral badge + "Dibatalkan"
-- MENUNGGU / DIPROSES → amber/blue badges
-- BERHASIL → green badge
-- DITOLAK / GAGAL → red badge
+Hierarchy:
 
-## 3. Typography Rules
+```text
+Display / Saldo besar : 28–32 px / Bold
+H1                    : 24 px / Bold
+H2                    : 20 px / Bold
+H3                    : 18 px / SemiBold
+Body                  : 14–16 px / Regular
+Caption               : 12–13 px / Regular
+Button                : 14–16 px / SemiBold
+```
 
-### Hierarchy & Weights
+### Web
 
-Use **Poppins** consistently because the legacy app already establishes it as the UI font. The typography should feel friendly but operational, with heavier weights for monetary values and page titles.
+```text
+Page Title            : 24 px / Bold
+Section Title         : 18–20 px / SemiBold
+Body                  : 14 px
+Table                 : 13–14 px
+Caption               : 12 px
+Button                : 14 px / SemiBold
+```
 
-- Display: 32/40, weight 700 — large balance or onboarding headline when appropriate.
-- Page headline: 22–26/30–34, weight 700 — screen titles and major sections.
-- Section title: 18/26, weight 700 — grouped content and card titles.
-- Body: 14/21 and 16/24, weight 400 — readable content and descriptions.
-- Body emphasis: 14/21, weight 600 — transaction names, actionable labels, amounts in rows.
-- Label: 12/18, weight 600 — field labels, status metadata, timestamps.
-- Large numeric/stat: 28/36, weight 700 — saldo, total nilai, and key transaction figures.
+---
 
-Money and numerical values should use strong hierarchy: the amount is visually dominant, while currency/unit and supporting metadata remain quieter. Never style every number as bold.
+## 4.3 Spacing
 
-### Spacing Principles
+Gunakan sistem 4 px / 8 px.
 
-Use a strict 4px base rhythm with most layout spacing falling on 8px, 16px, 24px, and 32px increments. Mobile page content uses approximately 20px side margins. Dense transactional areas may use 16px internal padding, while hero cards use 20–24px.
+```text
+4   = micro spacing
+8   = tight spacing
+12  = small spacing
+16  = default spacing
+24  = section spacing
+32  = large spacing
+40  = hero spacing
+48+ = page-level spacing
+```
 
-## 4. Component Stylings
+---
 
-### Buttons
+## 4.4 Radius
 
-Primary actions are filled green, full-width when they are the main action on a screen, and approximately 52px high to support comfortable touch. Use generously rounded corners (about 16px), not the extreme pill treatment of the old login UI.
+```text
+Small   : 8 px
+Medium  : 12 px
+Large   : 16 px
+Card    : 16 px
+Pill    : 999 px
+```
 
-Secondary actions use white or transparent surfaces with a green outline or green text. Tertiary actions are text buttons. Destructive actions use the error color and require confirmation for irreversible operations.
+Gunakan radius yang konsisten. Jangan mencampur banyak bentuk card pada halaman yang sama.
 
-Examples:
+---
 
-- Primary: "Setor Sekarang", "Verifikasi Setoran", "Ajukan Tukar Saldo", "Simpan".
-- Secondary: "Lihat Riwayat", "Petunjuk arah", "Batal".
-- Tertiary: "Lewati", "Lihat semua", "Ubah".
+## 4.5 Elevation
 
-Buttons must have clear disabled, pressed, loading, and error feedback.
+Gunakan shadow secara ringan.
 
-### Cards & Containers
+Prioritas:
 
-Cards should use white surfaces, 16–20px corner radii, and very subtle elevation. Prefer a light border plus soft shadow instead of large floating shadows. Large hero cards can use the brand green background and white foreground content, but gradients should be restrained to one major surface at most per screen.
+1. Surface datar untuk sebagian besar card.
+2. Shadow tipis untuk floating card.
+3. Shadow lebih kuat hanya untuk modal/floating element.
 
-Avoid stacking too many nested cards. A page should communicate hierarchy through whitespace first, cards second.
+Hindari efek glassmorphism berlebihan karena aplikasi membutuhkan keterbacaan data transaksi.
 
-### Navigation
+---
 
-Use a **five-destination mobile bottom navigation**:
+# 5. Component Library
 
-1. **Beranda**
-2. **Harga**
-3. **QR** (center action)
-4. **Edukasi**
-5. **Profil**
+## 5.1 Button
 
-The center QR action should be visually prominent and slightly elevated, clearly communicating "Tunjukkan QR saat setor". Keep the bottom bar compact and stable across authenticated screens.
+### Primary
 
-The notification icon remains in the top area of Beranda and opens the notification inbox. The chatbot is accessed through a floating action button and must not obscure primary controls.
+Untuk aksi utama:
 
-### Inputs & Forms
+- Verifikasi Setoran
+- Ajukan Tukar Saldo
+- Simpan
+- Login
+- Daftar
 
-Input fields use white surfaces, visible labels above the field, 14–16px text, and approximately 14–16px corner radii. Keep the border subtle at rest and clearly green on focus. Password/PIN fields expose visibility or numeric controls where useful.
+### Secondary
 
-Forms should be vertically scannable, with one clear label per field. Validation messages appear directly below the relevant field. Avoid relying on SnackBars alone for validation.
+Untuk aksi pendukung:
 
-For financial forms, surface constraints before submission: minimum tukar saldo Rp10.000, available balance, destination type, and saved destination behavior.
+- Lihat Detail
+- Petunjuk Arah
+- Export
+- Batal
 
-### Domain-Specific Components
+### Destructive
 
-#### Saldo Card
+Untuk:
 
-The hero balance card is the most important component on Beranda. Show:
+- Nonaktifkan akun
+- Batalkan setoran
+- Tolak tukar saldo
 
-- "Saldo tersedia"
-- large rupiah value
-- "Saldo ditahan" only when greater than zero
-- primary action "Tukar saldo" when eligible
-- optional visibility toggle for the amount
+Destructive action harus memiliki confirmation dialog jika menyebabkan perubahan data penting.
 
-Do not show coins, points, mission progress, or rewards anywhere in the Proyek 3 mobile UI.
+---
 
-#### Waste Price Row
+## 5.2 Input
 
-Each active waste type is presented as a compact row with category, material name, and purchase price per kg. Example hierarchy:
+Semua input harus mempunyai:
 
-"Plastik" → "Botol PET" → "Rp1.800/kg"
+- Label
+- Placeholder bila diperlukan
+- Error state
+- Helper text bila diperlukan
 
-Show the last update time as secondary metadata where useful.
+Untuk angka:
 
-#### Transaction Item
+- Gunakan numeric keyboard pada mobile.
+- Format berat mendukung dua desimal.
+- Format rupiah tidak boleh ambigu.
 
-A setoran row should surface the date, short transaction code, main waste type or summarized item count, total weight, total rupiah value, and status. The user must be able to open a detail screen showing the full price/weight calculation.
+Contoh:
 
-#### Status Badge
+```text
+Berat
+[ 1,25 ] kg
+```
 
-Use short, explicit Indonesian labels. The badge is never the only place where status is communicated; key result pages may also use an icon and explanatory text.
+```text
+Nominal
+[ Rp50.000 ]
+```
 
-#### QR Identity Card
+---
 
-The QR screen uses a large, high-contrast QR code with the user's name and short supporting text. Include a clear four-step explanation:
+## 5.3 Status Badge
 
-1. Bawa sampah bersih dan terpilah.
-2. Tunjukkan QR ke petugas.
-3. Petugas menimbang dan memverifikasi.
-4. Saldo masuk ke akun.
+Gunakan status badge yang mudah dibedakan secara visual dan tetap mempunyai teks.
 
-The QR itself represents a random unique customer code and should be treated as an identity credential, not as a decorative graphic.
+```text
+MENUNGGU_VERIFIKASI → Warning
+SELESAI              → Success
+DIBATALKAN           → Danger
 
-#### Chatbot
+MENUNGGU             → Warning
+DIPROSES             → Info
+BERHASIL             → Success
+DITOLAK              → Danger
+GAGAL                → Danger
 
-The chatbot is a supportive assistant for waste, environment, and Setor.in usage. It must visibly state that answers are general. Do not suggest that the assistant can access saldo, riwayat, or private user data. The UI should offer suggested questions and a graceful off-topic fallback toward FAQ or Rumah Hijau contact information.
+BUKA                  → Success
+TUTUP                 → Neutral/Danger
+```
 
-## 5. Layout Principles
+Jangan hanya mengandalkan warna; status harus selalu ditulis.
 
-### Grid & Structure
+---
 
-Use a **strict Android phone, portrait-only, single-column layout**. Treat the design canvas as a mobile device viewport, not as a responsive web page. Every primary authenticated screen should work naturally at common Android phone widths with vertical scrolling for longer content. Do not create desktop navigation, sidebar navigation, data tables intended for desktop, multi-column desktop grids, tablet breakpoints, hover states, or landscape-first layouts.
+## 5.4 Card
 
-Use a 20px outer gutter on standard mobile widths. Primary cards span the available width. Two-column layouts are reserved for compact stats where they genuinely improve scanning.
+Card digunakan untuk:
 
-### Whitespace Strategy
+- Saldo
+- Status Rumah Hijau
+- Setoran terakhir
+- Harga sampah
+- Artikel edukasi
+- Jadwal setor
+- Ringkasan transaksi
 
-Use generous separation between sections, especially after the hero balance area. Prefer approximately 24px between major sections and 12–16px between related content elements.
+Card harus memiliki hierarchy:
 
-Avoid filling empty space with decorative graphics. Empty space is part of the information hierarchy.
+```text
+Label
+Value utama
+Informasi tambahan
+Optional action
+```
 
-### Alignment & Visual Balance
+---
 
-Most content is left-aligned. Center alignment is appropriate for onboarding, OTP, QR, empty states, and the chatbot introduction. Monetary totals should align predictably in cards and tables, with labels subordinate to values.
+## 5.5 Modal / Dialog
 
-### Responsive Behavior & Touch
+Gunakan dialog untuk aksi yang membutuhkan konfirmasi.
 
-Target **Android 8.0+ phones in portrait orientation**. Use touch targets of at least 44–48px for interactive controls. Respect system safe areas, keyboard insets, gesture/navigation areas, and scrolling when forms are open.
+Contoh:
 
-The UI should be designed around a compact mobile viewport and remain readable at smaller Android phone widths without horizontal scrolling. Long Indonesian labels should wrap intentionally instead of being clipped. Do not introduce desktop-style hover interactions; use pressed, focused, selected, loading, disabled, and error states suitable for touch.
+```text
+Verifikasi Setoran?
 
-## 6. Screen Blueprint — Proyek 3
+Pastikan berat dan jenis sampah
+sudah benar.
 
-The following screens are the intended mobile UI scope derived from the PRD. F1 is the field-test MVP and F2 adds the complete product experience.
+Total:
+Rp35.500
 
-### F0/F1 Authentication Foundation
+[Batal] [Verifikasi]
+```
 
-#### Splash
+Untuk penolakan tukar saldo:
 
-- Full-screen brand introduction using Setor.in and Rumah Hijau identity.
-- Primary visual: logo mark/wordmark, then short line "Pilah Sampah, Raih Rupiah".
-- Replace the old generic recycling icon presentation with the actual Rumah Hijau logo when the asset is available.
-- Keep motion subtle: fade/scale, short duration, no distracting loops.
+```text
+Tolak Tukar Saldo
 
-#### Onboarding
+Alasan penolakan
+[________________]
 
-Three concise slides maximum. Update the legacy copy so it no longer mentions coins, nearby multiple bank sampah, or rewards.
+[ Batal ] [ Tolak ]
+```
 
-1. "Pilah & Setor Sampah" — explain clean/sorted waste and Rumah Hijau.
-2. "Dapatkan Nilai Rupiah" — explain weight × purchase price per kg.
-3. "Pantau Saldo & Tukar" — explain balance tracking and exchange flow.
+Alasan wajib.
 
-Primary CTA: "Lanjut" / "Mulai". Secondary: "Lewati".
+---
 
-#### Login
+# 6. Mobile UX Specification
 
-- Header with back control only when appropriate.
-- Logo/brand lockup.
-- Title: "Selamat datang kembali".
-- Email and password.
-- "Lupa password?"
-- Primary "Masuk".
-- Secondary Google sign-in button in F2.
-- Registration link: "Belum punya akun? Daftar".
+# 6.1 Splash Screen
 
-The legacy login already follows a clear vertical form but uses very pill-shaped controls; keep the hierarchy and simplify the geometry.
+Isi:
 
-#### Register
+- Logo Rumah Hijau
+- Nama Setor.in
+- Loading indicator ringan
 
-Fields: nama, no. HP, alamat, email, password, konfirmasi password. Use a progressive, easy-to-scan form with strong validation. Primary CTA: "Daftar". Explain OTP verification before submission without adding unnecessary copy.
+Tujuan:
 
-#### OTP
+- Brand recognition
+- Menunggu pemeriksaan sesi/token
 
-- Six-digit segmented numeric input.
-- Clear expiry/resend messaging.
-- Primary CTA: "Verifikasi".
-- Secondary action: "Kirim ulang kode" with countdown.
-- Clear error state for invalid/expired code.
+Jangan membuat splash terlalu lama.
 
-#### Forgot Password
+---
 
-Three states: request OTP → verify OTP → create new password. Keep the UI consistent with authentication screens.
+# 6.2 Login
 
-### F1 Core Experience
+Layout:
 
-#### Beranda
+```text
+Logo
 
-Purpose: answer three questions immediately — "Berapa saldo saya?", "Kapan bisa setor?", and "Apa yang harus saya lakukan berikutnya?"
+Selamat datang di Setor.in
+Kelola saldo hasil setoran sampah
+dengan mudah.
 
-Recommended order:
+Email
+[________________]
 
-1. Compact header with Rumah Hijau/Setor.in brand and notification icon.
-2. Greeting with customer name.
-3. Large saldo tersedia card.
-4. Status Rumah Hijau card: BUKA/TUTUP and next schedule.
-5. Quick actions: "Tunjukkan QR" and "Lihat Harga".
-6. Recent setoran list with status and rupiah value.
-7. Small educational teaser.
-8. Floating chatbot button.
-9. Five-item bottom navigation.
+Password
+[________________]
 
-Do not recreate the legacy dashboard's "Koin", "Target Sampah", or "Cek Bank Sampah" menu. Those concepts were removed from Proyek 3.
+[ Masuk ]
 
-#### QR Saya
+Lupa password?
 
-Full-screen focused QR presentation. Keep the QR large and unobstructed. Show customer name, optional code label, and the four-step instruction. Primary visual focus must remain the QR code.
+──── atau ────
 
-#### Harga Sampah
+[ Lanjut dengan Google ]
 
-- Page title: "Harga Sampah".
-- Search/filter by category.
-- List active material types.
-- Price per kg as the dominant number.
-- "Diperbarui" timestamp as metadata.
-- Read-only behavior.
+Belum punya akun?
+Daftar
+```
 
-#### Riwayat Setoran
+Requirement:
 
-F1 shows setoran history. Use filter chips such as "Semua", "Selesai", "Menunggu", and "Dibatalkan" only if useful. Date formatting follows WIB and Indonesian conventions.
+- Email + password.
+- Google Sign-In tersedia pada F2.
+- Akun nonaktif tidak dapat login.
 
-Each item opens a detail view with transaction ID, date/time, waste types, weight, purchase price/kg, subtotal, total weight, total value, and status.
+---
 
-#### Setoran Detail
+# 6.3 Registrasi
 
-Use a calculation-first layout:
+Field:
 
-- transaction summary
-- itemized waste rows
-- weight × purchase price
-- subtotal per type
-- total weight
-- total value
-- status timeline or status block
+1. Nama
+2. No. HP
+3. Alamat
+4. Email
+5. Password
+6. Konfirmasi password
 
-### F2 Complete Experience
+CTA:
 
-#### Tukar Saldo
+```text
+[ Daftar ]
+```
 
-The flow is deliberately stepwise:
+Setelah submit:
 
-1. Enter nominal.
-2. Choose Bank or E-Wallet.
-3. Fill destination details.
-4. Optional "Simpan untuk berikutnya".
-5. Review summary.
-6. Enter 6-digit PIN.
-7. Success/pending confirmation.
+```text
+Registrasi
+→ OTP
+→ Akun aktif
+→ QR dibuat
+→ Beranda
+```
 
-Show the minimum exchange amount (Rp10.000) near the amount field. Clearly show available balance and held balance behavior.
+---
 
-#### PIN
+# 6.4 OTP
 
-Dedicated flows for:
+Tampilkan:
 
-- Create PIN on first exchange.
-- Change PIN.
-- Forgot PIN via email OTP.
-- Locked state after 5 wrong attempts, with a visible 15-minute lock explanation.
+```text
+Verifikasi Email
 
-Use a calm, security-oriented composition with large numeric input and minimal distractions.
+Kode OTP telah dikirim ke
+email pengguna.
 
-#### Notifikasi
+[ _ _ _ _ _ _ ]
 
-Inbox layout with:
+Kirim ulang dalam 00:xx
 
-- unread/read distinction
-- timestamp
-- notification category icon
-- concise title and body
-- tap-through to related page
+[ Verifikasi ]
+```
 
-Important events: successful setoran, exchange approved/complete, exchange rejected with reason, new education article.
+Aturan dari PRD:
 
-#### Edukasi
+- OTP 6 digit.
+- Berlaku 5 menit.
+- Maks. 5 percobaan.
+- Resend cooldown 60 detik.
 
-List recent articles with category filter, cover image, title, excerpt, and publication date. Detail view includes cover image, article content, and optional video link.
+---
 
-Topics include waste sorting, waste processing, healthy environments, and risks of littering.
+# 6.5 Beranda
 
-#### FAQ
+Prioritas informasi:
 
-Accordion list. Keep questions short and answers scannable. Use clear disclosure animation and strong accessibility contrast.
+```text
+Header
+├── Greeting
+└── Notification icon
 
-#### Lokasi & Jadwal Setor
+Saldo
+├── Saldo tersedia
+└── Saldo ditahan jika > 0
 
-Because Proyek 3 has one fixed partner, this page is about **Rumah Hijau only**, not a bank-sampah discovery map.
+[ Tukar Saldo ]
 
-Show:
+Status Rumah Hijau
+├── BUKA / TUTUP
+├── Jadwal terdekat
+└── [ Petunjuk Arah ]
 
-- Rumah Hijau name
-- address
-- current status BUKA/TUTUP
-- next schedule
-- opening and closing time
-- note/instructions
-- "Petunjuk arah" button opening Google Maps
-- optional WhatsApp button only when a phone number is available
+[ Tampilkan QR ]
 
-The status is server-driven in WIB, so the UI should communicate the time context clearly.
+Setoran Terakhir
+└── Transaction cards
 
-#### Chatbot AI
+Floating Chatbot
+```
 
-Conversation screen with:
+Saldo harus menjadi visual paling dominan karena merupakan value utama nasabah.
 
-- header title "Asisten Setor.in"
-- small disclaimer "Jawaban bersifat umum"
-- suggested question chips
-- chat bubbles distinguishing user and assistant
-- 500-character input limit
-- send/loading/error states
-- off-topic fallback directing user to FAQ or Rumah Hijau contact
+---
 
-Never surface personal balance or transaction information inside the chatbot UI.
+# 6.6 QR Nasabah
 
-#### Edit Profil
+QR harus berukuran besar dan mudah dipindai webcam.
 
-Fields: nama, no. HP, alamat. Email appears read-only. Password and PIN changes are separate actions. Keep account settings quiet and utilitarian.
+```text
+QR Saya
 
-## 7. Interaction & Motion
+Tunjukkan QR ini kepada
+petugas Rumah Hijau.
 
-Motion should clarify state changes, not decorate the interface.
+        [ QR ]
 
-Use short 150–250ms transitions for tabs, chips, buttons, and accordions. Use 250–400ms for page-level hero/QR presentation or onboarding transitions. Avoid continuous animations except loading indicators.
+Kode: XXXX-XXXX
 
-Important feedback patterns:
+Sebelum setor:
+✓ Sampah bersih
+✓ Sampah sudah dipilah
+✓ Siapkan QR
+```
 
-- Save → progress indicator → success state.
-- Verification → confirmation dialog → completed status.
-- Exchange → PIN → pending/success/failure state.
-- Notification → unread badge → read state.
-- Chatbot → sending indicator → response → error fallback.
+QR berisi kode unik acak, bukan ID berurutan.
 
-## 8. Empty, Loading, Error & Disabled States
+---
 
-Every data-driven screen needs explicit non-happy paths.
+# 6.7 Harga Sampah
 
-### Empty
+Tampilan:
 
-Use an icon or quiet illustration, a one-sentence explanation, and one relevant CTA. Example: "Belum ada setoran" + "Setor sampah pertamamu di Rumah Hijau."
+```text
+Harga Sampah
 
-### Loading
+[ Semua ] [ Plastik ] [ Kertas ] ...
 
-Prefer skeleton rows or unobtrusive progress indicators over blank screens.
+Botol Plastik
+Plastik
+Rp1.800 / kg
+Diperbarui 24 Sep 2026
 
-### Error
+Kardus
+Kertas
+Rp1.500 / kg
+Diperbarui 24 Sep 2026
+```
 
-Explain what failed and what the user can do next. Do not expose technical API errors.
+Fokus mobile adalah **harga beli nasabah**, bukan harga jual pengepul.
 
-### Disabled
+---
 
-Use reduced contrast but preserve readable text. Disabled primary actions must still communicate the reason where that reason is not obvious.
+# 6.8 Riwayat
 
-## 9. Content & Copy Rules
+Gunakan list dengan status yang jelas.
 
-Language: **Bahasa Indonesia**.
+```text
+24 Sep 2026 • 14:05 WIB
 
-Tone: friendly, concise, concrete, and trustworthy. Avoid hype, gamification language, or unnecessary English terminology.
+Botol Plastik + Kardus
+2,50 kg
 
-Use the PRD's display formats:
+Rp4.500
 
-- Rupiah: `Rp1.800`
-- Weight: `1,25 kg`
-- Date/time: `24 Sep 2026 14:05 WIB`
+[ SELESAI ]
+```
 
-Preferred verbs: "Setor", "Tunjukkan", "Lihat", "Simpan", "Verifikasi", "Ajukan", "Tukar", "Baca", "Hubungi".
+Filter F2:
 
-Avoid legacy terms that are no longer valid in Proyek 3: **koin, misi, reward, harga koin, bank sampah terdekat, tukarkan koin**.
+```text
+Tanggal mulai
+Tanggal akhir
+Jenis transaksi
+Status
+```
 
-## 10. Legacy UI → Proyek 3 Migration Rules
+---
 
-- Replace **Koin** with **Saldo Rupiah**.
-- Replace **Tukarkan Koin** with **Tukar Saldo**.
-- Remove **Target Sampah / Misi** completely.
-- Remove **Cek Bank Sampah** as a discovery feature; replace with a single **Rumah Hijau** location/schedule page.
-- Replace old four-item bottom navigation with **Beranda / Harga / QR / Edukasi / Profil**.
-- Keep the green brand family, Poppins typography, rounded cards, and Material 3 foundation, but reduce excessive pills and layered cards.
-- Make the QR a first-class navigation action.
-- Make transaction value and status more prominent than gamification metrics.
-- Use a single-partner mental model: the user is always interacting with Rumah Hijau.
+# 6.9 Detail Setoran
 
-## 11. Strict Mobile-Only Stitch Rules
+Field minimum:
 
-Stitch must interpret this document as a **mobile app design specification**, not a web design system.
+- ID transaksi
+- Tanggal & jam
+- Jenis sampah
+- Berat
+- Harga/kg
+- Subtotal
+- Total berat
+- Total nilai
+- Status
 
-- Generate **Android phone screens only**.
-- Use **portrait orientation only** unless the user explicitly asks for landscape.
-- Use bottom navigation, mobile app bars, sheets, dialogs, and touch-friendly controls rather than sidebars, desktop navbars, or web page headers.
-- Do not generate desktop/tablet variants.
-- Do not introduce hover states, mouse-first interactions, mega menus, desktop tables, web dashboard layouts, or responsive website breakpoints.
-- Keep content vertically scrollable when it exceeds the viewport.
-- Design for one-handed and thumb-friendly interaction where practical.
-- Preserve Android system safe areas around status bar, navigation/gesture bar, and keyboard.
-- Treat the center QR item as a mobile navigation action, not a desktop shortcut.
-- If a prompt conflicts with this scope, prioritize this mobile-only scope and the PRD's mobile nasabah requirements.
+Gunakan tabel/list detail agar angka mudah diverifikasi.
 
-## 12. Stitch Generation Notes
+---
 
-### Language to Use
+# 6.10 Tukar Saldo
 
-Use prompt language such as:
+Flow:
 
-- "Mobile-first Android banking-style wallet UI for a digital bank-sampah app"
-- "clean, trustworthy, warm, community-oriented"
-- "single-column content with spacious vertical rhythm"
-- "green branded hero balance card"
-- "high-clarity transaction rows with status badges"
-- "elevated center QR action in bottom navigation"
-- "quiet white cards on a light neutral background"
-- "Poppins typography with strong numerical hierarchy"
+```text
+Input nominal
+      ↓
+Pilih Bank / E-wallet
+      ↓
+Isi tujuan
+      ↓
+Review
+      ↓
+PIN
+      ↓
+Saldo ditahan
+      ↓
+MENUNGGU
+```
 
-Avoid prompts such as "fun recycling game", "eco rewards dashboard", or "bank sampah marketplace" because those concepts contradict Proyek 3.
+Validasi:
 
-### Color References
+- Minimum Rp10.000.
+- Tidak boleh melebihi saldo tersedia.
+- Satu request aktif per nasabah.
+- Tanpa biaya/potongan.
 
-Use the semantic tokens above exactly when a Stitch prompt needs visual color specificity. The base brand is anchored by `#0D9146` / `#0A7A3A`, with `#26D077` as a restrained accent and `#F5F7FA` as the main canvas.
+---
 
-### Component Prompts
+# 6.11 PIN
 
-**Beranda:**
-"Create a mobile-first authenticated home screen for Setor.in at Rumah Hijau. Prioritize a large available-rupiah balance card, Rumah Hijau open/closed status, next deposit schedule, two quick actions for QR and prices, recent setoran transactions, and a small education teaser. Add a notification icon in the header, a floating chatbot action, and a five-destination bottom navigation with QR as the elevated center action. Do not include coins, missions, rewards, or bank-sampah discovery."
+First-time:
 
-**QR:**
-"Create a focused QR identity screen for Setor.in. Place a large high-contrast customer QR code in the visual center, customer name below it, and concise four-step instructions explaining how to bring clean sorted waste, show the QR to the officer, wait for weighing and verification, and receive rupiah balance. Keep the screen visually calm and action-oriented."
+```text
+Buat PIN
+[ _ _ _ _ _ _ ]
 
-**Harga:**
-"Create a mobile price-list screen for Rumah Hijau showing active recyclable waste types, category, material name, purchase price per kilogram, and last update time. Use compact readable rows, category filters, and a clear read-only presentation."
+Konfirmasi PIN
+[ _ _ _ _ _ _ ]
 
-**Tukar Saldo:**
-"Create a step-based exchange flow for a digital bank-sampah wallet. Show available saldo, minimum Rp10.000, destination type bank/e-wallet, destination details, optional save-for-next-time, a confirmation summary, and a final 6-digit PIN step. Make validation and status transitions explicit."
+[ Simpan PIN ]
+```
 
-**Chatbot:**
-"Create a lightweight Indonesian waste-management chatbot for Setor.in with suggested questions, conversation bubbles, a 500-character input limit, visible general-answer disclaimer, and graceful off-topic fallback to FAQ or Rumah Hijau contact. Do not expose balance or transaction data."
+Security state:
 
-### Incremental Iteration
+```text
+5x salah
+↓
+PIN terkunci
+↓
+15 menit
+```
 
-Generate screens in this order so the design language stabilizes early:
+---
 
-1. Beranda
-2. Login
-3. QR Saya
-4. Harga Sampah
-5. Riwayat Setoran
-6. Tukar Saldo
-7. Edukasi
-8. Lokasi & Jadwal
-9. Profil
-10. Notifikasi
-11. Chatbot
-12. Authentication support screens (Register, OTP, Forgot Password, PIN)
+# 6.12 Notifikasi
 
-After generating Beranda, use it as the visual reference for subsequent authenticated screens. Preserve the same header rhythm, card geometry, button geometry, status badge treatment, spacing scale, and bottom navigation across the product.
+Inbox:
 
-## 13. Data/Content Constraints for Mockups
+```text
+Notifikasi
 
-Use realistic Indonesian sample data without implying these values are final partner data unless provided:
+[●] Setoran berhasil
+    Setoran #ST-001 berhasil diverifikasi.
+    5 menit lalu
 
-- Example material: Botol PET, Rp1.800/kg.
-- Example weight: 1,25 kg.
-- Example timestamp: 24 Sep 2026 14:05 WIB.
-- Example exchange: Rp25.000 to an e-wallet.
+[ ] Tukar saldo ditolak
+    Alasan: ...
+    Kemarin
 
-Mark unknown partner-specific information as placeholder rather than inventing it:
+[ ] Edukasi baru
+    ...
+```
 
-- Rumah Hijau logo asset
-- Rumah Hijau complete address and coordinates
-- initial waste price catalog
-- October/November deposit dates
-- Rumah Hijau WhatsApp number
-- education article content and FAQ content
+Unread menggunakan dot/badge.
 
-## 13. Non-Negotiable Product Truths
+Push notification membuka halaman terkait.
 
-The UI must always communicate the following product model correctly:
+---
 
-- There is **one partner location: Rumah Hijau**.
-- Waste value is a **rupiah balance** calculated from **weight × purchase price per kg**.
-- Balance increases only after a deposit is verified.
-- Deposit prices are snapshot at save time and historical transactions do not change when admin prices change later.
-- Available balance and held balance are separate concepts.
-- Exchange requires at least Rp10.000 and a 6-digit PIN.
-- Only one active exchange request is allowed per customer.
-- Exchange approval is handled by admin; the customer sees clear status changes.
-- Chatbot knowledge is limited to general waste/environment/Setor.in usage and must not use personal data.
-- All date/time display is Asia/Jakarta (WIB).
+# 6.13 Edukasi
 
-## 14. Final Design Quality Bar
+Card:
 
-A generated Stitch screen is acceptable only when a user can identify the primary task within three seconds, understand the current rupiah/status state without reading every word, and reach the next meaningful action without navigating through decorative UI.
+```text
+[ Cover Image ]
 
-The redesign should look like a **real operational fintech-style utility for waste collection**, with environmental warmth carried through the brand color, imagery, and educational content—not through gamification mechanics that were removed from the product.
+Cara Memilah Sampah
+Lingkungan
+24 Sep 2026
+```
+
+Detail:
+
+```text
+Judul
+Kategori
+Tanggal
+Cover
+Isi artikel
+[ Tonton Video ] optional
+```
+
+---
+
+# 6.14 FAQ
+
+Gunakan accordion.
+
+```text
+Bagaimana cara setor sampah?
+[ + ]
+
+Bagaimana saldo bertambah?
+[ + ]
+
+Kapan Rumah Hijau buka?
+[ + ]
+```
+
+---
+
+# 6.15 Lokasi & Jadwal
+
+```text
+Rumah Hijau
+Alamat lengkap
+
+● BUKA
+
+Jadwal terdekat
+24 Oktober 2026
+08:00 – 12:00
+
+Catatan:
+...
+
+[ Petunjuk Arah ]
+
+[ WhatsApp ] optional
+```
+
+Status dihitung server berdasarkan WIB.
+
+---
+
+# 6.16 Chatbot AI
+
+Entry point:
+
+- Floating button di mobile.
+- Bisa juga diakses dari area bantuan.
+
+Chat:
+
+```text
+Setor.in Assistant
+
+Hai! Saya bisa membantu tentang
+sampah, lingkungan, dan penggunaan
+Setor.in.
+
+User:
+Apa saja sampah yang bisa disetor?
+
+AI:
+...
+```
+
+Aturan UI:
+
+- Maksimum 500 karakter.
+- Tampilkan typing/loading state.
+- Tampilkan error yang jelas.
+- Jika pertanyaan di luar topik, berikan fallback sopan.
+- Beri keterangan bahwa jawaban bersifat umum.
+- Jangan menampilkan data saldo/riwayat melalui chatbot.
+
+---
+
+# 7. Web Petugas UX
+
+## 7.1 Prinsip utama
+
+Target PRD:
+
+> Satu setoran dengan sampai 3 jenis sampah, dari scan sampai verifikasi dan struk, selesai dalam kurang dari 2 menit.
+
+Karena itu halaman Setoran Baru harus menjadi halaman paling efisien.
+
+---
+
+# 7.2 Dashboard Petugas
+
+Top KPI:
+
+```text
+Transaksi Hari Ini
+Total Berat
+Pembelian dari Nasabah
+Estimasi Penjualan
+Estimasi Selisih
+```
+
+Di bawahnya:
+
+- Transaksi terbaru
+- Top nasabah berdasarkan berat
+- Shortcut Setoran Baru
+
+CTA utama:
+
+```text
+[ + Setoran Baru ]
+```
+
+---
+
+# 7.3 Setoran Baru
+
+Layout desktop:
+
+```text
+┌───────────────────────────────────────────────┐
+│ Setoran Baru                                  │
+├───────────────────┬───────────────────────────┤
+│ Nasabah            │ Ringkasan                │
+│                   │                           │
+│ [ Scan QR ]       │ Total Berat               │
+│ [ Cari Manual ]   │ 3,50 kg                   │
+│                   │                           │
+│ Nama              │ Total Nilai               │
+│ No. HP            │ Rp8.500                   │
+│ Alamat            │                           │
+│                   │ [ Simpan Setoran ]        │
+├───────────────────┴───────────────────────────┤
+│ Rincian Sampah                                │
+│ Jenis | Berat | Harga/kg | Subtotal           │
+│ ...                                           │
+│ [+ Tambah Jenis]                              │
+└───────────────────────────────────────────────┘
+```
+
+Harga beli otomatis.
+
+Subtotal:
+
+```text
+berat × harga beli
+```
+
+Berat mendukung dua desimal.
+
+---
+
+# 7.4 Scan QR
+
+Gunakan webcam dengan `html5-qrcode`.
+
+State:
+
+```text
+Meminta akses kamera
+        ↓
+Kamera aktif
+        ↓
+Scan QR
+        ↓
+Nasabah ditemukan
+        ↓
+Tampilkan identitas
+```
+
+Fallback:
+
+```text
+Tidak bisa menggunakan kamera?
+
+[ Masukkan kode QR manual ]
+```
+
+---
+
+# 7.5 Identitas Nasabah
+
+Setelah QR berhasil:
+
+```text
+Nasabah ditemukan
+
+Nama
+Zakkiyah
+
+No. HP
+08xxxxxxxxxx
+
+Alamat
+...
+
+[ Ganti Nasabah ]
+```
+
+Tujuan: petugas memastikan orang yang benar sebelum input transaksi.
+
+---
+
+# 7.6 Status Menunggu Verifikasi
+
+Setelah klik Simpan:
+
+```text
+Setoran #ST-0001
+
+MENUNGGU VERIFIKASI
+
+Rincian:
+...
+
+[ Edit Setoran ]
+[ Batalkan Setoran ]
+[ Verifikasi ]
+```
+
+Jika dibatalkan, wajib meminta alasan.
+
+Setoran SELESAI tidak dapat diedit.
+
+---
+
+# 7.7 Verifikasi
+
+Confirmation dialog harus menampilkan:
+
+- Nama nasabah
+- Jenis sampah
+- Berat
+- Harga/kg
+- Total nilai
+
+CTA:
+
+```text
+[ Kembali ]
+[ Verifikasi Setoran ]
+```
+
+Saat berhasil, dalam satu transaksi:
+
+- status menjadi SELESAI
+- saldo bertambah
+- mutasi saldo tercatat
+- notifikasi dibuat
+
+---
+
+# 7.8 Struk
+
+Struk langsung tampil setelah verifikasi.
+
+```text
+SETOR.IN
+RUMAH HIJAU
+
+ID Transaksi
+ST-0001
+
+Nama
+...
+
+No. HP
+...
+
+Alamat
+...
+
+Rincian
+Botol Plastik   2,00 kg × Rp1.800 = Rp3.600
+Kardus          1,50 kg × Rp1.500 = Rp2.250
+
+Total Berat
+3,50 kg
+
+Total Nilai
+Rp5.850
+
+24 Sep 2026 14:05 WIB
+```
+
+CTA:
+
+```text
+[ Kembali ke Setoran Baru ]
+```
+
+Jika implementasi cetak diperlukan, gunakan layout yang juga aman untuk print.
+
+---
+
+# 7.9 Transaksi
+
+Table columns:
+
+```text
+ID
+Nasabah
+No. HP
+Alamat
+Tipe Sampah
+Berat
+Nilai
+Status
+Tanggal
+Aksi
+```
+
+Fitur:
+
+- Search
+- Date filter
+- Status filter
+- Detail
+- Cek transaksi nasabah
+- Export XLSX
+
+---
+
+# 7.10 Data Pengepul
+
+Tampilkan:
+
+```text
+Periode: [ tanggal ] – [ tanggal ]
+
+Jenis Sampah
+Total Berat
+Harga Beli
+Harga Jual
+Total Nilai Jual
+Estimasi Selisih
+```
+
+Formula:
+
+```text
+Nilai Jual = Σ(berat × harga jual snapshot)
+
+Estimasi Selisih =
+Nilai Jual - Nilai Beli
+```
+
+Jangan membuat UI yang menyiratkan stok aktual karena PRD belum mencakup pencatatan pengurangan stok.
+
+---
+
+# 7.11 Jadwal Setor
+
+Form:
+
+```text
+Tanggal
+Jam buka
+Jam tutup
+Catatan
+
+[ ] Override tutup darurat
+
+[ Simpan Jadwal ]
+```
+
+Mobile membaca jadwal ini dan menghitung status BUKA/TUTUP berdasarkan WIB.
+
+---
+
+# 8. Web Admin UX
+
+## 8.1 Dashboard
+
+KPI:
+
+```text
+Total Nasabah
+Total Kg Setoran Bulan Ini
+Total Nilai Setoran
+Total Saldo Nasabah
+Permintaan Tukar Saldo Menunggu
+```
+
+Gunakan card KPI + tabel aktivitas.
+
+---
+
+# 8.2 Kelola Nasabah
+
+Table:
+
+```text
+Nama
+Email
+No. HP
+Status
+Saldo
+Tanggal Daftar
+Aksi
+```
+
+Detail:
+
+```text
+Profil
+Saldo tersedia
+Saldo ditahan
+Riwayat setoran
+Riwayat tukar saldo
+```
+
+Saldo tidak boleh diedit manual.
+
+---
+
+# 8.3 Kelola Petugas
+
+Action:
+
+- Buat
+- Edit
+- Nonaktifkan
+- Reset password
+
+Status:
+
+```text
+AKTIF
+NONAKTIF
+```
+
+---
+
+# 8.4 Jenis Sampah & Harga
+
+Table:
+
+```text
+Jenis
+Kategori
+Harga Beli
+Harga Jual
+Status
+Updated
+Aksi
+```
+
+Form:
+
+```text
+Nama
+Kategori
+Harga beli/kg
+Harga jual/kg
+Status aktif
+
+[ Simpan ]
+```
+
+Jika harga jual < harga beli:
+
+```text
+⚠ Harga jual lebih rendah dari harga beli.
+```
+
+Simpan riwayat perubahan harga.
+
+---
+
+# 8.5 Persetujuan Tukar Saldo
+
+Table:
+
+```text
+Kode
+Nasabah
+Nominal
+Tujuan
+Status
+Tanggal
+Aksi
+```
+
+Detail harus memperlihatkan:
+
+- Nasabah
+- Nominal
+- Jenis tujuan
+- Nama bank/e-wallet
+- Nomor tujuan
+- Nama pemilik
+- Saldo
+- Status
+
+Action:
+
+```text
+[ Setujui ]
+[ Tolak ]
+```
+
+Tolak membutuhkan alasan.
+
+---
+
+# 8.6 Edukasi
+
+CMS sederhana:
+
+```text
+Judul
+Kategori
+Cover
+Isi rich text
+Video URL
+Status: Draft / Terbit
+```
+
+Saat artikel pertama kali diterbitkan, sistem mengirim notifikasi edukasi baru.
+
+---
+
+# 8.7 Audit Log
+
+Read-only.
+
+Table:
+
+```text
+Waktu
+User
+Aksi
+Entitas
+ID
+Ringkasan Perubahan
+IP
+```
+
+Gunakan expandable detail untuk `data_lama` dan `data_baru`.
+
+---
+
+# 9. Responsive Rules
+
+## Mobile
+
+Target:
+
+- Android 8.0+
+- Fokus portrait.
+- Touch target minimum sekitar 44–48 px.
+- Hindari tabel lebar.
+- Gunakan bottom navigation.
+- Gunakan bottom sheet bila lebih natural daripada modal penuh.
+
+## Web
+
+Target:
+
+- Desktop.
+- Chrome/Edge terbaru.
+- Minimum comfortable width sekitar 1024 px.
+- Sidebar persistent.
+- Table menggunakan horizontal scroll jika data tidak dapat dipadatkan tanpa kehilangan informasi.
+
+---
+
+# 10. Empty, Loading, Error & Success States
+
+Setiap screen data-driven wajib mempunyai state berikut:
+
+```text
+Loading
+Empty
+Success
+Error
+```
+
+## Empty
+
+Contoh riwayat:
+
+```text
+Belum ada transaksi
+
+Setoran kamu akan muncul di sini
+setelah transaksi berhasil.
+```
+
+## Error
+
+Jangan:
+
+```text
+Error 500
+```
+
+Gunakan:
+
+```text
+Data belum dapat dimuat
+
+Periksa koneksi internet dan coba lagi.
+
+[ Coba Lagi ]
+```
+
+## Success
+
+Gunakan feedback singkat:
+
+```text
+Setoran berhasil diverifikasi.
+Saldo kamu telah diperbarui.
+```
+
+---
+
+# 11. Accessibility & Usability
+
+- Jangan menggunakan warna sebagai satu-satunya indikator.
+- Gunakan label dan icon secara bersamaan.
+- Kontras teks harus memadai.
+- Error harus menjelaskan cara memperbaiki input.
+- Primary action konsisten.
+- Hindari istilah teknis backend pada UI.
+- Gunakan Bahasa Indonesia.
+- Angka rupiah dan berat harus mudah dipindai secara visual.
+
+---
+
+# 12. Data Formatting
+
+Ikuti BR-19 secara konsisten.
+
+### Rupiah
+
+```text
+Rp1.800
+Rp10.000
+Rp125.500
+```
+
+### Berat
+
+```text
+1,25 kg
+0,50 kg
+10,00 kg
+```
+
+### Date time
+
+```text
+24 Sep 2026 14:05 WIB
+```
+
+Timezone:
+
+```text
+Asia/Jakarta
+```
+
+---
+
+# 13. Security UX
+
+Jangan tampilkan informasi sensitif secara berlebihan.
+
+## PIN
+
+- Jangan pernah menampilkan PIN.
+- Input menggunakan masked field.
+- Beri feedback ketika PIN salah.
+- Setelah 5 kali salah, tampilkan waktu lock 15 menit.
+
+## Rekening / E-wallet
+
+Gunakan masking jika memungkinkan:
+
+```text
+BCA
+****1234
+```
+
+## OTP
+
+- Jangan tampilkan OTP di UI selain input yang diberikan user.
+- Jangan menampilkan OTP dari API.
+- Jangan menampilkan OTP di error/log.
+
+---
+
+# 14. Critical User Flows
+
+## 14.1 Registrasi
+
+```text
+Splash
+ ↓
+Register
+ ↓
+Input Data
+ ↓
+OTP
+ ↓
+Akun Aktif
+ ↓
+QR Dibuat
+ ↓
+Beranda
+```
+
+## 14.2 Setor Sampah
+
+```text
+Nasabah menunjukkan QR
+ ↓
+Petugas Scan
+ ↓
+Identitas Nasabah
+ ↓
+Input Jenis + Berat
+ ↓
+Simpan
+ ↓
+MENUNGGU_VERIFIKASI
+ ↓
+Verifikasi
+ ↓
+SELESAI
+ ↓
+Saldo Bertambah
+ ↓
+Notifikasi
+ ↓
+Struk
+```
+
+## 14.3 Tukar Saldo
+
+```text
+Tukar Saldo
+ ↓
+Input Nominal
+ ↓
+Pilih Tujuan
+ ↓
+Review
+ ↓
+PIN
+ ↓
+Saldo Ditahan
+ ↓
+MENUNGGU
+ ↓
+Admin
+ ├── Tolak → Saldo Kembali
+ └── Setujui
+       ↓
+     Simulasi → BERHASIL
+       atau
+     Payout → DIPROSES → BERHASIL/GAGAL
+```
+
+## 14.4 Chatbot
+
+```text
+Open Chatbot
+ ↓
+Input ≤ 500 karakter
+ ↓
+Backend
+ ↓
+Gemini
+ ↓
+Jawaban
+```
+
+Jika out of scope:
+
+```text
+Pertanyaan di luar topik
+ ↓
+Fallback
+ ↓
+FAQ / Kontak Rumah Hijau
+```
+
+---
+
+# 15. Design Constraints
+
+Jangan memasukkan kembali fitur Proyek 2:
+
+- Koin
+- Misi
+- Reward
+- Harga koin
+- Banyak bank sampah
+
+Jangan membuat:
+
+- Pencairan uang sungguhan sebagai requirement wajib.
+- Pendaftaran nasabah oleh petugas.
+- iOS.
+- Play Store distribution.
+- Google Maps SDK.
+- Chatbot yang membaca saldo atau riwayat pribadi.
+
+---
+
+# 16. Screen Checklist
+
+## Mobile F1
+
+- [ ] Splash
+- [ ] Login
+- [ ] Register
+- [ ] OTP
+- [ ] Forgot Password
+- [ ] Home
+- [ ] QR
+- [ ] Harga Sampah
+- [ ] Riwayat Setoran
+- [ ] Detail Setoran
+
+## Mobile F2
+
+- [ ] Google Login
+- [ ] Tukar Saldo
+- [ ] Review Tukar Saldo
+- [ ] Input PIN
+- [ ] Kelola PIN
+- [ ] Notifikasi
+- [ ] Edukasi
+- [ ] Detail Edukasi
+- [ ] FAQ
+- [ ] Lokasi
+- [ ] Jadwal
+- [ ] Chatbot
+- [ ] Edit Akun
+
+## Web Petugas F1
+
+- [ ] Login
+- [ ] Dashboard
+- [ ] Setoran Baru
+- [ ] Scan QR
+- [ ] Cari Nasabah
+- [ ] Input Multi Sampah
+- [ ] Menunggu Verifikasi
+- [ ] Verifikasi
+- [ ] Struk
+- [ ] Transaksi
+- [ ] Detail Transaksi
+- [ ] Data Pengepul
+- [ ] Export XLSX
+
+## Web Petugas F2
+
+- [ ] Jadwal Setor
+- [ ] Override Buka/Tutup
+
+## Web Admin F1
+
+- [ ] Login
+- [ ] Dashboard
+- [ ] Nasabah
+- [ ] Detail Nasabah
+- [ ] Petugas
+- [ ] Jenis Sampah
+- [ ] Harga
+- [ ] Riwayat Harga
+- [ ] Setoran
+- [ ] Data Pengepul
+
+## Web Admin F2
+
+- [ ] Tukar Saldo
+- [ ] Detail Tukar Saldo
+- [ ] Edukasi
+- [ ] Dashboard Lengkap
+- [ ] Audit Log
+
+---
+
+# 17. Acceptance Checklist untuk Design
+
+Desain dianggap siap diimplementasikan jika:
+
+- [ ] Semua screen F1 mempunyai flow lengkap.
+- [ ] Primary action setiap screen jelas.
+- [ ] Semua status transaksi mempunyai visual + teks.
+- [ ] Semua form memiliki validation/error state.
+- [ ] Empty/loading/error state tersedia.
+- [ ] Format rupiah sesuai PRD.
+- [ ] Format berat dua desimal.
+- [ ] Format waktu WIB.
+- [ ] QR mudah dipindai.
+- [ ] Alur setor dapat dilakukan tanpa langkah UI yang tidak diperlukan.
+- [ ] Struk memuat seluruh field P-04.
+- [ ] Tukar saldo menampilkan saldo tersedia/ditahan dengan jelas.
+- [ ] Chatbot tidak mengesankan bahwa ia dapat mengakses data pribadi.
+- [ ] Tidak ada fitur koin, misi, reward, atau multi-bank-sampah.
+- [ ] Desain menggunakan identitas Rumah Hijau setelah asset resmi tersedia.
+
+---
+
+# 18. Design-to-Development Handoff
+
+Setiap screen yang masuk development harus mempunyai:
+
+1. Nama screen.
+2. Tujuan screen.
+3. Entry point.
+4. Primary action.
+5. Secondary action.
+6. Semua state:
+   - loading
+   - empty
+   - error
+   - success
+   - disabled
+7. Validasi form.
+8. Navigation destination.
+9. Data yang ditampilkan.
+10. Permission/security requirement jika ada.
+
+Contoh handoff:
+
+```text
+Screen: Setoran Baru
+
+Role:
+Petugas
+
+Entry:
+Sidebar → Setoran Baru
+
+Primary action:
+Simpan Setoran
+
+Dependencies:
+- Data nasabah
+- Jenis sampah aktif
+- Harga beli aktif
+
+States:
+- Initial
+- QR scanning
+- Nasabah selected
+- Input item
+- Saving
+- Menunggu verifikasi
+- Error
+
+Next:
+Verifikasi / Batalkan / Edit
+```
+
+---
+
+# 19. Source of Truth
+
+Prioritas ketika terjadi konflik:
+
+1. **PRD Setor.in Proyek 3**
+2. Requirement/acceptance criteria yang disetujui tim
+3. DESIGN.md ini untuk keputusan visual dan UX
+4. Implementasi kode
+
+Jika DESIGN.md bertentangan dengan PRD, **PRD harus menang** dan DESIGN.md harus diperbarui.
+
+---
+
+# 20. Catatan yang Belum Final
+
+PRD masih menyatakan beberapa data perlu disediakan tim/mitra:
+
+- Logo Rumah Hijau
+- Alamat lengkap dan koordinat
+- Daftar jenis sampah
+- Harga beli dan jual awal
+- Tanggal setor Oktober dan November 2026
+- Nomor WhatsApp Rumah Hijau
+- Artikel edukasi awal
+- FAQ awal
+
+Jangan mengunci data tersebut ke desain sebagai data final sebelum diberikan.
+
+---
+
+## Referensi Requirement
+
+Dokumen ini diturunkan dari:
+
+- PRD Setor.in Proyek 3 v1.0
+- Bagian 2 — Tujuan & Ruang Lingkup
+- Bagian 3 — Peran Pengguna & Hak Akses
+- Bagian 5 — Perubahan dari Proyek 2
+- Bagian 6 — Aturan Bisnis
+- Bagian 7 — Kebutuhan Fungsional Mobile
+- Bagian 8 — Kebutuhan Fungsional Web Petugas
+- Bagian 9 — Kebutuhan Fungsional Web Admin
+- Bagian 10 — Alur Utama
+- Bagian 14 — Kebutuhan Non-Fungsional
+- Bagian 17 — Kriteria Penerimaan
+- Bagian 18 — Data yang Dibutuhkan
+
+**End of DESIGN.md**
