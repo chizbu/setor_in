@@ -554,8 +554,67 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   );
 }
 
-class FaqScreen extends StatelessWidget {
+class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
+  @override
+  State<FaqScreen> createState() => _FaqScreenState();
+}
+
+class _FaqScreenState extends State<FaqScreen> {
+  bool _loading = true;
+  String? _error;
+  List<(String, String)> _entries = FaqScreen.entries;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (mounted)
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    final result = await ApiService().getFaqContext();
+    final raw = result['data'];
+    final rows = raw is Map
+        ? (raw['data'] ?? raw['faqs'] ?? raw['kategori'])
+        : raw;
+    final parsed = <(String, String)>[];
+    if (result['success'] == true && rows is List) {
+      for (final row in rows.whereType<Map>()) {
+        final nested = row['faqs'] ?? row['items'] ?? row['pertanyaan'];
+        if (nested is List) {
+          for (final faq in nested.whereType<Map>()) {
+            final question =
+                (faq['pertanyaan'] ?? faq['question'] ?? faq['tanya'] ?? '')
+                    .toString();
+            final answer = (faq['jawaban'] ?? faq['answer'] ?? faq['isi'] ?? '')
+                .toString();
+            if (question.isNotEmpty && answer.isNotEmpty)
+              parsed.add((question, answer));
+          }
+        } else {
+          final question =
+              (row['pertanyaan'] ?? row['question'] ?? row['tanya'] ?? '')
+                  .toString();
+          final answer = (row['jawaban'] ?? row['answer'] ?? row['isi'] ?? '')
+              .toString();
+          if (question.isNotEmpty && answer.isNotEmpty)
+            parsed.add((question, answer));
+        }
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      if (parsed.isNotEmpty) _entries = parsed;
+      if (result['success'] != true) _error = result['message']?.toString();
+      _loading = false;
+    });
+  }
+
   static const entries = <(String, String)>[
     (
       'Sampah apa yang bisa disetor?',
@@ -601,39 +660,53 @@ class FaqScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PrdScreenFrame(
     title: 'Pertanyaan umum',
-    child: ListView(
-      padding: const EdgeInsets.all(16),
-      children: entries
-          .map(
-            (e) => Card(
-              color: Colors.white,
-              elevation: 0,
-              margin: const EdgeInsets.only(bottom: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: ExpansionTile(
-                title: Text(
-                  e.$1,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: kText,
+    action: IconButton(
+      onPressed: _load,
+      icon: const Icon(Icons.refresh_rounded),
+    ),
+    child: _loading
+        ? const Center(child: CircularProgressIndicator(color: kPrimary))
+        : ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              if (_error != null && _entries.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Text(
+                    'Menampilkan FAQ yang tersimpan. ${_error!}',
+                    style: const TextStyle(color: kTextSoft, fontSize: 12),
                   ),
                 ),
-                iconColor: kPrimary,
-                collapsedIconColor: kTextSoft,
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                children: [
-                  Text(
-                    e.$2,
-                    style: const TextStyle(color: kTextSoft, height: 1.5),
+              ..._entries.map(
+                (e) => Card(
+                  color: Colors.white,
+                  elevation: 0,
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                ],
+                  child: ExpansionTile(
+                    title: Text(
+                      e.$1,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: kText,
+                      ),
+                    ),
+                    iconColor: kPrimary,
+                    collapsedIconColor: kTextSoft,
+                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    children: [
+                      Text(
+                        e.$2,
+                        style: const TextStyle(color: kTextSoft, height: 1.5),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          )
-          .toList(),
-    ),
+            ],
+          ),
   );
 }
 
