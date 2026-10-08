@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+
 import 'app_theme.dart';
 import 'login_screen.dart';
+import '../../services/api_service.dart';
 
 class NewPasswordScreen extends StatefulWidget {
   final String email;
   final String otp;
 
-  const NewPasswordScreen({
-    super.key,
-    required this.email,
-    required this.otp,
-  });
+  const NewPasswordScreen({super.key, required this.email, required this.otp});
 
   @override
   State<NewPasswordScreen> createState() => _NewPasswordScreenState();
@@ -21,15 +19,15 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final TextEditingController _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
-  void _handleSubmit() async {
+  Future<void> _handleSubmit() async {
     final password = _passwordController.text.trim();
     final confirm = _confirmController.text.trim();
 
     if (password.isEmpty || confirm.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Harap isi semua kolom')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Harap isi semua kolom')));
       return;
     }
 
@@ -41,20 +39,29 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     }
 
     if (password != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password tidak cocok')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Password tidak cocok')));
       return;
     }
 
-    // TODO: Hubungkan ke API reset password
-    // Kirim: widget.email, widget.otp, password ke endpoint reset
-    // Contoh body:
-    // {
-    //   "email": widget.email,
-    //   "otp": widget.otp,
-    //   "new_password": password
-    // }
+    setState(() => _isLoading = true);
+    final result = await ApiService().resetPassword(
+      email: widget.email,
+      otp: widget.otp,
+      password: password,
+    );
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    if (result['success'] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['message']?.toString() ?? 'Password belum berhasil diubah.',
+          ),
+        ),
+      );
+      return;
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -105,8 +112,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
           decoration: InputDecoration(
             hintText: 'Masukan password',
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             filled: true,
             fillColor: Colors.grey.shade50,
             enabledBorder: OutlineInputBorder(
@@ -119,7 +128,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                obscure
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
                 color: Colors.grey.shade500,
                 size: 20,
               ),
@@ -151,8 +162,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: Colors.grey.shade300, width: 1.5),
+                    border: Border.all(color: Colors.grey.shade300, width: 1.5),
                   ),
                   child: const Icon(
                     Icons.chevron_left,
@@ -215,7 +225,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _handleSubmit,
+                  onPressed: _isLoading ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimary,
                     foregroundColor: Colors.white,
@@ -224,13 +234,22 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Simpan Password',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Simpan Password',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],

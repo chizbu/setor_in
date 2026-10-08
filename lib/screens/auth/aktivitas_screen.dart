@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -14,6 +15,7 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
   List<dynamic> _allAktivitas = [];
   List<dynamic> _filteredAktivitas = [];
   String _selectedFilter = 'Semua';
+  String? _error;
 
   @override
   void initState() {
@@ -22,8 +24,13 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
   }
 
   Future<void> _fetchAktivitas() async {
-    setState(() => _isLoading = true);
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
     final res = await ApiService().getAktivitas();
+    if (!mounted) return;
     if (res['success']) {
       setState(() {
         _allAktivitas = res['data'] ?? [];
@@ -31,12 +38,10 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
         _isLoading = false;
       });
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Gagal mengambil data')),
-        );
-        setState(() => _isLoading = false);
-      }
+      setState(() {
+        _error = res['message']?.toString() ?? 'Riwayat belum dapat dimuat.';
+        _isLoading = false;
+      });
     }
   }
 
@@ -44,9 +49,13 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
     if (_selectedFilter == 'Semua') {
       _filteredAktivitas = _allAktivitas;
     } else if (_selectedFilter == 'Setor') {
-      _filteredAktivitas = _allAktivitas.where((x) => x['type'] == 'setor').toList();
-    } else if (_selectedFilter == 'Misi') {
-      _filteredAktivitas = _allAktivitas.where((x) => x['type'] == 'misi').toList();
+      _filteredAktivitas = _allAktivitas
+          .where((x) => x['type'] == 'setor')
+          .toList();
+    } else if (_selectedFilter == 'Tukar saldo') {
+      _filteredAktivitas = _allAktivitas
+          .where((x) => x['type'] == 'tukar_saldo')
+          .toList();
     }
   }
 
@@ -58,9 +67,13 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
         return kPrimary;
       case 'pending':
       case 'proses':
+      case 'menunggu':
+      case 'diproses':
         return kWarning;
       case 'batal':
       case 'tolak':
+      case 'ditolak':
+      case 'gagal':
         return kDanger;
       default:
         return kTextSoft;
@@ -71,8 +84,8 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
     switch (type) {
       case 'setor':
         return Icons.recycling_rounded;
-      case 'misi':
-        return Icons.flag_rounded;
+      case 'tukar_saldo':
+        return Icons.account_balance_wallet_outlined;
       default:
         return Icons.history_rounded;
     }
@@ -82,7 +95,7 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
     switch (type) {
       case 'setor':
         return kPrimary;
-      case 'misi':
+      case 'tukar_saldo':
         return kInfo;
       default:
         return kTextSoft;
@@ -112,10 +125,14 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
               onRefresh: _fetchAktivitas,
               color: kPrimary,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: kPrimary))
+                  ? const Center(
+                      child: CircularProgressIndicator(color: kPrimary),
+                    )
+                  : _error != null && _allAktivitas.isEmpty
+                  ? _buildErrorState()
                   : _filteredAktivitas.isEmpty
-                      ? _buildEmptyState()
-                      : _buildListView(),
+                  ? _buildEmptyState()
+                  : _buildListView(),
             ),
           ),
         ],
@@ -124,7 +141,7 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
   }
 
   Widget _buildFilterBar() {
-    final filters = ['Semua', 'Setor', 'Misi'];
+    final filters = ['Semua', 'Setor', 'Tukar saldo'];
     return Container(
       height: 60,
       color: Colors.white,
@@ -199,19 +216,43 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
             const SizedBox(height: 8),
             Text(
               _selectedFilter == 'Semua'
-                  ? 'Ayo lakukan setor sampah pertama Anda untuk mengumpulkan koin!'
+                  ? 'Setoran dan penukaran saldo Anda akan muncul di sini.'
                   : 'Tidak ada aktivitas untuk kategori $_selectedFilter.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13,
-                color: kTextSoft,
-              ),
+              style: const TextStyle(fontSize: 13, color: kTextSoft),
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildErrorState() => ListView(
+    physics: const AlwaysScrollableScrollPhysics(),
+    children: [
+      SizedBox(height: MediaQuery.of(context).size.height * .28),
+      Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off_outlined, color: kTextSoft, size: 42),
+            const SizedBox(height: 12),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: kTextSoft, height: 1.4),
+            ),
+            const SizedBox(height: 10),
+            TextButton.icon(
+              onPressed: _fetchAktivitas,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Coba lagi'),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 
   Widget _buildListView() {
     return ListView.builder(
@@ -269,10 +310,7 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
                       const SizedBox(height: 4),
                       Text(
                         item['detail'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: kTextSoft,
-                        ),
+                        style: const TextStyle(fontSize: 11, color: kTextSoft),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -291,7 +329,8 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(status).withValues(alpha: 0.12),
+                              color: _getStatusColor(status)
+                                  .withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

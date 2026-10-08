@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'otp_screen.dart';
+import '../../services/api_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -15,23 +17,29 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   static const Color primaryGreen = Color(0xFF26D077);
 
-  void _handleNext() async {
+  Future<void> _handleNext() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
+      final result = await ApiService().forgotPassword(
+        _emailController.text.trim(),
+      );
+      if (!mounted) return;
       setState(() => _isLoading = false);
-
-      if (mounted) {
-        // ✅ Navigasi ke halaman OTP setelah loading selesai
+      if (result['success'] == true) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => OtpScreen(
               email: _emailController.text.trim(),
               source: 'reset_password',
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['message']?.toString() ?? 'Kode OTP belum dapat dikirim.',
             ),
           ),
         );
@@ -123,10 +131,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
                   decoration: InputDecoration(
                     hintText: 'contoh : user@gmail.com',
                     hintStyle: TextStyle(
