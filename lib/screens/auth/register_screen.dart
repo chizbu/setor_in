@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'app_theme.dart';
 import 'login_screen.dart';
 import 'otp_screen.dart';
@@ -17,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _konfirmasiController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureKonfirmasi = true;
@@ -29,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _konfirmasiController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -39,17 +42,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final konfirmasi = _konfirmasiController.text;
     final phone = _phoneController.text.trim();
 
-    if (nama.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty) {
+    final alamat = _addressController.text.trim();
+    if (nama.isEmpty ||
+        email.isEmpty ||
+        alamat.isEmpty ||
+        password.isEmpty ||
+        phone.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Semua field harus diisi')));
+      return;
+    }
+
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua field harus diisi')),
+        const SnackBar(content: Text('Masukkan alamat email yang valid')),
+      );
+      return;
+    }
+
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password minimal 8 karakter')),
       );
       return;
     }
 
     if (password != konfirmasi) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password tidak cocok')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Password tidak cocok')));
       return;
     }
 
@@ -64,6 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       password: password,
       passwordConfirmation: konfirmasi,
       noTelepon: phone,
+      alamat: alamat,
     );
 
     if (!mounted) return;
@@ -79,23 +101,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
           backgroundColor: Colors.green,
         ),
       );
-      
+
       // Navigasi ke OTP screen setelah validasi & simpan ke DB sukses
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => OtpScreen(
-            email: email,
-            source: 'register',
-          ),
+          builder: (_) => OtpScreen(email: email, source: 'register'),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
       );
     }
   }
@@ -135,7 +151,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ? GestureDetector(
                 onTap: onToggleObscure,
                 child: Icon(
-                  obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  obscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                   color: Colors.grey,
                   size: 20,
                 ),
@@ -253,7 +271,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 prefixIcon: Icons.lock_outline,
                 isPassword: true,
                 obscure: _obscurePassword,
-                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                onToggleObscure: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               const SizedBox(height: 16),
               _buildLabel('Konfirmasi Password'),
@@ -263,11 +282,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 prefixIcon: Icons.lock_outline,
                 isPassword: true,
                 obscure: _obscureKonfirmasi,
-                onToggleObscure: () => setState(() => _obscureKonfirmasi = !_obscureKonfirmasi),
+                onToggleObscure: () =>
+                    setState(() => _obscureKonfirmasi = !_obscureKonfirmasi),
               ),
               const SizedBox(height: 16),
               _buildLabel('Nomor telpon'),
               _buildPhoneField(),
+              const SizedBox(height: 16),
+              _buildLabel('Alamat'),
+              _buildTextField(
+                controller: _addressController,
+                hint: 'Alamat tempat tinggal',
+                prefixIcon: Icons.location_on_outlined,
+              ),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
@@ -293,7 +320,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         )
                       : const Text(
                           'Daftar',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                 ),
               ),
@@ -308,7 +338,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                     ),
                     child: const Text(
                       'Masuk disini',

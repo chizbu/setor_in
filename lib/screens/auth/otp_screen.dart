@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import 'app_theme.dart';
 import 'login_screen.dart';
 import 'new_password_screen.dart'; // ← tambahkan import ini
@@ -9,22 +11,20 @@ class OtpScreen extends StatefulWidget {
   final String email;
   final String source; // 'register' atau 'reset_password'
 
-  const OtpScreen({
-    super.key,
-    required this.email,
-    required this.source,
-  });
+  const OtpScreen({super.key, required this.email, required this.source});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
-  int _secondsRemaining = 45;
+  int _secondsRemaining = 60;
   bool _canResend = false;
   bool _isLoading = false;
   Timer? _timer;
@@ -37,7 +37,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   void _startTimer() {
     setState(() {
-      _secondsRemaining = 45;
+      _secondsRemaining = 60;
       _canResend = false;
     });
     _timer?.cancel();
@@ -51,23 +51,41 @@ class _OtpScreenState extends State<OtpScreen> {
     });
   }
 
-  void _handleResend() {
-    if (_canResend) {
-      // TODO: Hubungkan ke API kirim ulang OTP
+  Future<void> _handleResend() async {
+    if (_canResend && !_isLoading) {
+      setState(() => _isLoading = true);
+      final result = await ApiService().resendOtp(widget.email);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      if (result['success'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['message']?.toString() ?? 'OTP belum dapat dikirim ulang.',
+            ),
+          ),
+        );
+        return;
+      }
       for (var c in _controllers) {
         c.clear();
       }
       _focusNodes[0].requestFocus();
       _startTimer();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kode OTP baru telah dikirim ke email Anda.'),
+        ),
+      );
     }
   }
 
   Future<void> _handleConfirm() async {
     final otp = _controllers.map((c) => c.text).join();
     if (otp.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukan 6 digit kode OTP')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Masukan 6 digit kode OTP')));
       return;
     }
 
@@ -91,7 +109,9 @@ class _OtpScreenState extends State<OtpScreen> {
             content: const Text('Akun berhasil diaktifkan! Silakan masuk.'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pushAndRemoveUntil(
@@ -104,20 +124,14 @@ class _OtpScreenState extends State<OtpScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => NewPasswordScreen(
-              email: widget.email,
-              otp: otp,
-            ),
+            builder: (_) => NewPasswordScreen(email: widget.email, otp: otp),
           ),
         );
       }
     } else {
       // Tampilkan error (OTP salah/expired)
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
       );
     }
   }
@@ -206,8 +220,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: Colors.grey.shade300, width: 1.5),
+                    border: Border.all(color: Colors.grey.shade300, width: 1.5),
                   ),
                   child: const Icon(
                     Icons.chevron_left,
@@ -269,8 +282,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 children: [
                   Text(
                     'Tidak menerima pesan dari email? ',
-                    style:
-                        TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                 ],
               ),

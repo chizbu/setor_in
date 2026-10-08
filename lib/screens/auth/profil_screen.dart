@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:proyek_2_setor_in/screens/auth/app_theme.dart';
+
 import 'edit_profil_screen.dart';
 import 'user_data.dart';
 import 'login_screen.dart';
 import 'bantuan_screen.dart'; // ← tambahkan import ini
 import '../../services/api_service.dart';
+import 'prd_screens.dart';
+import 'notifikasi_screen.dart';
 
 class ProfilScreen extends StatefulWidget {
   final VoidCallback? onUpdate;
@@ -36,7 +39,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       _nama = data['nama'] ?? 'User';
       _email = data['email'] ?? '-';
       _noTelpon = data['no_telepon'] ?? '-';
-      
+
       // Sync ke UserData singleton juga
       _userData.nama = _nama;
       _userData.email = _email;
@@ -65,11 +68,14 @@ class _ProfilScreenState extends State<ProfilScreen> {
               child: Row(
                 children: [
                   const SizedBox(width: 8),
-                  const Text('Profil',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87)),
+                  const Text(
+                    'Profil',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -78,7 +84,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
             const SizedBox(height: 28),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: kPrimary))
+                  ? const Center(
+                      child: CircularProgressIndicator(color: kPrimary),
+                    )
                   : SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
@@ -97,8 +105,11 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                       )
                                     : null,
                                 child: _userData.fotoProfil == null
-                                    ? Icon(Icons.person,
-                                        size: 56, color: Colors.grey.shade400)
+                                    ? Icon(
+                                        Icons.person,
+                                        size: 56,
+                                        color: Colors.grey.shade400,
+                                      )
                                     : null,
                               ),
                               GestureDetector(
@@ -120,33 +131,48 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                   decoration: BoxDecoration(
                                     color: kPrimary,
                                     shape: BoxShape.circle,
-                                    border:
-                                        Border.all(color: Colors.white, width: 2),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                   ),
-                                  child: const Icon(Icons.edit,
-                                      size: 14, color: Colors.white),
+                                  child: const Icon(
+                                    Icons.edit,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 14),
-                          Text(_nama,
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87)),
+                          Text(
+                            _nama,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(_email,
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey.shade500)),
+                          Text(
+                            _email,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
                           const SizedBox(height: 32),
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: const Text('Personal Info',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87)),
+                            child: const Text(
+                              'Personal Info',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
                           _buildInfoItem(
@@ -155,19 +181,48 @@ class _ProfilScreenState extends State<ProfilScreen> {
                             subtitle: _noTelpon,
                           ),
                           const Divider(height: 1, color: Colors.black12),
-                          // ✅ Notifikasi dihapus
-                          // ✅ Bantuan sekarang navigasi ke BantuanScreen
+                          _buildMenuItem(
+                            icon: Icons.account_balance_wallet_outlined,
+                            label: 'Tukar saldo',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ExchangeScreen(),
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 1, color: Colors.black12),
+                          _buildMenuItem(
+                            icon: Icons.notifications_none_rounded,
+                            label: 'Notifikasi',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const NotifikasiScreen(),
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 1, color: Colors.black12),
+                          _buildMenuItem(
+                            icon: Icons.location_on_outlined,
+                            label: 'Lokasi & jadwal setor',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const LocationScreen(),
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 1, color: Colors.black12),
                           _buildMenuItem(
                             icon: Icons.help_outline,
-                            label: 'Bantuan',
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const BantuanScreen(),
-                                ),
-                              );
-                            },
+                            label: 'FAQ dan bantuan',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const FaqScreen(),
+                              ),
+                            ),
                           ),
                           const Divider(height: 1, color: Colors.black12),
                           const SizedBox(height: 36),
@@ -178,7 +233,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
                                 Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (_) => const LoginScreen()),
+                                    builder: (_) => const LoginScreen(),
+                                  ),
                                   (route) => false,
                                 );
                               }
@@ -188,11 +244,14 @@ class _ProfilScreenState extends State<ProfilScreen> {
                               children: const [
                                 Icon(Icons.logout, color: Colors.red, size: 20),
                                 SizedBox(width: 8),
-                                Text('Keluar',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.w600)),
+                                Text(
+                                  'Keluar',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -221,15 +280,19 @@ class _ProfilScreenState extends State<ProfilScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style:
-                      TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              Text(
+                title,
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              ),
               const SizedBox(height: 2),
-              Text(subtitle,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87)),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
             ],
           ),
         ],
@@ -250,8 +313,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
           children: [
             Icon(icon, color: Colors.black54, size: 26),
             const SizedBox(width: 16),
-            Text(label,
-                style: const TextStyle(fontSize: 15, color: Colors.black87)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 15, color: Colors.black87),
+            ),
           ],
         ),
       ),
