@@ -28,8 +28,8 @@ class KategoriDetailScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Colors.white.withValues(alpha: 0.2),
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 15, color: Colors.white),
+                child: const Icon(Icons.arrow_back,
+                    size: 23.6, color: Colors.white),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -54,7 +54,7 @@ class KategoriDetailScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(data['icon'] as IconData,
-                              color: Colors.white, size: 30),
+                              color: Colors.white, size: 35.4),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -65,13 +65,13 @@ class KategoriDetailScreen extends StatelessWidget {
                               const Text('Kategori Sampah',
                                   style: TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 12,
+                                      fontSize: 13.8,
                                       fontWeight: FontWeight.w500)),
                               const SizedBox(height: 4),
                               Text(data['label'],
                                   style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 22,
+                                      fontSize: 24.2,
                                       fontWeight: FontWeight.w800)),
                             ],
                           ),
@@ -95,7 +95,7 @@ class KategoriDetailScreen extends StatelessWidget {
               child: Text(
                 data['definisi'] ?? '',
                 style: const TextStyle(
-                    fontSize: 14, color: Colors.black87, height: 1.6),
+                    fontSize: 16.1, color: Colors.black87, height: 1.6),
               ),
             ),
             const SizedBox(height: 16),
@@ -123,7 +123,7 @@ class KategoriDetailScreen extends StatelessWidget {
                             Expanded(
                               child: Text(c,
                                   style: const TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16.1,
                                       color: Colors.black87,
                                       height: 1.4)),
                             ),
@@ -162,7 +162,7 @@ class KategoriDetailScreen extends StatelessWidget {
                             child: Text(
                               '${i + 1}',
                               style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 13.8,
                                   fontWeight: FontWeight.w700,
                                   color: color),
                             ),
@@ -171,7 +171,7 @@ class KategoriDetailScreen extends StatelessWidget {
                         Expanded(
                           child: Text(p,
                               style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16.1,
                                   color: Colors.black87,
                                   height: 1.4)),
                         ),
@@ -218,11 +218,11 @@ class _SectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(icon, color: color, size: 18),
+            Icon(icon, color: color, size: 21.2),
             const SizedBox(width: 8),
             Text(title,
                 style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16.1,
                     fontWeight: FontWeight.w700,
                     color: color)),
           ]),

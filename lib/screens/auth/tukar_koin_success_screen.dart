@@ -265,7 +265,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                   child: const Icon(
                     Icons.swap_horiz_rounded,
                     color: Colors.white,
-                    size: 36,
+                    size: 42.5,
                   ),
                 ),
               ],
@@ -278,7 +278,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
         const Text(
           'Memproses Penukaran...',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w800,
             color: kText,
           ),
@@ -287,7 +287,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
         Text(
           'Menukar ${widget.koinDitukar} koin ke saldo',
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16.1,
             color: kTextSoft,
           ),
         ),
@@ -345,19 +345,19 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
             color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: color, size: 20),
+          child: Icon(icon, color: color, size: 23.6),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 13, color: kTextSoft),
+            style: const TextStyle(fontSize: 14.9, color: kTextSoft),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16.1,
             fontWeight: FontWeight.w700,
             color: color,
           ),
@@ -400,7 +400,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                 child: const Icon(
                   Icons.check_rounded,
                   color: Colors.white,
-                  size: 56,
+                  size: 66.1,
                 ),
               ),
             ),
@@ -414,7 +414,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                 child: const Text(
                   'Penukaran Berhasil!',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 26.4,
                     fontWeight: FontWeight.w800,
                     color: kText,
                   ),
@@ -429,7 +429,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                 offset: Offset(0, _slideAnim.value),
                 child: const Text(
                   'Koin kamu telah berhasil ditukar ke saldo',
-                  style: TextStyle(fontSize: 14, color: kTextSoft),
+                  style: TextStyle(fontSize: 16.1, color: kTextSoft),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -465,7 +465,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                         'Detail Transaksi',
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 13,
+                          fontSize: 14.9,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -575,7 +575,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                         'Kembali ke Beranda',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontSize: 17.2,
                         ),
                       ),
                     ),
@@ -601,7 +601,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
                         style: TextStyle(
                           color: kPrimary,
                           fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontSize: 17.2,
                         ),
                       ),
                     ),
@@ -619,14 +619,14 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
   Widget _resultColumn(IconData icon, String value, String label) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white, size: 24),
+        Icon(icon, color: Colors.white, size: 28.3),
         const SizedBox(height: 8),
         Text(
           value,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w800,
-            fontSize: 18,
+            fontSize: 19.8,
           ),
         ),
         const SizedBox(height: 2),
@@ -634,7 +634,7 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
           label,
           style: const TextStyle(
             color: Colors.white70,
-            fontSize: 11,
+            fontSize: 13.8,
           ),
         ),
       ],
@@ -647,12 +647,12 @@ class _TukarKoinSuccessScreenState extends State<TukarKoinSuccessScreen>
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+          style: TextStyle(fontSize: 14.9, color: Colors.grey.shade600),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16.1,
             fontWeight: FontWeight.w700,
             color: valueColor,
           ),

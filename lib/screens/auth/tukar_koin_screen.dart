@@ -150,7 +150,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28)),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const Text('Konfirmasi Penukaran',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: kText)),
+              style: TextStyle(fontSize: 19.8, fontWeight: FontWeight.w800, color: kText)),
           const SizedBox(height: 20),
 
           // Summary
@@ -165,7 +165,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
             ),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               _summaryItem(Icons.monetization_on_rounded, '-$_koinYangDipakai koin', 'Koin Berkurang', true),
-              const Icon(Icons.arrow_forward_rounded, color: Colors.white54, size: 28),
+              const Icon(Icons.arrow_forward_rounded, color: Colors.white54, size: 33),
               _summaryItem(Icons.account_balance_wallet_outlined, '+Rp ${_fmt(_rupiahDidapat)}', 'Saldo Bertambah', false),
             ]),
           ),
@@ -216,12 +216,12 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
 
   Widget _summaryItem(IconData icon, String val, String label, bool isKoin) {
     return Column(children: [
-      Icon(icon, color: Colors.white, size: 24),
+      Icon(icon, color: Colors.white, size: 28.3),
       const SizedBox(height: 6),
       Text(val, style: TextStyle(
           color: isKoin ? Colors.red.shade200 : Colors.white,
-          fontWeight: FontWeight.w800, fontSize: 16)),
-      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          fontWeight: FontWeight.w800, fontSize: 18.4)),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13.8)),
     ]);
   }
 
@@ -229,10 +229,10 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(children: [
-        Text(label, style: const TextStyle(fontSize: 13, color: kTextSoft)),
+        Text(label, style: const TextStyle(fontSize: 14.9, color: kTextSoft)),
         const Spacer(),
         Text(val, style: TextStyle(
-            fontSize: 13,
+            fontSize: 14.9,
             fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w600,
             color: isHighlight ? kPrimary : kText)),
       ]),
@@ -258,8 +258,8 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isDismissible: false,
-      builder: (_) => WillPopScope(
-        onWillPop: () async => false,
+      builder: (_) => PopScope(
+        canPop: false,
         child: Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
@@ -273,14 +273,14 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
               child: Container(
                 width: 80, height: 80,
                 decoration: BoxDecoration(color: kPrimary.withValues(alpha: 0.12), shape: BoxShape.circle),
-                child: const Icon(Icons.check_circle_rounded, color: kPrimary, size: 48),
+                child: const Icon(Icons.check_circle_rounded, color: kPrimary, size: 56.6),
               ),
             ),
             const SizedBox(height: 18),
             const Text('Penukaran Berhasil!',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: kText)),
+                style: TextStyle(fontSize: 24.2, fontWeight: FontWeight.w800, color: kText)),
             const SizedBox(height: 8),
-            const Text('Saldo kamu telah diperbarui.', style: TextStyle(color: kTextSoft, fontSize: 13)),
+            const Text('Saldo kamu telah diperbarui.', style: TextStyle(color: kTextSoft, fontSize: 14.9)),
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(20),
@@ -303,7 +303,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
-                child: const Text('Selesai', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                child: const Text('Selesai', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17.2)),
               ),
             ),
           ]),
@@ -314,11 +314,11 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
 
   Widget _resultItem(String label, String val, Color color, IconData icon) {
     return Column(children: [
-      Icon(icon, color: color, size: 20),
+      Icon(icon, color: color, size: 23.6),
       const SizedBox(height: 4),
-      Text(label, style: const TextStyle(fontSize: 11, color: kTextSoft)),
+      Text(label, style: const TextStyle(fontSize: 13.8, color: kTextSoft)),
       const SizedBox(height: 2),
-      Text(val, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: color)),
+      Text(val, style: TextStyle(fontSize: 17.2, fontWeight: FontWeight.w800, color: color)),
     ]);
   }
 
@@ -328,19 +328,16 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kBg,
+        foregroundColor: kText,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: kText),
-          ),
+          icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Tukar Koin', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
-        centerTitle: true,
+        title: const Text('Tukar Koin', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18.4, color: kText)),
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -361,7 +358,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                 boxShadow: [BoxShadow(color: kPrimary.withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
               ),
               child: Column(children: [
-                const Text('Aset Kamu', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                const Text('Aset Kamu', style: TextStyle(color: Colors.white70, fontSize: 14.9)),
                 const SizedBox(height: 16),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                   _assetItem(Icons.monetization_on_rounded, '$_koin', 'Koin', koinColor: true),
@@ -385,12 +382,12 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
               Container(
                 width: 36, height: 36,
                 decoration: BoxDecoration(color: kWarning.withValues(alpha: 0.15), shape: BoxShape.circle),
-                child: const Icon(Icons.currency_exchange_rounded, color: kWarning, size: 18),
+                child: const Icon(Icons.currency_exchange_rounded, color: kWarning, size: 21.2),
               ),
               const SizedBox(width: 10),
               const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Kurs Penukaran', style: TextStyle(fontSize: 12, color: kTextSoft)),
-                Text('1 Koin = Rp 95 – Rp 105', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+                Text('Kurs Penukaran', style: TextStyle(fontSize: 13.8, color: kTextSoft)),
+                Text('1 Koin = Rp 95 – Rp 105', style: TextStyle(fontSize: 14.9, fontWeight: FontWeight.w700, color: kText)),
               ]),
             ]),
           ),
@@ -398,10 +395,10 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
 
           // ── Pilih Paket ──
           const Text('Pilih Paket Penukaran',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+              style: TextStyle(fontSize: 18.4, fontWeight: FontWeight.w700, color: kText)),
           const SizedBox(height: 4),
           const Text('Paket memberikan nilai lebih baik dari penukaran manual',
-              style: TextStyle(fontSize: 12, color: kTextSoft)),
+              style: TextStyle(fontSize: 13.8, color: kTextSoft)),
           const SizedBox(height: 14),
 
           GridView.builder(
@@ -424,7 +421,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text('atau masukkan sendiri',
-                  style: TextStyle(fontSize: 12, color: kTextSoft.withValues(alpha: 0.7))),
+                  style: TextStyle(fontSize: 13.8, color: kTextSoft.withValues(alpha: 0.7))),
             ),
             const Expanded(child: Divider(color: Color(0xFFE5E7EB))),
           ]),
@@ -445,7 +442,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                     activeColor: kPrimary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   ),
-                  const Text('Jumlah Kustom', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText)),
+                  const Text('Jumlah Kustom', style: TextStyle(fontSize: 16.1, fontWeight: FontWeight.w600, color: kText)),
                 ]),
               ),
               if (_useCustom) ...[
@@ -453,23 +450,23 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(children: [
-                    const Icon(Icons.monetization_on_rounded, color: kPrimary, size: 22),
+                    const Icon(Icons.monetization_on_rounded, color: kPrimary, size: 26),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: _customCtrl,
                         keyboardType: TextInputType.number,
                         onChanged: (v) => setState(() => _customKoin = int.tryParse(v) ?? 0),
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kText),
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: kText),
                         decoration: const InputDecoration(
                           hintText: '0',
-                          hintStyle: TextStyle(fontSize: 20, color: kTextSoft, fontWeight: FontWeight.w400),
+                          hintStyle: TextStyle(fontSize: 22, color: kTextSoft, fontWeight: FontWeight.w400),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(vertical: 16),
                         ),
                       ),
                     ),
-                    const Text('koin', style: TextStyle(fontSize: 14, color: kTextSoft, fontWeight: FontWeight.w600)),
+                    const Text('koin', style: TextStyle(fontSize: 16.1, color: kTextSoft, fontWeight: FontWeight.w600)),
                   ]),
                 ),
                 if (_customKoin > 0 && _customKoin <= _koin)
@@ -479,10 +476,10 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(12)),
                       child: Row(children: [
-                        const Icon(Icons.account_balance_wallet_outlined, color: kPrimary, size: 16),
+                        const Icon(Icons.account_balance_wallet_outlined, color: kPrimary, size: 18.9),
                         const SizedBox(width: 8),
                         Text('Dapat: Rp ${_fmt(_customKoin * kRatePerKoin)}',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kPrimary)),
+                            style: const TextStyle(fontSize: 14.9, fontWeight: FontWeight.w700, color: kPrimary)),
                       ]),
                     ),
                   ),
@@ -493,9 +490,9 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(color: kDanger.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
                       child: const Row(children: [
-                        Icon(Icons.warning_amber_rounded, color: kDanger, size: 16),
+                        Icon(Icons.warning_amber_rounded, color: kDanger, size: 18.9),
                         SizedBox(width: 8),
-                        Text('Koin tidak cukup', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kDanger)),
+                        Text('Koin tidak cukup', style: TextStyle(fontSize: 14.9, fontWeight: FontWeight.w600, color: kDanger)),
                       ]),
                     ),
                   ),
@@ -510,7 +507,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
               padding: const EdgeInsets.all(18),
               decoration: AppTheme.cardDecoration,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Ringkasan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                const Text('Ringkasan', style: TextStyle(fontSize: 16.1, fontWeight: FontWeight.w700, color: kText)),
                 const SizedBox(height: 12),
                 _summaryRow('Koin Digunakan', '$_koinYangDipakai koin', kWarning),
                 const SizedBox(height: 8),
@@ -523,7 +520,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
           ],
 
           // ── History ──
-          const Text('Riwayat Penukaran', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kText)),
+          const Text('Riwayat Penukaran', style: TextStyle(fontSize: 17.2, fontWeight: FontWeight.w700, color: kText)),
           const SizedBox(height: 12),
           ..._buildHistory(),
         ]),
@@ -546,7 +543,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
             _canExchange
                 ? 'Tukar $_koinYangDipakai Koin → Rp ${_fmt(_rupiahDidapat)}'
                 : 'Pilih Paket atau Masukkan Koin',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16.1),
           ),
         ),
       ),
@@ -555,13 +552,13 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
 
   Widget _assetItem(IconData icon, String val, String label, {bool koinColor = false}) {
     return Column(children: [
-      Icon(icon, color: Colors.white, size: 22),
+      Icon(icon, color: Colors.white, size: 26),
       const SizedBox(height: 4),
       Text(val, style: TextStyle(
           color: Colors.white, fontWeight: FontWeight.w800,
-          fontSize: 18,
+          fontSize: 19.8,
           shadows: koinColor ? [] : [])),
-      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13.8)),
     ]);
   }
 
@@ -592,7 +589,7 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
                   color: kWarning,
                   borderRadius: BorderRadius.only(topRight: Radius.circular(18), bottomLeft: Radius.circular(12)),
                 ),
-                child: const Text('Terlaris', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                child: const Text('Terlaris', style: TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700)),
               ),
             ),
 
@@ -612,24 +609,24 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
               Row(children: [
                 Text(p.label, style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w600,
+                    fontSize: 13.8, fontWeight: FontWeight.w600,
                     color: sel ? kPrimary : cukup ? kTextSoft : Colors.grey.shade400)),
-                if (sel) ...[const Spacer(), const Icon(Icons.check_circle_rounded, color: kPrimary, size: 18)],
+                if (sel) ...[const Spacer(), const Icon(Icons.check_circle_rounded, color: kPrimary, size: 21.2)],
               ]),
               const SizedBox(height: 6),
               Row(children: [
-                Icon(Icons.monetization_on_rounded, color: sel ? kPrimary : cukup ? kWarning : Colors.grey.shade400, size: 18),
+                Icon(Icons.monetization_on_rounded, color: sel ? kPrimary : cukup ? kWarning : Colors.grey.shade400, size: 21.2),
                 const SizedBox(width: 4),
                 Text('${p.koin} koin', style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w800,
+                    fontSize: 18.4, fontWeight: FontWeight.w800,
                     color: sel ? kPrimary : cukup ? kText : Colors.grey.shade400)),
               ]),
               const SizedBox(height: 4),
               Text('Rp ${_fmt(p.rupiah)}', style: TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w700,
+                  fontSize: 16.1, fontWeight: FontWeight.w700,
                   color: sel ? kPrimary : cukup ? kPrimary : Colors.grey.shade400)),
               Text('≈ ${p.rupPerKoin} rp/koin', style: TextStyle(
-                  fontSize: 10, color: sel ? kPrimary.withValues(alpha: 0.6) : kTextSoft)),
+                  fontSize: 12.5, color: sel ? kPrimary.withValues(alpha: 0.6) : kTextSoft)),
             ]),
           ),
         ]),
@@ -639,9 +636,9 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
 
   Widget _summaryRow(String label, String val, Color color) {
     return Row(children: [
-      Text(label, style: const TextStyle(fontSize: 13, color: kTextSoft)),
+      Text(label, style: const TextStyle(fontSize: 14.9, color: kTextSoft)),
       const Spacer(),
-      Text(val, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+      Text(val, style: TextStyle(fontSize: 14.9, fontWeight: FontWeight.w700, color: color)),
     ]);
   }
 
@@ -659,18 +656,18 @@ class _TukarKoinScreenState extends State<TukarKoinScreen>
         Container(
           width: 44, height: 44,
           decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(12)),
-          child: const Icon(Icons.swap_horiz_rounded, color: kPrimary, size: 22),
+          child: const Icon(Icons.swap_horiz_rounded, color: kPrimary, size: 26),
         ),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('${h.koin} Koin → Rp ${_fmt(h.rupiah)}',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: kText)),
-          Text(h.tanggal, style: const TextStyle(fontSize: 11, color: kTextSoft)),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.9, color: kText)),
+          Text(h.tanggal, style: const TextStyle(fontSize: 13.8, color: kTextSoft)),
         ])),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(10)),
-          child: const Text('Selesai', style: TextStyle(fontSize: 11, color: kPrimary, fontWeight: FontWeight.w600)),
+          child: const Text('Selesai', style: TextStyle(fontSize: 13.8, color: kPrimary, fontWeight: FontWeight.w600)),
         ),
       ]),
     )).toList();

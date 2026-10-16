@@ -96,6 +96,7 @@ class _BuatPinScreenState extends State<BuatPinScreen>
     if (res['success']) {
       UserData().hasPin = true;
       await UserData().simpan();
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('PIN berhasil dibuat! 🎉'),
@@ -119,12 +120,13 @@ class _BuatPinScreenState extends State<BuatPinScreen>
     final currentPin = _isStep2 ? _pin2 : _pin1;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kBg,
+        foregroundColor: kText,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
           onPressed: () {
             if (_isStep2) {
               setState(() {
@@ -137,9 +139,8 @@ class _BuatPinScreenState extends State<BuatPinScreen>
             }
           },
         ),
-        title: const Text('Buat PIN Transaksi',
-            style: TextStyle(color: Colors.black87, fontSize: 17, fontWeight: FontWeight.w600)),
-        centerTitle: true,
+        title: const Text('Buat PIN Transaksi'),
+        centerTitle: false,
       ),
       body: Column(
         children: [
@@ -150,13 +151,13 @@ class _BuatPinScreenState extends State<BuatPinScreen>
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: kPrimary.withOpacity(0.1),
+              color: kPrimary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               _isStep2 ? Icons.lock_outline : Icons.vpn_key_rounded,
               color: kPrimary,
-              size: 32,
+              size: 37.8,
             ),
           ),
           const SizedBox(height: 20),
@@ -164,14 +165,14 @@ class _BuatPinScreenState extends State<BuatPinScreen>
           // ── Title ──
           Text(
             _isStep2 ? 'Konfirmasi PIN Baru' : 'Masukkan PIN Baru',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+            style: const TextStyle(fontSize: 19.8, fontWeight: FontWeight.w600, color: Colors.black87),
           ),
           const SizedBox(height: 8),
           Text(
             _isStep2
                 ? 'Masukkan ulang PIN 6 digit Anda'
                 : 'Buat PIN 6 digit untuk keamanan transaksi',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 14.9, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 28),
 
@@ -195,7 +196,7 @@ class _BuatPinScreenState extends State<BuatPinScreen>
                     shape: BoxShape.circle,
                     color: filled ? kPrimary : Colors.grey.shade300,
                     boxShadow: filled
-                        ? [BoxShadow(color: kPrimary.withOpacity(0.3), blurRadius: 6, spreadRadius: 1)]
+                        ? [BoxShadow(color: kPrimary.withValues(alpha: 0.3), blurRadius: 6, spreadRadius: 1)]
                         : null,
                   ),
                 );
@@ -207,7 +208,7 @@ class _BuatPinScreenState extends State<BuatPinScreen>
           if (_errorMsg != null) ...[
             const SizedBox(height: 16),
             Text(_errorMsg!,
-                style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w500)),
+                style: const TextStyle(color: Colors.red, fontSize: 14.9, fontWeight: FontWeight.w500)),
           ],
 
           const SizedBox(height: 32),
@@ -262,10 +263,10 @@ class _BuatPinScreenState extends State<BuatPinScreen>
               borderRadius: BorderRadius.circular(16),
             ),
             child: key == 'DEL'
-                ? Icon(Icons.backspace_outlined, color: Colors.grey.shade700, size: 22)
+                ? Icon(Icons.backspace_outlined, color: Colors.grey.shade700, size: 26)
                 : Text(key,
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.w500, color: Colors.black87)),
+                        fontSize: 26.4, fontWeight: FontWeight.w500, color: Colors.black87)),
           ),
         );
       }).toList(),

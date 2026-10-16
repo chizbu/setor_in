@@ -11,14 +11,13 @@ import 'package:path_provider/path_provider.dart';
 
 import 'user_data.dart'; // ← TAMBAHAN: import UserData
 import '../../services/api_service.dart';
-import 'tukar_koin_success_screen.dart';
 import 'buat_pin_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 //  MODEL RIWAYAT TRANSAKSI
 // ══════════════════════════════════════════════════════════════
 
-enum JenisTransaksi { tukarKoin, transfer }
+enum JenisTransaksi { transfer, cash }
 
 class RiwayatTransaksi {
   final JenisTransaksi jenis;
@@ -103,26 +102,10 @@ class RiwayatStore {
     }
   }
 
-  static void tambahTukarKoin(int koin, int saldo) {
+  static void tambahTransfer(String metode, String penerima, int nominal, {JenisTransaksi jenis = JenisTransaksi.transfer}) {
     tambah(RiwayatTransaksi(
-      jenis: JenisTransaksi.tukarKoin,
-      judul: 'Tukar Koin',
-      subjudul: '$koin koin → Rp ${_fmt(saldo)}',
-      tanggal: _nowStr(),
-      nominal: '+Rp ${_fmt(saldo)}',
-      isPlus: true,
-      status: 'disetujui',
-      id: 'TK-${DateTime.now().millisecondsSinceEpoch}',
-      metodeBayar: 'Koin',
-      noRekening: '$koin Koin',
-      waktu: DateTime.now(),
-    ));
-  }
-
-  static void tambahTransfer(String metode, String penerima, int nominal) {
-    tambah(RiwayatTransaksi(
-      jenis: JenisTransaksi.transfer,
-      judul: 'Transfer ke $metode',
+      jenis: jenis,
+      judul: jenis == JenisTransaksi.cash ? 'Tarik tunai - $metode' : 'Top-up ke $metode',
       subjudul: penerima,
       tanggal: _nowStr(),
       nominal: '-Rp ${_fmt(nominal)}',
@@ -138,7 +121,7 @@ class RiwayatStore {
 
 // ══════════════════════════════════════════════════════════════
 //  KEUANGAN SCREEN
-//  FIX: Baca koin & saldo dari UserData (bukan hardcoded 0)
+  // Saldo Proyek 3 hanya berupa saldo rupiah.
 // ══════════════════════════════════════════════════════════════
 
 class KeuanganScreen extends StatefulWidget {
@@ -177,7 +160,6 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
         if (jumlahSaldoRaw is String) saldoParsed = double.tryParse(jumlahSaldoRaw) ?? 0;
         
         _userData.saldo = saldoParsed;
-        _userData.koin = data['total_koin'] ?? 0;
         
         // Parse saldo_tertahan dan has_pin
         dynamic tertahanRaw = data['saldo_tertahan'] ?? 0;
@@ -197,8 +179,12 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
             final tgl = RiwayatStore._fmtDate(tglStr); 
             final waktu = DateTime.tryParse(tglStr) ?? DateTime.now();
             RiwayatStore.data.add(RiwayatTransaksi(
-              jenis: JenisTransaksi.transfer,
-              judul: 'Transfer ke ${p['metode_bayar']}',
+              jenis: (p['metode_bayar'] ?? '').toString().toLowerCase().contains('tunai')
+                  ? JenisTransaksi.cash
+                  : JenisTransaksi.transfer,
+              judul: (p['metode_bayar'] ?? '').toString().toLowerCase().contains('tunai')
+                  ? 'Tarik tunai'
+                  : 'Top-up ke ${p['metode_bayar']}',
               subjudul: p['no_rekening'] ?? '-',
               tanggal: tgl,
               nominal: '-Rp ${_fmtNominal(p['jumlah_tarik'] ?? 0)}',
@@ -211,35 +197,6 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
             ));
           }
         }
-
-        if (data['riwayat_tukar_koin'] != null) {
-          // Hapus riwayat tukar koin lokal sebelumnya agar tidak duplikat dengan API
-          RiwayatStore.data.removeWhere((r) => r.jenis == JenisTransaksi.tukarKoin);
-          
-          final listTukarKoin = data['riwayat_tukar_koin'] as List;
-          for (var tk in listTukarKoin) {
-            final tglStr = tk['tgl_diperoleh'] ?? tk['created_at'] ?? '';
-            final tgl = RiwayatStore._fmtDate(tglStr);
-            final waktu = DateTime.tryParse(tglStr) ?? DateTime.now();
-            final koin = tk['jumlah_koin'] ?? 0;
-            final rupiah = tk['nilai_saldo'] ?? 0;
-            
-            RiwayatStore.data.add(RiwayatTransaksi(
-              jenis: JenisTransaksi.tukarKoin,
-              judul: 'Tukar Koin',
-              subjudul: '$koin koin → Rp ${_fmtNominal(rupiah)}',
-              tanggal: tgl,
-              nominal: '+Rp ${_fmtNominal(rupiah)}',
-              isPlus: true,
-              status: 'disetujui',
-              id: tk['id']?.toString() ?? 'TK-${tk['id']}',
-              metodeBayar: 'Koin',
-              noRekening: '$koin Koin',
-              waktu: waktu,
-            ));
-          }
-        }
-        
         // Urutkan riwayat berdasarkan waktu descending (terbaru di atas)
         RiwayatStore.data.sort((a, b) {
           final tA = a.waktu ?? DateTime.fromMillisecondsSinceEpoch(0);
@@ -277,7 +234,6 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
 
   // ── Getter shortcut ──────────────────────────────────────
   double get _saldo => _isLoading ? 0 : _userData.saldo;
-  int    get _koin  => _isLoading ? 0 : _userData.koin;
 
   // ────────────────────────────────────────────────────────
   Widget _buildTopSection() {
@@ -298,10 +254,10 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               Row(
                 children: [
                   const Icon(Icons.account_balance_wallet_outlined,
-                      color: Colors.white70, size: 18),
+                      color: Colors.white70, size: 19.1),
                   const SizedBox(width: 6),
                   const Text('Saldomu',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      style: TextStyle(color: Colors.white70, fontSize: 13.4)),
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => setState(() => _showSaldo = !_showSaldo),
@@ -310,7 +266,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
                       color: Colors.white70,
-                      size: 18,
+                      size: 19.1,
                     ),
                   ),
                 ],
@@ -324,22 +280,8 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                         : 'Rp ••••••••',
                 style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 19.8,
                     fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.monetization_on_outlined,
-                      color: Colors.white70, size: 16),
-                  const SizedBox(width: 4),
-                  // FIX: tampilkan _koin dari UserData
-                  Text(
-                    _isLoading ? 'Koinmu  ...' : 'Koinmu  $_koin',
-                    style: const TextStyle(
-                        color: Colors.white70, fontSize: 14),
-                  ),
-                ],
               ),
               // ── Saldo Tertahan (jika ada) ──
               if (!_isLoading && _userData.saldoTertahan > 0) ...[
@@ -347,17 +289,17 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
+                    color: Colors.white.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.hourglass_top_rounded, color: Colors.amber, size: 14),
+                      const Icon(Icons.hourglass_top_rounded, color: Colors.amber, size: 14.8),
                       const SizedBox(width: 4),
                       Text(
                         'Saldo diproses: Rp ${_userData.saldoTertahan.toStringAsFixed(0)}',
-                        style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.w500),
+                        style: const TextStyle(color: Colors.amber, fontSize: 12.4, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -367,45 +309,30 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        // Menu aksi
+        // Menu aksi Proyek 3: saldo rupiah dipakai untuk e-wallet atau tunai.
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildMenuTile(
-              icon: Icons.swap_horiz,
-              label: 'Tukar koin',
+              icon: Icons.account_balance_wallet_outlined,
+              label: 'Top-up Ewallet',
               onTap: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    // FIX: kirim _koin terbaru dari UserData
-                    builder: (_) => TukarKoinScreen(koin: _koin),
+                    builder: (_) => const MetodePembayaranScreen(isTransfer: false),
                   ),
                 );
-                // FIX: reload setelah tukar koin agar UI update
                 await _reloadData();
               },
             ),
             _buildMenuTile(
-              icon: Icons.compare_arrows_rounded,
-              label: 'Transfer',
+              icon: Icons.payments_outlined,
+              label: 'Tarik tunai',
               onTap: () async {
-                // Cek apakah sudah punya PIN
-                if (!_userData.hasPin) {
-                  final created = await Navigator.push<bool>(
-                    context,
-                    MaterialPageRoute(builder: (_) => const BuatPinScreen()),
-                  );
-                  if (created != true) return; // user batal
-                  await _reloadData(); // refresh hasPin
-                  if (!mounted) return;
-                }
-                if (!mounted) return;
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          const MetodePembayaranScreen(isTransfer: true)),
+                  MaterialPageRoute(builder: (_) => const CashWithdrawalScreen()),
                 );
                 await _reloadData();
               },
@@ -415,14 +342,11 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
       ],
     );
   }
-
   Widget _buildRiwayatTile(RiwayatTransaksi item) {
-    final isTransfer = item.jenis == JenisTransaksi.transfer;
-    final iconData =
-        isTransfer ? Icons.compare_arrows_rounded : Icons.monetization_on_outlined;
-    final iconColor = isTransfer ? Colors.blue.shade400 : kPrimary;
-    final iconBg =
-        isTransfer ? Colors.blue.shade50 : kPrimary.withOpacity(0.1);
+    final isCash = item.jenis == JenisTransaksi.cash;
+    final iconData = isCash ? Icons.payments_outlined : Icons.account_balance_wallet_outlined;
+    final iconColor = isCash ? kWarning : Colors.blue.shade400;
+    final iconBg = isCash ? const Color(0xFFFFF4E5) : Colors.blue.shade50;
 
     return InkWell(
       onTap: () => _showDetailTransaksi(context, item),
@@ -438,7 +362,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(iconData, color: iconColor, size: 20),
+              child: Icon(iconData, color: iconColor, size: 21.2),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -448,12 +372,12 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   Text(
                     item.judul,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13),
+                        fontWeight: FontWeight.w600, fontSize: 13.4),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     item.subjudul,
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12.4),
                   ),
                 ],
               ),
@@ -465,7 +389,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   item.nominal,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontSize: 13.4,
                     color: item.isPlus ? kPrimary : Colors.red,
                   ),
                 ),
@@ -473,7 +397,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                 Text(
                   item.status.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 9,
+                    fontSize: 10.1,
                     fontWeight: FontWeight.w700,
                     color: item.status == 'pending' 
                         ? Colors.orange 
@@ -485,7 +409,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   item.tanggal.contains(',')
                       ? item.tanggal.split(',').last.trim()
                       : item.tanggal,
-                  style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
+                  style: TextStyle(fontSize: 11.2, color: Colors.grey.shade400),
                 ),
               ],
             ),
@@ -508,14 +432,14 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: kPrimary.withOpacity(0.12),
+              color: kPrimary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: kPrimary, size: 28),
+            child: Icon(icon, color: kPrimary, size: 29.7),
           ),
           const SizedBox(height: 8),
           Text(label,
-              style: const TextStyle(fontSize: 13, color: Colors.black87)),
+              style: const TextStyle(fontSize: 13.4, color: Colors.black87)),
         ],
       ),
     );
@@ -555,7 +479,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                             top: Radius.circular(24)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 16,
                             offset: const Offset(0, -4),
                           ),
@@ -592,7 +516,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                       const Text(
                                         'Riwayat',
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 16.6,
                                           fontWeight: FontWeight.w700,
                                           color: Colors.black87,
                                         ),
@@ -600,7 +524,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                       Text(
                                         'Lihat semua',
                                         style: TextStyle(
-                                          fontSize: 13,
+                                          fontSize: 13.4,
                                           color: kPrimary,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -623,14 +547,14 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                         MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.receipt_long_outlined,
-                                          size: 48,
+                                          size: 50.9,
                                           color: Colors.grey.shade300),
                                       const SizedBox(height: 10),
                                       Text(
                                         'Belum ada transaksi',
                                         style: TextStyle(
                                             color: Colors.grey.shade400,
-                                            fontSize: 13),
+                                            fontSize: 13.4),
                                       ),
                                     ],
                                   )
@@ -678,7 +602,7 @@ class RiwayatScreen extends StatefulWidget {
 }
 
 class _RiwayatScreenState extends State<RiwayatScreen> {
-  int _filterIndex = 0; // 0=Semua, 1=Tukar Koin, 2=Transfer
+  int _filterIndex = 0; // 0=Semua, 1=Top-up Ewallet, 2=Tarik tunai
   int _totalMasuk = 0;
   int _totalKeluar = 0;
 
@@ -714,11 +638,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   List<RiwayatTransaksi> get _filtered {
     if (_filterIndex == 1) {
       return RiwayatStore.data
-          .where((r) => r.jenis == JenisTransaksi.tukarKoin)
+          .where((r) => r.jenis == JenisTransaksi.transfer)
           .toList();
     } else if (_filterIndex == 2) {
       return RiwayatStore.data
-          .where((r) => r.jenis == JenisTransaksi.transfer)
+          .where((r) => r.jenis == JenisTransaksi.cash)
           .toList();
     }
     return RiwayatStore.data;
@@ -788,9 +712,9 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               children: [
                 _chip('Semua', 0),
                 const SizedBox(width: 8),
-                _chip('Tukar Koin', 1),
+                _chip('Top-up Ewallet', 1),
                 const SizedBox(width: 8),
-                _chip('Transfer', 2),
+                _chip('Tarik tunai', 2),
               ],
             ),
           ),
@@ -804,12 +728,12 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.receipt_long_outlined,
-                          size: 56, color: Colors.grey.shade300),
+                          size: 59.5, color: Colors.grey.shade300),
                       const SizedBox(height: 12),
                       Text(
                         'Belum ada transaksi',
                         style: TextStyle(
-                            color: Colors.grey.shade400, fontSize: 14),
+                            color: Colors.grey.shade400, fontSize: 14.5),
                       ),
                     ],
                   )
@@ -828,7 +752,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                             child: Text(
                               tgl,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.4,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade500,
                                 letterSpacing: 0.3,
@@ -894,7 +818,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 13.4,
             fontWeight: FontWeight.w600,
             color: active ? Colors.white : Colors.grey.shade600,
           ),
@@ -909,11 +833,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         children: [
           Text(label,
               style:
-                  TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                  TextStyle(fontSize: 12.4, color: Colors.grey.shade500)),
           const SizedBox(height: 4),
           Text(value,
               style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.4,
                   fontWeight: FontWeight.w700,
                   color: valueColor)),
         ],
@@ -922,7 +846,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   }
 
   Widget _buildTile(RiwayatTransaksi item) {
-    final isTransfer = item.jenis == JenisTransaksi.transfer;
+    final isCash = item.jenis == JenisTransaksi.cash;
     return InkWell(
       onTap: () => _showDetailTransaksi(context, item),
       borderRadius: BorderRadius.circular(12),
@@ -935,17 +859,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: isTransfer
-                    ? Colors.blue.shade50
-                    : kPrimary.withOpacity(0.1),
+                color: isCash ? const Color(0xFFFFF4E5) : Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                isTransfer
-                    ? Icons.compare_arrows_rounded
-                    : Icons.monetization_on_outlined,
-                color: isTransfer ? Colors.blue.shade400 : kPrimary,
-                size: 20,
+                isCash ? Icons.payments_outlined : Icons.account_balance_wallet_outlined,
+                color: isCash ? kWarning : Colors.blue.shade400,
+                size: 21.2,
               ),
             ),
             const SizedBox(width: 12),
@@ -955,11 +875,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 children: [
                   Text(item.judul,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 13)),
+                          fontWeight: FontWeight.w600, fontSize: 13.4)),
                   const SizedBox(height: 2),
                   Text(item.subjudul,
                       style: TextStyle(
-                          color: Colors.grey.shade500, fontSize: 11)),
+                          color: Colors.grey.shade500, fontSize: 12.4)),
                 ],
               ),
             ),
@@ -970,7 +890,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   item.nominal,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontSize: 13.4,
                     color: item.isPlus ? kPrimary : Colors.red,
                   ),
                 ),
@@ -978,7 +898,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 Text(
                   item.status.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 9,
+                    fontSize: 10.1,
                     fontWeight: FontWeight.w700,
                     color: item.status == 'pending' 
                         ? Colors.orange 
@@ -991,311 +911,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       ? item.tanggal.split(',').last.trim()
                       : item.tanggal,
                   style: TextStyle(
-                      fontSize: 10, color: Colors.grey.shade400),
+                      fontSize: 11.2, color: Colors.grey.shade400),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-//  TUKAR KOIN SCREEN
-//  FIX: Kurangi koin di UserData dan tambah saldo setelah tukar
-// ══════════════════════════════════════════════════════════════
-
-class TukarKoinScreen extends StatefulWidget {
-  final int koin;
-  const TukarKoinScreen({super.key, required this.koin});
-
-  @override
-  State<TukarKoinScreen> createState() => _TukarKoinScreenState();
-}
-
-class _TukarKoinScreenState extends State<TukarKoinScreen> {
-  final TextEditingController _ctrl = TextEditingController();
-  int _jumlahKoin = 0;
-
-  static const int _nilaiPerKoin = 100;
-
-  int    get _saldoDidapat => _jumlahKoin * _nilaiPerKoin;
-  bool   get _canProceed   =>
-      _jumlahKoin > 0 && _jumlahKoin <= widget.koin;
-
-  String _fmt(int amount) => amount
-      .toString()
-      .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar:
-          _buildAppBar('Tukar Koin', showBack: true, context: context),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: kPrimaryDark,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.monetization_on_rounded,
-                      color: Colors.amber, size: 36),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Koin Kamu',
-                          style: TextStyle(
-                              color: Colors.white70, fontSize: 13)),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${widget.koin} Koin',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: kPrimary.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: kPrimary.withOpacity(0.25)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline_rounded,
-                      color: kPrimary, size: 18),
-                  const SizedBox(width: 10),
-                  Text(
-                    '1 Koin = Rp ${_fmt(_nilaiPerKoin)}',
-                    style: const TextStyle(
-                      color: kPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Jumlah Koin yang Ditukar',
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _ctrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onChanged: (v) =>
-                  setState(() => _jumlahKoin = int.tryParse(v) ?? 0),
-              decoration: InputDecoration(
-                hintText: '0',
-                suffixText: 'Koin',
-                suffixStyle: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black54),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: Colors.grey.shade300)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: kPrimary, width: 2)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: Colors.grey.shade300)),
-                errorText: _jumlahKoin > widget.koin
-                    ? 'Koin tidak mencukupi'
-                    : null,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [10, 25, 50, 100]
-                  .where((v) => v <= widget.koin)
-                  .map((val) {
-                return GestureDetector(
-                  onTap: () {
-                    _ctrl.text = val.toString();
-                    setState(() => _jumlahKoin = val);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: kPrimary.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: kPrimary.withOpacity(0.3)),
-                    ),
-                    child: Text(
-                      '$val Koin',
-                      style: const TextStyle(
-                          color: kPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 28),
-            AnimatedOpacity(
-              opacity: _canProceed ? 1 : 0,
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Column(
-                  children: [
-                    _summaryRow('Koin ditukar', '$_jumlahKoin Koin'),
-                    const SizedBox(height: 8),
-                    _summaryRow(
-                        'Saldo didapat',
-                        'Rp ${_fmt(_saldoDidapat)}',
-                        highlight: true),
-                    const SizedBox(height: 8),
-                    _summaryRow('Sisa koin',
-                        '${widget.koin - _jumlahKoin} Koin'),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _canProceed ? _tukarKoin : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kPrimary,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Tukar Sekarang',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── FIX: Simpan perubahan koin & saldo ke API dan UserData ──────
-  Future<void> _tukarKoin() async {
-    // Simpan nilai sebelum proses
-    final koinDitukar = _jumlahKoin;
-    final saldoDidapat = _saldoDidapat;
-
-    // Langsung navigate ke halaman proses/sukses
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => TukarKoinSuccessScreen(
-          koinDitukar: koinDitukar,
-          saldoDidapat: saldoDidapat,
-          sisaKoin: (widget.koin - koinDitukar).clamp(0, widget.koin),
-        ),
-      ),
-    );
-
-    // Proses API di background
-    final apiService = ApiService();
-    final res = await apiService.tukarKoin(koinDitukar);
-
-    if (!mounted) return;
-
-    if (res['success']) {
-      // 1. Catat ke riwayat transaksi lokal
-      RiwayatStore.tambahTukarKoin(koinDitukar, saldoDidapat);
-
-      // 2. Update UserData (koin berkurang, saldo bertambah)
-      final userData = UserData();
-      await userData.load();
-      userData.koin  -= koinDitukar;   // kurangi koin
-      
-      // Cegah koin menjadi negatif di UI lokal
-      if (userData.koin < 0) userData.koin = 0;
-      
-      userData.saldo += saldoDidapat; // tambah saldo rupiah
-      await userData.simpan();         // persist ke SharedPreferences
-    } else {
-      // Jika gagal, tampilkan error (user sudah di success screen)
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(res['message'] ?? 'Gagal menukar koin'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
-    }
-  }
-
-  Widget _summaryRow(String label, String value,
-      {bool highlight = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label,
-            style: TextStyle(
-                fontSize: 13, color: Colors.grey.shade600)),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight:
-                highlight ? FontWeight.w800 : FontWeight.w600,
-            color: highlight ? kPrimary : Colors.black87,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -1316,13 +938,13 @@ class MetodePembayaranScreen extends StatefulWidget {
 class _MetodePembayaranScreenState
     extends State<MetodePembayaranScreen> {
   String? _selected;
-  final List<String> _metode = ['Dana', 'OVO', 'Gopay', 'Shoopepay'];
+  final List<String> _metode = ['DANA', 'OVO', 'GoPay', 'ShopeePay'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar('Keuangan',
+      appBar: _buildAppBar('Top-up Ewallet',
           showBack: true, context: context),
       body: Column(
         children: [
@@ -1336,7 +958,7 @@ class _MetodePembayaranScreenState
                 border: Border.all(color: Colors.grey.shade200),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2))
                 ],
@@ -1359,7 +981,7 @@ class _MetodePembayaranScreenState
                               Expanded(
                                 child: Text(name,
                                     style: const TextStyle(
-                                        fontSize: 15,
+                                        fontSize: 15.5,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.black87)),
                               ),
@@ -1380,7 +1002,7 @@ class _MetodePembayaranScreenState
                                 ),
                                 child: _selected == name
                                     ? const Icon(Icons.check,
-                                        color: Colors.white, size: 14)
+                                        color: Colors.white, size: 14.8)
                                     : null,
                               ),
                             ],
@@ -1424,7 +1046,7 @@ class _MetodePembayaranScreenState
                 child: const Text('Konfirmasi',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 16.6,
                         fontWeight: FontWeight.w600)),
               ),
             ),
@@ -1556,7 +1178,7 @@ class _TransferScreenState extends State<TransferScreen> {
               child: Row(
                 children: [
                   Icon(Icons.search,
-                      color: Colors.grey.shade500, size: 20),
+                      color: Colors.grey.shade500, size: 21.2),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
@@ -1568,7 +1190,7 @@ class _TransferScreenState extends State<TransferScreen> {
                         border: InputBorder.none,
                         isDense: true,
                         hintStyle: TextStyle(
-                            color: Colors.grey, fontSize: 14),
+                            color: Colors.grey, fontSize: 14.5),
                       ),
                     ),
                   ),
@@ -1579,7 +1201,7 @@ class _TransferScreenState extends State<TransferScreen> {
                         setState(() => _query = '');
                       },
                       child: Icon(Icons.close,
-                          color: Colors.grey.shade500, size: 18),
+                          color: Colors.grey.shade500, size: 19.1),
                     ),
                 ],
               ),
@@ -1592,10 +1214,10 @@ class _TransferScreenState extends State<TransferScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: kPrimary.withOpacity(0.08),
+                    color: kPrimary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: kPrimary.withOpacity(0.3)),
+                        color: kPrimary.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -1603,12 +1225,12 @@ class _TransferScreenState extends State<TransferScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                            color: kPrimary.withOpacity(0.2),
+                            color: kPrimary.withValues(alpha: 0.2),
                             shape: BoxShape.circle),
                         child: const Icon(
                             Icons.send_to_mobile_outlined,
                             color: kPrimary,
-                            size: 20),
+                            size: 21.2),
                       ),
                       const SizedBox(width: 12),
                       Column(
@@ -1618,11 +1240,11 @@ class _TransferScreenState extends State<TransferScreen> {
                           Text('Kirim ke nomor ini',
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontSize: 14.5,
                                   color: kPrimary)),
                           Text(_query,
                               style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.4,
                                   color: Colors.grey.shade600)),
                         ],
                       ),
@@ -1635,7 +1257,7 @@ class _TransferScreenState extends State<TransferScreen> {
             if (!_permissionDenied)
               const Text('Kontak saya',
                   style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87)),
             const SizedBox(height: 10),
@@ -1651,7 +1273,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                 MainAxisAlignment.center,
                             children: [
                               Icon(Icons.contacts_outlined,
-                                  size: 60,
+                                  size: 63.7,
                                   color: Colors.grey.shade300),
                               const SizedBox(height: 16),
                               Text('Izin kontak ditolak',
@@ -1665,7 +1287,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.grey.shade400,
-                                      fontSize: 13)),
+                                      fontSize: 13.4)),
                             ],
                           ),
                         )
@@ -1674,7 +1296,7 @@ class _TransferScreenState extends State<TransferScreen> {
                               child: Text('Kontak tidak ditemukan',
                                   style: TextStyle(
                                       color: Colors.grey.shade400,
-                                      fontSize: 14)))
+                                      fontSize: 14.5)))
                           : Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -1685,7 +1307,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                 boxShadow: [
                                   BoxShadow(
                                       color: Colors.black
-                                          .withOpacity(0.04),
+                                          .withValues(alpha: 0.04),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2))
                                 ],
@@ -1725,7 +1347,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                         initial),
                                                     fontWeight:
                                                         FontWeight.w700,
-                                                    fontSize: 16)),
+                                                    fontSize: 16.6)),
                                           ),
                                           const SizedBox(width: 12),
                                           Column(
@@ -1738,12 +1360,12 @@ class _TransferScreenState extends State<TransferScreen> {
                                                       fontWeight:
                                                           FontWeight
                                                               .w600,
-                                                      fontSize: 14)),
+                                                      fontSize: 14.5)),
                                               Text(phone,
                                                   style: TextStyle(
                                                       color: Colors.grey
                                                           .shade500,
-                                                      fontSize: 12)),
+                                                      fontSize: 12.4)),
                                             ],
                                           ),
                                         ],
@@ -1842,7 +1464,7 @@ class _NominalTransferScreenState
                       style: TextStyle(
                           color: Colors.pink.shade400,
                           fontWeight: FontWeight.w700,
-                          fontSize: 18),
+                          fontSize: 17.8),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1852,23 +1474,23 @@ class _NominalTransferScreenState
                       Text(_maskName(widget.namaPenerima),
                           style: const TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 15)),
+                              fontSize: 15.5)),
                       Text(widget.nomorPenerima,
                           style: TextStyle(
                               color: Colors.grey.shade500,
-                              fontSize: 13)),
+                              fontSize: 13.4)),
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: kPrimary.withOpacity(0.1),
+                          color: kPrimary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(widget.metode,
                             style: TextStyle(
                                 color: kPrimary,
-                                fontSize: 11,
+                                fontSize: 12.4,
                                 fontWeight: FontWeight.w600)),
                       ),
                     ],
@@ -1877,9 +1499,9 @@ class _NominalTransferScreenState
               ),
             ),
             const SizedBox(height: 28),
-            const Text('Nominal Transfer',
+            const Text('Nominal Top-up Ewallet',
                 style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.5,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87)),
             const SizedBox(height: 10),
@@ -1922,16 +1544,16 @@ class _NominalTransferScreenState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: kPrimary.withOpacity(0.08),
+                      color: kPrimary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: kPrimary.withOpacity(0.3)),
+                          color: kPrimary.withValues(alpha: 0.3)),
                     ),
                     child: Text('Rp ${_fmt(amt)}',
                         style: TextStyle(
                             color: kPrimary,
                             fontWeight: FontWeight.w600,
-                            fontSize: 13)),
+                            fontSize: 13.4)),
                   ),
                 );
               }).toList(),
@@ -1964,7 +1586,7 @@ class _NominalTransferScreenState
                 child: const Text('Lanjutkan',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 16.6,
                         fontWeight: FontWeight.w600)),
               ),
             ),
@@ -2073,7 +1695,7 @@ class _PinScreenState extends State<PinScreen> {
           const Spacer(),
           const Text('Masukan PIN',
               style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600)),
+                  fontSize: 16.6, fontWeight: FontWeight.w600)),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -2134,7 +1756,7 @@ class _PinScreenState extends State<PinScreen> {
                     : const Text('Konfirmasi',
                         style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 16.6,
                             fontWeight: FontWeight.w600)),
               ),
             ),
@@ -2161,10 +1783,10 @@ class _PinScreenState extends State<PinScreen> {
             child: Center(
               child: key == 'DEL'
                   ? const Icon(Icons.backspace_outlined,
-                      size: 22, color: Colors.black87)
+                      size: 23.4, color: Colors.black87)
                   : Text(key,
                       style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 21.8,
                           fontWeight: FontWeight.w500,
                           color: Colors.black87)),
             ),
@@ -2226,18 +1848,18 @@ class StrukWidget extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.compare_arrows_rounded,
-                      color: Colors.white, size: 28),
+                      color: Colors.white, size: 29.7),
                 ),
                 const SizedBox(height: 14),
                 Text(
                   _fmt(nominal),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: 25.7,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                   ),
@@ -2249,7 +1871,7 @@ class StrukWidget extends StatelessWidget {
                     const Text('Berhasil',
                         style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 14,
+                            fontSize: 14.5,
                             fontWeight: FontWeight.w500)),
                     const SizedBox(width: 6),
                     Container(
@@ -2260,14 +1882,14 @@ class StrukWidget extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.check,
-                          color: Colors.white, size: 13),
+                          color: Colors.white, size: 13.8),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(tanggal,
                     style: const TextStyle(
-                        color: Colors.white54, fontSize: 12)),
+                        color: Colors.white54, fontSize: 12.4)),
               ],
             ),
           ),
@@ -2320,22 +1942,22 @@ class StrukWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: kPrimary.withOpacity(0.06),
+                    color: kPrimary.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(12),
                     border:
-                        Border.all(color: kPrimary.withOpacity(0.2)),
+                        Border.all(color: kPrimary.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total Transfer',
+                      const Text('Total Top-up Ewallet',
                           style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 14.5,
                               fontWeight: FontWeight.w700,
                               color: Colors.black87)),
                       Text(_fmt(nominal),
                           style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.6,
                               fontWeight: FontWeight.w800,
                               color: kPrimary)),
                     ],
@@ -2353,7 +1975,7 @@ class StrukWidget extends StatelessWidget {
                 Text(
                   'Simpan struk ini sebagai bukti transaksi',
                   style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12.4,
                       color: Colors.grey.shade400,
                       fontStyle: FontStyle.italic),
                 ),
@@ -2362,11 +1984,11 @@ class StrukWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.lock_outline_rounded,
-                        size: 12, color: Colors.grey.shade400),
+                        size: 12.8, color: Colors.grey.shade400),
                     const SizedBox(width: 4),
                     Text('Transaksi terenkripsi & aman',
                         style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12.4,
                             color: Colors.grey.shade400)),
                   ],
                 ),
@@ -2393,7 +2015,7 @@ class StrukWidget extends StatelessWidget {
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 16, color: Colors.grey.shade500),
+          child: Icon(icon, size: 17, color: Colors.grey.shade500),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -2402,13 +2024,13 @@ class StrukWidget extends StatelessWidget {
             children: [
               Text(label,
                   style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12.4,
                       color: Colors.grey.shade500,
                       fontWeight: FontWeight.w400)),
               const SizedBox(height: 2),
               Text(value,
                   style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.4,
                       fontWeight: FontWeight.w600,
                       color: valueColor)),
             ],
@@ -2608,13 +2230,13 @@ class _RincianTransaksiScreenState
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Row(children: [
             const Icon(Icons.check_circle_outline,
-                color: Colors.white, size: 18),
+                color: Colors.white, size: 19.1),
             const SizedBox(width: 10),
             Expanded(
                 child: Text(
                     'Struk disimpan ke '
                     '${Platform.isAndroid ? "Download" : "Dokumen"}',
-                    style: const TextStyle(fontSize: 13))),
+                    style: const TextStyle(fontSize: 13.4))),
           ]),
           backgroundColor: kPrimary,
           behavior: SnackBarBehavior.floating,
@@ -2649,11 +2271,11 @@ class _RincianTransaksiScreenState
       await file.writeAsBytes(bytes);
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'image/png')],
-        text: 'Struk Transfer ${widget.metode} — ${_fmt(widget.nominal)}\n'
+        text: 'Struk Top-up Ewallet ${widget.metode} — ${_fmt(widget.nominal)}\n'
             'Kepada: $_maskedName\n'
             'No. Transaksi: $_noTrx\n'
             'Tanggal: $_tanggal',
-        subject: 'Struk Transfer ${widget.metode}',
+        subject: 'Struk Top-up Ewallet ${widget.metode}',
       );
     } catch (e) {
       if (mounted) {
@@ -2692,7 +2314,7 @@ class _RincianTransaksiScreenState
                     border: Border.all(color: Colors.grey.shade200),
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 12,
                           offset: const Offset(0, 4))
                     ],
@@ -2703,33 +2325,33 @@ class _RincianTransaksiScreenState
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: kPrimary.withOpacity(0.12),
+                          color: kPrimary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
                             Icons.compare_arrows_rounded,
                             color: kPrimary,
-                            size: 28),
+                            size: 29.7),
                       ),
                       const SizedBox(height: 16),
                       Text(_fmt(widget.nominal),
                           style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 21.8,
                               fontWeight: FontWeight.w800,
                               color: Colors.black87)),
                       const SizedBox(height: 6),
-                      Text('Ditransfer ke ${widget.metode}',
+                      Text('Top-up ke ${widget.metode}',
                           style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.4,
                               color: Colors.grey.shade600)),
                       Text(_maskedName,
                           style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.4,
                               color: Colors.grey.shade600)),
                       const SizedBox(height: 4),
                       Text(_tanggal,
                           style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.4,
                               color: Colors.grey.shade500)),
                       const SizedBox(height: 12),
                       Row(
@@ -2738,7 +2360,7 @@ class _RincianTransaksiScreenState
                           const Text('Berhasil',
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 15)),
+                                  fontSize: 15.5)),
                           const SizedBox(width: 6),
                           Container(
                             width: 22,
@@ -2747,7 +2369,7 @@ class _RincianTransaksiScreenState
                                 color: kPrimary,
                                 shape: BoxShape.circle),
                             child: const Icon(Icons.check,
-                                color: Colors.white, size: 14),
+                                color: Colors.white, size: 14.8),
                           ),
                         ],
                       ),
@@ -2758,7 +2380,7 @@ class _RincianTransaksiScreenState
                         alignment: Alignment.centerLeft,
                         child: Text('Rincian Transaksi',
                             style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 15.5,
                                 fontWeight: FontWeight.w700)),
                       ),
                       const SizedBox(height: 16),
@@ -2801,7 +2423,7 @@ class _RincianTransaksiScreenState
                 label: const Text('Kembali ke Dashboard',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 15,
+                        fontSize: 15.5,
                         fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
@@ -2824,13 +2446,13 @@ class _RincianTransaksiScreenState
       children: [
         Text(label,
             style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.4,
                 color: Colors.grey.shade600,
                 fontWeight:
                     bold ? FontWeight.w700 : FontWeight.w400)),
         Text(value,
             style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.4,
                 fontWeight:
                     bold ? FontWeight.w800 : FontWeight.w500,
                 color: Colors.black87)),
@@ -2854,7 +2476,7 @@ class _RincianTransaksiScreenState
             decoration: BoxDecoration(
               color: _isProcessing
                   ? Colors.grey.shade200
-                  : kPrimary.withOpacity(0.12),
+                  : kPrimary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: _isProcessing
@@ -2866,12 +2488,12 @@ class _RincianTransaksiScreenState
                           strokeWidth: 2, color: kPrimary),
                     ),
                   )
-                : Icon(icon, color: kPrimary, size: 24),
+                : Icon(icon, color: kPrimary, size: 25.5),
           ),
           const SizedBox(height: 6),
           Text(label,
               style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.4,
                   color: _isProcessing ? Colors.grey : kPrimary,
                   fontWeight: FontWeight.w500)),
         ],
@@ -2914,7 +2536,7 @@ PreferredSizeWidget _buildAppBar(
                 border: Border.all(color: Colors.black87, width: 2),
               ),
               child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: Colors.black87),
+                  size: 17, color: Colors.black87),
             ),
           )
         : null,
@@ -2923,7 +2545,7 @@ PreferredSizeWidget _buildAppBar(
       style: const TextStyle(
         color: Colors.black87,
         fontWeight: FontWeight.w800,
-        fontSize: 16,
+        fontSize: 16.6,
       ),
     ),
     centerTitle: true,
@@ -2944,7 +2566,7 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      final isTransfer = item.jenis == JenisTransaksi.transfer;
+      final isCash = item.jenis == JenisTransaksi.cash;
       final statusColor = item.status == 'pending'
           ? Colors.orange
           : (item.status == 'ditolak' ? Colors.red : kPrimary);
@@ -2979,13 +2601,13 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: isTransfer ? Colors.blue.shade50 : kPrimaryLight,
+                    color: isCash ? const Color(0xFFFFF4E5) : Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
-                    isTransfer ? Icons.compare_arrows_rounded : Icons.monetization_on_outlined,
-                    color: isTransfer ? Colors.blue.shade600 : kPrimary,
-                    size: 26,
+                    isCash ? Icons.payments_outlined : Icons.account_balance_wallet_outlined,
+                    color: isCash ? kWarning : Colors.blue.shade600,
+                    size: 27.6,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -2996,20 +2618,18 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                       Text(
                         item.judul,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.6,
                           fontWeight: FontWeight.w700,
                           color: kText,
-                          fontFamily: 'Poppins',
-                        ),
+                                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        isTransfer ? 'Penarikan / Transfer Saldo' : 'Konversi / Tukar Koin',
+                        isCash ? 'Tarik tunai Rumah Hijau' : 'Top-up Ewallet',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.4,
                           color: kTextSoft,
-                          fontFamily: 'Poppins',
-                        ),
+                                        ),
                       ),
                     ],
                   ),
@@ -3025,7 +2645,7 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
             _buildDetailRow('Status', Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.12),
+                color: statusColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Text(
@@ -3033,9 +2653,8 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                 style: TextStyle(
                   color: statusColor,
                   fontWeight: FontWeight.w700,
-                  fontSize: 11,
-                  fontFamily: 'Poppins',
-                  letterSpacing: 0.5,
+                  fontSize: 12.4,
+                          letterSpacing: 0.5,
                 ),
               ),
             )),
@@ -3047,8 +2666,7 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: kText,
-                  fontFamily: 'Poppins',
-                ),
+                        ),
               )),
             ],
             
@@ -3058,8 +2676,7 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 color: kText,
-                fontFamily: 'Poppins',
-              ),
+                    ),
             )),
             
             if (item.metodeBayar != null) ...[
@@ -3069,22 +2686,20 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: kText,
-                  fontFamily: 'Poppins',
-                ),
+                        ),
               )),
             ],
 
             if (item.noRekening != null) ...[
               const SizedBox(height: 16),
               _buildDetailRow(
-                isTransfer ? 'No. Rekening / E-Wallet' : 'Jumlah Koin',
+                isCash ? 'Nomor ponsel' : 'No. Ewallet',
                 Text(
                   item.noRekening!,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     color: kText,
-                    fontFamily: 'Poppins',
-                  ),
+                            ),
                 ),
               ),
             ],
@@ -3097,11 +2712,10 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
             _buildDetailRow('Nominal', Text(
               item.nominal,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 17.8,
                 fontWeight: FontWeight.w800,
                 color: item.isPlus ? kPrimary : Colors.red,
-                fontFamily: 'Poppins',
-              ),
+                    ),
             )),
 
             const SizedBox(height: 30),
@@ -3135,12 +2749,430 @@ Widget _buildDetailRow(String label, Widget valueWidget) {
         label,
         style: const TextStyle(
           color: kTextSoft,
-          fontSize: 13,
+          fontSize: 13.4,
           fontWeight: FontWeight.w500,
-          fontFamily: 'Poppins',
         ),
       ),
       valueWidget,
     ],
   );
+}
+
+// ============================================================================
+// TARIK TUNAI RUMAH HIJAU - ALUR PROYEK 3
+// ============================================================================
+class CashWithdrawalScreen extends StatefulWidget {
+  const CashWithdrawalScreen({super.key});
+
+  @override
+  State<CashWithdrawalScreen> createState() => _CashWithdrawalScreenState();
+}
+
+class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
+  static const _quickAmounts = [10000, 25000, 50000, 100000, 200000];
+  final _controller = TextEditingController();
+  double _balance = 0;
+  String _phone = '-';
+  String _amount = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = UserData();
+    await user.load();
+    if (!mounted) return;
+    setState(() {
+      _balance = user.saldo;
+      _phone = user.noTelpon.trim().isEmpty ? '-' : user.noTelpon.trim();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  int get _value => int.tryParse(_amount) ?? 0;
+
+  String _money(num value) => value.round().toString().replaceAllMapped(
+        RegExp(r'\B(?=(\d{3})+(?!\d))'),
+        (_) => '.',
+      );
+
+  void _continue() {
+    final value = _value;
+    if (value < 10000) {
+      _message('Minimal penarikan tunai adalah Rp10.000.');
+      return;
+    }
+    if (value > _balance) {
+      _message('Nominal melebihi saldo yang tersedia.');
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CashReviewScreen(
+          amount: value,
+          phone: _phone,
+        ),
+      ),
+    );
+  }
+
+  void _message(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar('Tarik tunai', showBack: true, context: context),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF7EC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF0DFC3)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: kPrimaryLight,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.eco_rounded, color: kPrimaryDark, size: 31.9),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('admin', style: TextStyle(color: kTextSoft, fontSize: 12.4)),
+                        SizedBox(height: 2),
+                        Text('Rumah Hijau', style: TextStyle(color: kText, fontSize: 16.8, fontWeight: FontWeight.w800)),
+                        SizedBox(height: 3),
+                        Text('Penarikan uang tunai di lokasi mitra', style: TextStyle(color: kTextSoft, fontSize: 12.4)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text('Nominal tarik tunai', style: TextStyle(color: kText, fontSize: 15.5, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _controller,
+              autofocus: false,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (value) => setState(() => _amount = value),
+              decoration: InputDecoration(
+                hintText: '0',
+                prefixText: 'Rp  ',
+                prefixStyle: const TextStyle(color: kText, fontWeight: FontWeight.w700),
+                helperText: 'Minimal penarikan Rp10.000',
+                helperStyle: const TextStyle(color: kTextSoft, fontSize: 12.4),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimary, width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _quickAmounts.map((amount) {
+                return ActionChip(
+                  label: Text('Rp ${_money(amount)}'),
+                  onPressed: () {
+                    _controller.text = amount.toString();
+                    setState(() => _amount = amount.toString());
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+            Text('Saldo tersedia: Rp ${_money(_balance)}', style: const TextStyle(color: kTextSoft, fontSize: 12.4)),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _continue,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                ),
+                child: const Text('Lanjutkan', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CashReviewScreen extends StatelessWidget {
+  final int amount;
+  final String phone;
+  const CashReviewScreen({super.key, required this.amount, required this.phone});
+
+  String _money(num value) => value.round().toString().replaceAllMapped(
+        RegExp(r'\B(?=(\d{3})+(?!\d))'),
+        (_) => '.',
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    const fee = 0;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar('Periksa rincian', showBack: true, context: context),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Periksa rincian nominal dan biaya transaksi', style: TextStyle(color: kText, fontSize: 17.8, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            const Text('Pastikan nominal dan nomor ponsel sudah benar sebelum konfirmasi.', style: TextStyle(color: kTextSoft, fontSize: 12.4)),
+            const SizedBox(height: 22),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(16), border: Border.all(color: kBorder)),
+              child: Column(
+                children: [
+                  _row('Tujuan', 'Rumah Hijau'),
+                  _row('Nominal tarik tunai', 'Rp ${_money(amount)}'),
+                  _row('Biaya transaksi', fee == 0 ? 'Gratis' : 'Rp ${_money(fee)}'),
+                  const Divider(height: 26),
+                  _row('Total', 'Rp ${_money(amount + fee)}', strong: true),
+                  _row('Nomor ponsel terdaftar', phone),
+                ],
+              ),
+            ),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => CashPinScreen(amount: amount, phone: phone)),
+                ),
+                style: ElevatedButton.styleFrom(backgroundColor: kPrimary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
+                child: const Text('Konfirmasi', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _row(String label, String value, {bool strong = false}) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        child: Row(
+          children: [
+            Expanded(child: Text(label, style: const TextStyle(color: kTextSoft, fontSize: 12.4))),
+            Flexible(child: Text(value, textAlign: TextAlign.right, style: TextStyle(color: kText, fontSize: strong ? 16 : 12, fontWeight: strong ? FontWeight.w800 : FontWeight.w600))),
+          ],
+        ),
+      );
+}
+
+class CashPinScreen extends StatefulWidget {
+  final int amount;
+  final String phone;
+  const CashPinScreen({super.key, required this.amount, required this.phone});
+
+  @override
+  State<CashPinScreen> createState() => _CashPinScreenState();
+}
+
+class _CashPinScreenState extends State<CashPinScreen> {
+  String _pin = '';
+  bool _loading = false;
+  static const _length = 6;
+
+  void _key(String value) {
+    if (value == 'DEL') {
+      if (_pin.isNotEmpty) setState(() => _pin = _pin.substring(0, _pin.length - 1));
+    } else if (_pin.length < _length) {
+      setState(() => _pin += value);
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_pin.length != _length) return;
+    setState(() => _loading = true);
+    final result = await ApiService().ajukanPenarikan(
+      jumlahTarik: widget.amount.toDouble(),
+      metodeBayar: 'Tarik Tunai - Rumah Hijau',
+      noRekening: widget.phone,
+      pin: _pin,
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (result['success'] == true) {
+      final token = (DateTime.now().millisecondsSinceEpoch % 1000000).toString().padLeft(6, '0');
+      RiwayatStore.tambahTransfer('Rumah Hijau', widget.phone, widget.amount, jenis: JenisTransaksi.cash);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => CashTokenScreen(token: token, phone: widget.phone, amount: widget.amount)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Penarikan gagal'), behavior: SnackBarBehavior.floating));
+      setState(() => _pin = '');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar('Masukkan PIN', showBack: true, context: context),
+      body: Column(
+        children: [
+          const Spacer(),
+          const Text('Masukkan PIN yang telah dibuat', style: TextStyle(color: kText, fontSize: 16.6, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 24),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(_length, (i) => Container(margin: const EdgeInsets.symmetric(horizontal: 8), width: 14, height: 14, decoration: BoxDecoration(shape: BoxShape.circle, color: i < _pin.length ? kPrimary : kBorder)))),
+          const SizedBox(height: 30),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Column(
+              children: [
+                _row(['1', '2', '3']),
+                const SizedBox(height: 12),
+                _row(['4', '5', '6']),
+                const SizedBox(height: 12),
+                _row(['7', '8', '9']),
+                const SizedBox(height: 12),
+                _row(['', '0', 'DEL']),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _pin.length == _length && !_loading ? _submit : null,
+                style: ElevatedButton.styleFrom(backgroundColor: kPrimary, disabledBackgroundColor: kBorder, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
+                child: _loading ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2) : const Text('Konfirmasi', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(List<String> keys) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: keys.map((value) {
+          if (value.isEmpty) return const SizedBox(width: 80, height: 60);
+          return GestureDetector(
+            onTap: () => _key(value),
+            child: Container(
+              width: 80,
+              height: 60,
+              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+              child: Center(child: value == 'DEL' ? const Icon(Icons.backspace_outlined) : Text(value, style: const TextStyle(fontSize: 21.8, fontWeight: FontWeight.w500))),
+            ),
+          );
+        }).toList(),
+      );
+}
+
+class CashTokenScreen extends StatelessWidget {
+  final String token;
+  final String phone;
+  final int amount;
+  const CashTokenScreen({super.key, required this.token, required this.phone, required this.amount});
+
+  String _money(num value) => value.round().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      appBar: _buildAppBar('Kode tarik tunai', showBack: false, context: context),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+              decoration: BoxDecoration(color: kPrimaryDark, borderRadius: BorderRadius.circular(22)),
+              child: Column(
+                children: [
+                  const Icon(Icons.verified_outlined, color: Colors.white, size: 36.1),
+                  const SizedBox(height: 10),
+                  const Text('Kode tarik tunai', style: TextStyle(color: Colors.white70, fontSize: 13.4)),
+                  const SizedBox(height: 8),
+                  SelectableText(token, style: const TextStyle(color: Colors.white, fontSize: 33.7, fontWeight: FontWeight.w900, letterSpacing: 8)),
+                  const SizedBox(height: 10),
+                  const Text('Berlaku selama 60 menit', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 12.4, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: kBorder)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Sampaikan kepada admin Rumah Hijau', style: TextStyle(color: kText, fontSize: 15.5, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 10),
+                  Text('Nomor ponsel terdaftar: $phone', style: const TextStyle(color: kText, fontSize: 13.4)),
+                  const SizedBox(height: 4),
+                  Text('Nominal: Rp ${_money(amount)}', style: const TextStyle(color: kTextSoft, fontSize: 12.4)),
+                  const SizedBox(height: 12),
+                  const Text('Tunjukkan atau bacakan nomor ponsel dan kode ini kepada admin. Admin akan memproses transaksi dan menyerahkan uang tunai fisik.', style: TextStyle(color: kTextSoft, fontSize: 12.4, height: 1.4)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+                style: ElevatedButton.styleFrom(backgroundColor: kPrimary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
+                child: const Text('Selesai', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

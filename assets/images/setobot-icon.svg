@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="setobot-title setobot-desc">
+  <title id="setobot-title">Setobot</title>
+  <desc id="setobot-desc">Maskot robot Setor.in yang ceria dengan antena daun, mata berkilau, pipi merah muda, dan badan mungil.</desc>
+  <defs>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientTransform="translate(176 126) rotate(54) scale(424)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F8EA"/>
+      <stop offset="1" stop-color="#DFEDDB"/>
+    </radialGradient>
+    <linearGradient id="face" x1="151" y1="128" x2="355" y2="388" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDF3"/>
+      <stop offset="1" stop-color="#F0F6E9"/>
+    </linearGradient>
+    <linearGradient id="body" x1="185" y1="335" x2="326" y2="442" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#91BD83"/>
+      <stop offset="1" stop-color="#6E9C67"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="257" y1="47" x2="310" y2="103" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A7D18F"/>
+      <stop offset="1" stop-color="#5F9C63"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Soft sage badge; the corners remain transparent. -->
+  <circle cx="256" cy="256" r="239" fill="url(#halo)" stroke="#D5E5D1" stroke-width="6"/>
+  <circle cx="256" cy="256" r="221" fill="none" stroke="#FFFFFF" stroke-opacity=".66" stroke-width="3"/>
+
+  <!-- A couple of tiny recycling-garden sparkles. -->
+  <path d="M391 139c3 11 7 15 18 18-11 3-15 7-18 18-3-11-7-15-18-18 11-3 15-7 18-18Z" fill="#D9AB5E"/>
+  <path d="M113 322c2.3 7.5 5.2 10.4 12.7 12.7-7.5 2.2-10.4 5.2-12.7 12.7-2.2-7.5-5.2-10.5-12.7-12.7 7.5-2.3 10.5-5.2 12.7-12.7Z" fill="#88B77C"/>
+  <circle cx="402" cy="315" r="6" fill="#88B77C"/>
+  <circle cx="124" cy="183" r="5" fill="#E5C67F"/>
+
+  <!-- Tiny feet and soft ground shadow. -->
+  <ellipse cx="256" cy="443" rx="103" ry="17" fill="#526F4C" opacity=".12"/>
+  <rect x="190" y="407" width="61" height="38" rx="19" fill="#55764E" stroke="#3F5C40" stroke-width="8"/>
+  <rect x="261" y="407" width="61" height="38" rx="19" fill="#55764E" stroke="#3F5C40" stroke-width="8"/>
+  <path d="M210 424h20M281 424h20" stroke="#9FC78D" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Little arms, behind the body. -->
+  <path d="M169 346c-19-3-31 7-32 21-1 11 8 19 20 17l25-7-13-31Z" fill="#79A971" stroke="#3F5C40" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M343 346c19-3 31 7 32 21 1 11-8 19-20 17l-25-7 13-31Z" fill="#79A971" stroke="#3F5C40" stroke-width="10" stroke-linejoin="round"/>
+  <circle cx="146" cy="370" r="7" fill="#B5D3A7"/>
+  <circle cx="366" cy="370" r="7" fill="#B5D3A7"/>
+
+  <!-- Compact little body. -->
+  <rect x="164" y="324" width="184" height="112" rx="48" fill="url(#body)" stroke="#3F5C40" stroke-width="14"/>
+  <path d="M193 350c13-12 30-17 53-17" stroke="#D9EAD0" stroke-width="7" stroke-linecap="round" opacity=".75"/>
+  <path d="M256 370c-16-1-27 9-27 22 14 1 24-5 27-18 3 13 13 19 27 18 0-13-11-23-27-22Z" fill="#F6F5E8"/>
+  <path d="M256 373v28" stroke="#527A4F" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Antenna and leaf sprout. -->
+  <path d="M256 139V93" stroke="#3F5C40" stroke-width="16" stroke-linecap="round"/>
+  <path d="M254 103c-4-37 23-62 60-54 1 35-20 59-60 54Z" fill="url(#leaf)" stroke="#3F5C40" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M260 96c13-15 27-27 43-37" fill="none" stroke="#DFF0D5" stroke-width="5" stroke-linecap="round"/>
+  <path d="M280 79c-1-9-5-16-11-21M293 69c7 1 12 4 16 9" fill="none" stroke="#DFF0D5" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Round ear pads peek out from the sides. -->
+  <circle cx="111" cy="266" r="34" fill="#81B276" stroke="#3F5C40" stroke-width="12"/>
+  <circle cx="401" cy="266" r="34" fill="#81B276" stroke="#3F5C40" stroke-width="12"/>
+  <circle cx="111" cy="266" r="11" fill="#D8E9CF"/>
+  <circle cx="401" cy="266" r="11" fill="#D8E9CF"/>
+
+  <!-- Big rounded head. -->
+  <rect x="105" y="121" width="302" height="269" rx="103" fill="url(#face)" stroke="#3F5C40" stroke-width="16"/>
+  <path d="M152 165c17-19 40-28 68-29" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" opacity=".92"/>
+  <path d="M143 198c5-8 12-14 20-18" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity=".72"/>
+
+  <!-- Sparkly eyes, blush, and a happy little smile. -->
+  <ellipse cx="202" cy="250" rx="19" ry="22" fill="#174B35"/>
+  <ellipse cx="310" cy="250" rx="19" ry="22" fill="#174B35"/>
+  <circle cx="208" cy="242" r="6.5" fill="#FFFFFF"/>
+  <circle cx="316" cy="242" r="6.5" fill="#FFFFFF"/>
+  <circle cx="196" cy="258" r="2.8" fill="#A9D48E"/>
+  <circle cx="304" cy="258" r="2.8" fill="#A9D48E"/>
+  <ellipse cx="159" cy="296" rx="20" ry="13" fill="#E9A7A0" opacity=".8"/>
+  <ellipse cx="353" cy="296" rx="20" ry="13" fill="#E9A7A0" opacity=".8"/>
+  <path d="M234 299c6 15 14 22 22 22s16-7 22-22" fill="none" stroke="#28734A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M248 313c3 5 6 7 8 7s5-2 8-7" fill="#E9A7A0"/>
+  <path d="M184 287h6M322 287h6" stroke="#D98D89" stroke-width="4" stroke-linecap="round" opacity=".75"/>
+</svg>

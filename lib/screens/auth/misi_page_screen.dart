@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'app_theme.dart';
 import 'target_sampah_screen.dart';
 import 'user_data.dart'; // ← TAMBAHAN
 
@@ -247,34 +248,34 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
 
   Widget _appBar() {
     return Container(
-      color: Colors.white,
+      color: kBg,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black87, width: 2),
+                color: kPrimaryLight,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: Colors.black87),
+              child: const Icon(Icons.arrow_back,
+                  size: 23.6, color: kText),
             ),
           ),
           const Expanded(
             child: Text(
               'Targetkan Sampah',
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 18.4,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black87),
+                  color: kText),
             ),
           ),
-          const SizedBox(width: 38),
+          const SizedBox(width: 40),
         ],
       ),
     );
@@ -293,20 +294,20 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(children: [
-            Icon(Icons.info_rounded, color: Color(0xFF1D4ED8), size: 16),
+            Icon(Icons.info_rounded, color: Color(0xFF1D4ED8), size: 18.9),
             SizedBox(width: 6),
             Flexible(
                 child: Text('Fitur Misi Penargetan Sampah',
                     style: TextStyle(
                         color: Color(0xFF1D4ED8),
                         fontWeight: FontWeight.w700,
-                        fontSize: 13))),
+                        fontSize: 14.9))),
           ]),
           const SizedBox(height: 6),
           RichText(
             text: const TextSpan(
               style: TextStyle(
-                  color: Color(0xFF374151), fontSize: 12, height: 1.5),
+                  color: Color(0xFF374151), fontSize: 13.8, height: 1.5),
               children: [
                 TextSpan(
                     text: 'Fitur ini membantu Anda merencanakan dan '
@@ -349,13 +350,13 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
         child: Row(
           children: [
             const Icon(Icons.calendar_today_rounded,
-                color: Color(0xFF22C55E), size: 16),
+                color: Color(0xFF22C55E), size: 18.9),
             const SizedBox(width: 10),
             Expanded(
               child: RichText(
                 text: TextSpan(
                   style: const TextStyle(
-                      color: Color(0xFF374151), fontSize: 13, height: 1.4),
+                      color: Color(0xFF374151), fontSize: 14.9, height: 1.4),
                   children: [
                     const TextSpan(
                         text:
@@ -379,7 +380,7 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
                   ? Icons.edit_calendar_rounded
                   : Icons.calendar_month_outlined,
               color: const Color(0xFF22C55E),
-              size: 18,
+              size: 21.2,
             ),
           ],
         ),
@@ -410,18 +411,18 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
         const Text('Target bulan ini :',
             style: TextStyle(
                 color: Colors.white70,
-                fontSize: 14,
+                fontSize: 16.1,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
         const Text('0kg',
             style: TextStyle(
                 color: Colors.white,
-                fontSize: 48,
+                fontSize: 52.8,
                 fontWeight: FontWeight.w900,
                 height: 1)),
         const SizedBox(height: 6),
         const Text('Estimasi koin yang di dapatkan : 0',
-            style: TextStyle(color: Colors.white70, fontSize: 13)),
+            style: TextStyle(color: Colors.white70, fontSize: 14.9)),
         const SizedBox(height: 12),
         Container(
           padding:
@@ -432,7 +433,7 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
           ),
           child: Row(children: [
             const Icon(Icons.warning_amber_rounded,
-                color: Color(0xFFFBBF24), size: 22),
+                color: Color(0xFFFBBF24), size: 26),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -441,7 +442,7 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
                   const Text('Anda belum membuat penargetan',
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 13,
+                          fontSize: 14.9,
                           fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   GestureDetector(
@@ -450,7 +451,7 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
                       'Lakukan penargetan sampah',
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 13,
+                          fontSize: 14.9,
                           fontWeight: FontWeight.w700,
                           decoration: TextDecoration.underline,
                           decorationColor: Colors.white),
@@ -475,7 +476,7 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
             const Text('Target bulan ini :',
                 style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 13,
+                    fontSize: 14.9,
                     fontWeight: FontWeight.w500)),
             GestureDetector(
               onTap: _bukaFormTarget,
@@ -487,12 +488,12 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(children: [
-                  Icon(Icons.edit_rounded, color: Colors.white, size: 13),
+                  Icon(Icons.edit_rounded, color: Colors.white, size: 15.3),
                   SizedBox(width: 4),
                   Text('Ubah',
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 13.8,
                           fontWeight: FontWeight.w600)),
                 ]),
               ),
@@ -503,19 +504,19 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
         Text('${_targetKg.toStringAsFixed(0)}kg',
             style: const TextStyle(
                 color: Colors.white,
-                fontSize: 52,
+                fontSize: 57.2,
                 fontWeight: FontWeight.w900,
                 height: 1)),
         const SizedBox(height: 8),
         Text('Estimasi koin yang di dapatkan : $_estimasiKoin',
-            style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            style: const TextStyle(color: Colors.white70, fontSize: 14.9)),
         const SizedBox(height: 4),
         Row(children: [
-          const Icon(Icons.today_rounded, color: Colors.white70, size: 14),
+          const Icon(Icons.today_rounded, color: Colors.white70, size: 16.5),
           const SizedBox(width: 4),
           Text('Durasi misi : $_totalHariMisi hari',
               style:
-                  const TextStyle(color: Colors.white70, fontSize: 12)),
+                  const TextStyle(color: Colors.white70, fontSize: 13.8)),
         ]),
       ],
     );
@@ -526,7 +527,7 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(t,
           style: TextStyle(
-              fontSize: 16,
+              fontSize: 18.4,
               fontWeight: FontWeight.w800,
               color: Colors.grey.shade800)),
     );
@@ -544,12 +545,12 @@ class _MisiPageScreenState extends State<MisiPageScreen> {
       ),
       child: Row(children: [
         const Icon(Icons.monetization_on_rounded,
-            color: Color(0xFFF59E0B), size: 22),
+            color: Color(0xFFF59E0B), size: 26),
         const SizedBox(width: 10),
         RichText(
           text: TextSpan(
             style: const TextStyle(
-                fontSize: 13, color: Color(0xFF92400E)),
+                fontSize: 14.9, color: Color(0xFF92400E)),
             children: [
               const TextSpan(text: 'Total koin dari misi : '),
               TextSpan(
@@ -694,7 +695,7 @@ class _DayCell extends StatelessWidget {
             Text(
               'Hari ke-$dayNumber',
               style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13.8,
                   fontWeight: FontWeight.w600,
                   color: (isSelesai || isNextActive)
                       ? const Color(0xFF22C55E)
@@ -715,7 +716,7 @@ class _DayCell extends StatelessWidget {
             color: const Color(0xFFF0FDF4),
             borderRadius: BorderRadius.circular(10)),
         child: const Icon(Icons.check_circle_rounded,
-            color: Color(0xFF22C55E), size: 28),
+            color: Color(0xFF22C55E), size: 33),
       );
     }
     if (isNextActive) {
@@ -726,7 +727,7 @@ class _DayCell extends StatelessWidget {
             color: const Color(0xFFF0FDF4),
             borderRadius: BorderRadius.circular(10)),
         child: const Icon(Icons.gps_fixed_rounded,
-            color: Color(0xFF22C55E), size: 26),
+            color: Color(0xFF22C55E), size: 30.7),
       );
     }
     return Container(
@@ -736,7 +737,7 @@ class _DayCell extends StatelessWidget {
           color: const Color(0xFFFFF0F0),
           borderRadius: BorderRadius.circular(10)),
       child: const Icon(Icons.lock_rounded,
-          color: Color(0xFFEF4444), size: 26),
+          color: Color(0xFFEF4444), size: 30.7),
     );
   }
 }
@@ -885,7 +886,11 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
 
   int get _totalItem {
     int t = 0;
-    for (final cat in _qty) for (final q in cat) t += q;
+    for (final cat in _qty) {
+      for (final q in cat) {
+        t += q;
+      }
+    }
     return t;
   }
 
@@ -896,7 +901,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
   bool   get _bisaSubmit     => _totalItem >= 1;
 
   String _fmtKg(double gram) =>
-      (gram / 1000).toStringAsFixed(1).replaceAll('.', ',') + 'kg';
+      '${(gram / 1000).toStringAsFixed(1).replaceAll('.', ',')}kg';
 
   @override
   Widget build(BuildContext context) {
@@ -937,7 +942,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
 
   Widget _appBar() {
     return Container(
-      color: Colors.white,
+      color: kBg,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(
         children: [
@@ -947,27 +952,27 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
               if (mounted) Navigator.pop(context, null);
             },
             child: Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black87, width: 2),
+                color: kPrimaryLight,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: Colors.black87),
+              child: const Icon(Icons.arrow_back,
+                  size: 23.6, color: kText),
             ),
           ),
           Expanded(
             child: Text(
               'Jalankan Misi - Hari ke-${widget.hariKe}',
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18.4,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black87),
+                  color: kText),
             ),
           ),
-          const SizedBox(width: 38),
+          const SizedBox(width: 40),
         ],
       ),
     );
@@ -994,12 +999,12 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
                 children: [
                   const Text('Target hari ini :',
                       style: TextStyle(
-                          color: Colors.white70, fontSize: 13)),
+                          color: Colors.white70, fontSize: 14.9)),
                   const SizedBox(height: 2),
                   Text(_fmtKg(_targetGram),
                       style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 22,
+                          fontSize: 24.2,
                           fontWeight: FontWeight.w800)),
                 ]),
             Column(
@@ -1007,12 +1012,12 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
                 children: [
                   const Text('Terkumpul :',
                       style: TextStyle(
-                          color: Colors.white70, fontSize: 13)),
+                          color: Colors.white70, fontSize: 14.9)),
                   const SizedBox(height: 2),
                   Text(_fmtKg(_terkumpulGram),
                       style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 22,
+                          fontSize: 24.2,
                           fontWeight: FontWeight.w800)),
                 ]),
           ],
@@ -1045,7 +1050,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
       child: RichText(
         text: const TextSpan(
           style: TextStyle(
-              color: Color(0xFF374151), fontSize: 12, height: 1.5),
+              color: Color(0xFF374151), fontSize: 13.8, height: 1.5),
           children: [
             TextSpan(text: '🗑️ '),
             TextSpan(
@@ -1085,7 +1090,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
                   horizontal: 16, vertical: 14),
               child: Row(children: [
                 Text(kat['icon'] as String,
-                    style: const TextStyle(fontSize: 22)),
+                    style: const TextStyle(fontSize: 24.2)),
                 const SizedBox(width: 10),
                 Expanded(
                     child: Column(
@@ -1093,12 +1098,12 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
                   children: [
                     Text(kat['nama'] as String,
                         style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 16.1,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87)),
                     const Text('Ketuk untuk melihat pilihan',
                         style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 13.8,
                             color: Color(0xFF6B7280))),
                   ],
                 )),
@@ -1136,13 +1141,13 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
                         children: [
                           Text(item['nama'] as String,
                               style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 14.9,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.black87)),
                           Text(
                               '+${item['gram']} gram per item',
                               style: const TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 13.8,
                                   color: Color(0xFF6B7280))),
                         ],
                       )),
@@ -1164,7 +1169,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
                         alignment: Alignment.center,
                         child: Text('${_qty[ci][ii]}',
                             style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 16.1,
                                 fontWeight: FontWeight.w700)),
                       ),
                       _QtyButton(
@@ -1223,7 +1228,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
               ),
               child: Text(btnLabel,
                   style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16.1,
                       fontWeight: FontWeight.w700)),
             ),
           ),
@@ -1231,7 +1236,7 @@ class _JalankanMisiScreenState extends State<JalankanMisiScreen> {
           const Text(
             '💡 Ini adalah estimasi untuk tracking. Jangan lupa setor sampah ke bank sampah untuk mendapat uang!',
             style: TextStyle(
-                fontSize: 11, color: Color(0xFF6B7280)),
+                fontSize: 13.8, color: Color(0xFF6B7280)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1296,7 +1301,7 @@ class MisiSelesaiDialog extends StatelessWidget {
   });
 
   String _fmt(double kg) =>
-      kg.toStringAsFixed(1).replaceAll('.', ',') + 'kg';
+      '${kg.toStringAsFixed(1).replaceAll('.', ',')}kg';
 
   @override
   Widget build(BuildContext context) {
@@ -1330,14 +1335,14 @@ class MisiSelesaiDialog extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check_rounded,
-                      color: Colors.white, size: 44),
+                      color: Colors.white, size: 51.9),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Misi Hari ke-$hariKe Selesai!!',
                   style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 19.8,
                       fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 ),
@@ -1345,11 +1350,11 @@ class MisiSelesaiDialog extends StatelessWidget {
                 Text(_fmt(terkumpulKg),
                     style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 52,
+                        fontSize: 57.2,
                         fontWeight: FontWeight.w900)),
                 const Text('terkumpul hari ini',
                     style: TextStyle(
-                        color: Colors.white70, fontSize: 13)),
+                        color: Colors.white70, fontSize: 14.9)),
                 const SizedBox(height: 24),
                 Container(
                   width: double.infinity,
@@ -1363,12 +1368,12 @@ class MisiSelesaiDialog extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.monetization_on_rounded,
-                          color: Color(0xFFFBBF24), size: 28),
+                          color: Color(0xFFFBBF24), size: 33),
                       const SizedBox(width: 10),
                       Text('+$koinDapat Koin',
                           style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 24,
+                              fontSize: 26.4,
                               fontWeight: FontWeight.w800)),
                     ],
                   ),
@@ -1376,7 +1381,7 @@ class MisiSelesaiDialog extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text('ditambahkan ke total koinmu',
                     style: TextStyle(
-                        color: Colors.white70, fontSize: 12)),
+                        color: Colors.white70, fontSize: 13.8)),
                 const SizedBox(height: 20),
               ],
             ),
@@ -1394,7 +1399,7 @@ class MisiSelesaiDialog extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.close_rounded,
-                    color: Colors.white, size: 22),
+                    color: Colors.white, size: 26),
               ),
             ),
           ),
@@ -1427,7 +1432,7 @@ class _QtyButton extends StatelessWidget {
         decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(6)),
-        child: Icon(icon, color: Colors.white, size: 16),
+        child: Icon(icon, color: Colors.white, size: 18.9),
       ),
     );
   }

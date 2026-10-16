@@ -171,10 +171,15 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
         final String name = b['nama_bank'] ?? 'Bank Sampah';
 
         Color markerC = kPrimary;
-        if (id % 4 == 1) markerC = kPrimary;
-        else if (id % 4 == 2) markerC = kInfo;
-        else if (id % 4 == 3) markerC = kWarning;
-        else markerC = const Color(0xFF8B5CF6);
+        if (id % 4 == 1) {
+          markerC = kPrimary;
+        } else if (id % 4 == 2) {
+          markerC = kInfo;
+        } else if (id % 4 == 3) {
+          markerC = kWarning;
+        } else {
+          markerC = const Color(0xFF8B5CF6);
+        }
 
         return BankSampah(
           id: 'bs_$id',
@@ -256,40 +261,20 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
             // ── App Bar ──
             SliverAppBar(
               pinned: true,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
+              backgroundColor: kBg,
+              foregroundColor: kText,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               expandedHeight: 0,
               leading: IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.black87, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: 16,
-                    color: Colors.black87,
-                  ),
-                ),
+                icon: const Icon(Icons.arrow_back),
               ),
-              title: const Text(
-                'Cek Bank Sampah',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              centerTitle: true,
+              title: const Text('Cek Bank Sampah'),
+              centerTitle: false,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.filter_list_rounded,
-                      color: Colors.black87),
+                  icon: const Icon(Icons.filter_list_rounded),
                   onPressed: _showFilterSheet,
                 ),
               ],
@@ -320,13 +305,13 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                       decoration: InputDecoration(
                         hintText: 'Cari nama atau alamat bank sampah...',
                         hintStyle:
-                            const TextStyle(color: kTextSoft, fontSize: 13),
+                            const TextStyle(color: kTextSoft, fontSize: 14.9),
                         prefixIcon:
                             const Icon(Icons.search_rounded, color: kPrimary),
                         suffixIcon: _query.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear_rounded,
-                                    color: kTextSoft, size: 18),
+                                    color: kTextSoft, size: 21.2),
                                 onPressed: () {
                                   setState(() {
                                     _query = '';
@@ -351,7 +336,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                     const Spacer(),
                     Text('${_filtered.length} lokasi',
                         style:
-                            const TextStyle(fontSize: 12, color: kTextSoft)),
+                            const TextStyle(fontSize: 13.8, color: kTextSoft)),
                   ]),
                   const SizedBox(height: 10),
                 ]),
@@ -428,7 +413,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                     ],
                   ),
                   child: const Icon(Icons.recycling_rounded,
-                      color: Colors.white, size: 14),
+                      color: Colors.white, size: 16.5),
                 ),
                 CustomPaint(
                   painter:
@@ -475,11 +460,11 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                 ],
               ),
               child: const Row(children: [
-                Icon(Icons.my_location_rounded, color: kPrimary, size: 16),
+                Icon(Icons.my_location_rounded, color: kPrimary, size: 18.9),
                 SizedBox(width: 4),
                 Text('Lokasiku',
                     style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13.8,
                         color: kText,
                         fontWeight: FontWeight.w600)),
               ]),
@@ -499,12 +484,12 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               _legendDot(kPrimary),
               const SizedBox(width: 4),
-              const Text('Buka', style: TextStyle(fontSize: 10, color: kText)),
+              const Text('Buka', style: TextStyle(fontSize: 12.5, color: kText)),
               const SizedBox(width: 8),
               _legendDot(Colors.grey),
               const SizedBox(width: 4),
               const Text('Tutup',
-                  style: TextStyle(fontSize: 10, color: kText)),
+                  style: TextStyle(fontSize: 12.5, color: kText)),
             ]),
           ),
         ),
@@ -532,7 +517,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
         ),
         child: Text(label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13.8,
               fontWeight: active ? FontWeight.w700 : FontWeight.w400,
               color: active ? Colors.white : kTextSoft,
             )),
@@ -575,7 +560,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(Icons.recycling_rounded,
-                    color: b.markerColor, size: 26),
+                    color: b.markerColor, size: 30.7),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -587,7 +572,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                           child: Text(b.nama,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                  fontSize: 16.1,
                                   color: kText))),
                       _statusBadge(b.buka),
                     ]),
@@ -596,7 +581,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            fontSize: 12, color: kTextSoft)),
+                            fontSize: 13.8, color: kTextSoft)),
                   ])),
             ]),
             const SizedBox(height: 12),
@@ -624,7 +609,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                         child: Text(j,
                             style: const TextStyle(
                                 color: kPrimary,
-                                fontSize: 10,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w600)),
                       ))
                   .toList(),
@@ -655,7 +640,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
         Text(buka ? 'Buka' : 'Tutup',
             style: TextStyle(
                 color: buka ? kPrimary : kDanger,
-                fontSize: 11,
+                fontSize: 13.8,
                 fontWeight: FontWeight.w700)),
       ]),
     );
@@ -663,9 +648,9 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
 
   Widget _infoChip(IconData icon, String label, Color color) {
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: 13, color: color),
+      Icon(icon, size: 15.3, color: color),
       const SizedBox(width: 3),
-      Text(label, style: TextStyle(fontSize: 11, color: color)),
+      Text(label, style: TextStyle(fontSize: 13.8, color: color)),
     ]);
   }
 
@@ -688,7 +673,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                 Row(children: [
                   const Text('Filter',
                       style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 19.8,
                           fontWeight: FontWeight.w700,
                           color: kText)),
                   const Spacer(),
@@ -702,7 +687,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                     },
                     child: const Text('Reset',
                         style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 14.9,
                             color: kPrimary,
                             fontWeight: FontWeight.w600)),
                   ),
@@ -710,7 +695,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                 const SizedBox(height: 20),
                 const Text('Status',
                     style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14.9,
                         fontWeight: FontWeight.w600,
                         color: kText)),
                 const SizedBox(height: 10),
@@ -734,7 +719,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                           ),
                           child: Text(s,
                               style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13.8,
                                   color:
                                       active ? Colors.white : kTextSoft,
                                   fontWeight: active
@@ -746,7 +731,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                 const SizedBox(height: 18),
                 const Text('Jenis Sampah',
                     style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14.9,
                         fontWeight: FontWeight.w600,
                         color: kText)),
                 const SizedBox(height: 10),
@@ -771,7 +756,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                           ),
                           child: Text(j,
                               style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13.8,
                                   color:
                                       active ? Colors.white : kTextSoft,
                                   fontWeight: active
@@ -849,7 +834,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(Icons.recycling_rounded,
-                              color: b.markerColor, size: 30),
+                              color: b.markerColor, size: 35.4),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -859,13 +844,13 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                                 children: [
                               Text(b.nama,
                                   style: const TextStyle(
-                                      fontSize: 17,
+                                      fontSize: 18.7,
                                       fontWeight: FontWeight.w800,
                                       color: kText)),
                               const SizedBox(height: 4),
                               Text(b.alamat,
                                   style: const TextStyle(
-                                      fontSize: 12, color: kTextSoft)),
+                                      fontSize: 13.8, color: kTextSoft)),
                               const SizedBox(height: 6),
                               _statusBadge(b.buka),
                             ])),
@@ -878,7 +863,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                         const SizedBox(width: 10),
                         Expanded(
                             child: _infoBox(Icons.star_rounded, 'Rating',
-                                '${b.rating.toStringAsFixed(1)}', kWarning)),
+                                b.rating.toStringAsFixed(1), kWarning)),
                         const SizedBox(width: 10),
                         Expanded(
                             child: _infoBox(Icons.rate_review_outlined,
@@ -899,7 +884,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                       const SizedBox(height: 16),
                       const Text('Menerima Sampah',
                           style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 16.1,
                               fontWeight: FontWeight.w700,
                               color: kText)),
                       const SizedBox(height: 10),
@@ -919,7 +904,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                                         style: const TextStyle(
                                             color: kPrimary,
                                             fontWeight: FontWeight.w600,
-                                            fontSize: 13)),
+                                            fontSize: 14.9)),
                                   ))
                               .toList()),
                       const SizedBox(height: 24),
@@ -931,7 +916,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               onPressed: () => _pilihMitra(b),
-                              icon: const Icon(Icons.handshake_rounded, size: 18),
+                              icon: const Icon(Icons.handshake_rounded, size: 21.2),
                               label: const Text('Pilih Sebagai Mitra',
                                   style: TextStyle(fontWeight: FontWeight.w700)),
                               style: ElevatedButton.styleFrom(
@@ -954,7 +939,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                               }
                             },
                             icon: const Icon(Icons.phone_outlined,
-                                size: 18, color: kPrimary),
+                                size: 21.2, color: kPrimary),
                             label: const Text('Hubungi',
                                 style: TextStyle(
                                     color: kPrimary,
@@ -977,7 +962,7 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
                               _launchMaps(b.lat, b.lng);
                             },
                             icon: const Icon(Icons.directions_rounded,
-                                size: 18),
+                                size: 21.2),
                             label: const Text('Petunjuk Arah',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600)),
@@ -1008,29 +993,29 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: AppTheme.cardDecoration,
       child: Column(children: [
-        Icon(icon, color: color, size: 20),
+        Icon(icon, color: color, size: 23.6),
         const SizedBox(height: 4),
         Text(val,
             style: TextStyle(
-                fontSize: 14,
+                fontSize: 16.1,
                 fontWeight: FontWeight.w700,
                 color: color)),
         Text(label,
-            style: const TextStyle(fontSize: 10, color: kTextSoft)),
+            style: const TextStyle(fontSize: 12.5, color: kTextSoft)),
       ]),
     );
   }
 
   Widget _detailRow(IconData icon, String label, String val) {
     return Row(children: [
-      Icon(icon, color: kPrimary, size: 16),
+      Icon(icon, color: kPrimary, size: 18.9),
       const SizedBox(width: 10),
       Text('$label: ',
-          style: const TextStyle(fontSize: 13, color: kTextSoft)),
+          style: const TextStyle(fontSize: 14.9, color: kTextSoft)),
       Expanded(
           child: Text(val,
               style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 14.9,
                   fontWeight: FontWeight.w600,
                   color: kText))),
     ]);
@@ -1043,10 +1028,10 @@ class _CekBankSampahScreenState extends State<CekBankSampahScreen>
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Pilih Bank Sampah Mitra',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18.4)),
         content: Text(
           'Apakah Anda yakin ingin menjadikan "${b.nama}" sebagai bank sampah mitra Anda?',
-          style: const TextStyle(fontSize: 14, color: kTextSoft),
+          style: const TextStyle(fontSize: 16.1, color: kTextSoft),
         ),
         actions: [
           TextButton(

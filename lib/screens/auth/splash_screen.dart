@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'app_theme.dart';
-import 'login_screen.dart';
 import 'dashboard_screen.dart';
+import 'login_screen.dart';
 import 'onboarding_screen.dart';
 import 'user_data.dart';
 
@@ -13,174 +14,182 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.7, curve: Curves.easeIn)),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.75, curve: Curves.easeOutBack)),
-    );
-
-    _controller.forward();
-    _checkNavigation();
+    _routeFromLaunch();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _checkNavigation() async {
-    // Tunggu animasi logo selesai + delay sedikit agar UX nyaman
-    await Future.delayed(const Duration(milliseconds: 2500));
-    if (!mounted) return;
-
+  Future<void> _routeFromLaunch() async {
+    // Keep the illustrated intro visible long enough to read, then continue
+    // through the same first-run/authentication flow as before.
+    await Future.delayed(const Duration(milliseconds: 2200));
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    final isFirstRun = prefs.getBool('isFirstRun') ?? true;
 
-    if (isFirstRun) {
+    if (prefs.getBool('isFirstRun') ?? true) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const OnboardingScreen()),
       );
-    } else {
-      final token = prefs.getString('token');
-      if (token != null && token.isNotEmpty) {
-        // Load data nasabah terlebih dahulu
-        final userData = UserData();
-        await userData.load();
-        
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
+      return;
     }
+
+    final token = prefs.getString('token');
+    if (token != null && token.isNotEmpty) {
+      await UserData().load();
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          color: kPrimaryDark,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Center Logo & Title
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+      backgroundColor: kPrimaryDark,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -96,
+            right: -92,
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: .07)),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -150,
+            bottom: -140,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: .06)),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                return Column(
                   children: [
-                    // Icon Logo Container
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(width * .055, 18, width * .055, 0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.eco_rounded,
+                              color: Color(0xFFE7E9D9), size: 22.4),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'SETOR.IN',
+                            style: TextStyle(
+                              color: Color(0xFFE7E9D9),
+                              fontSize: 14.9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2.1,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'RUMAH HIJAU',
+                            style: TextStyle(
+                              color: const Color(0xFFE7E9D9).withValues(alpha: .72),
+                              fontSize: 11.2,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.6,
+                            ),
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.recycling_rounded,
-                          size: 56,
-                          color: kPrimary,
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 460),
+                          child: SizedBox(
+                            width: width * .9,
+                            height: constraints.maxHeight * .57,
+                            child: Image.asset(
+                              'assets/images/setor_story_illustration.webp',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    // Brand Name
-                    const Text(
-                      'Setor.in',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                        fontFamily: 'Poppins',
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 22),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Pilahkan. Setorkan. Tumbuhkan.',
+                              maxLines: 1,
+                              style: TextStyle(
+                                color: const Color(0xFFF5F4E8),
+                                fontSize: width < 390 ? 25 : 29,
+                                height: 1.1,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -.7,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Sampah terpilah, nilai yang berarti.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: const Color(0xFFE7E9D9).withValues(alpha: .78),
+                              fontSize: 14.9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 25),
+                          const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Color(0xFFE7E9D9),
+                            ),
+                          ),
+                          const SizedBox(height: 9),
+                          Text(
+                            'Menyiapkan aplikasi',
+                            style: TextStyle(
+                              color: const Color(0xFFE7E9D9).withValues(alpha: .68),
+                              fontSize: 13.8,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Subtitle
-                    Text(
-                      'Pilah Sampah, Raih Rupiah',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.85),
-                        letterSpacing: 0.5,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
+                    const SizedBox(height: 18),
                   ],
-                ),
-              ),
+                );
+              },
             ),
-            // Loading Indicator at bottom
-            Positioned(
-              bottom: 60,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Menghubungkan...',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 12,
-                        fontFamily: 'Poppins',
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -59,8 +59,12 @@ Kebutuhan mitra dan kebutuhan akademik:
 - Web admin dan backend/API (repo lama, khusus admin).
 - Integrasi: Gemini API (chatbot), Firebase (FCM dan Google Sign-In),
   email SMTP (OTP), Google Maps (tombol petunjuk arah).
-- Tukar saldo berupa simulasi internal; Midtrans Payouts (Iris)
-  sandbox bersifat opsional.
+- Penarikan bank/e-wallet (label UI mobile: Tarik Saldo; istilah teknis
+  bisnis/backend tetap "tukar saldo") berupa simulasi internal;
+  Midtrans Payouts (Iris) sandbox bersifat opsional.
+- Pencarian lokasi Agen, Alfamart, Indomaret, dan Rumah Hijau hanya
+  menampilkan hasil lokasi/petunjuk arah; bukan kanal payout atau
+  transaksi tarik tunai.
 
 ### 2.3 Di luar lingkup
 - Landing page (sudah jadi; hanya perlu tautan unduh APK).
@@ -239,7 +243,7 @@ M-08 Riwayat transaksi [F1 setoran; F2 lengkap]
 - F2: digabung dengan riwayat tukar saldo (nominal, tujuan, status,
   alasan penolakan), filter rentang tanggal.
 
-M-09 Tukar saldo [F2]
+M-09 Tarik Saldo [F2] (istilah teknis bisnis/backend: tukar saldo)
 - Form: nominal (min. Rp10.000), jenis tujuan (bank/e-wallet),
   nama bank/e-wallet, nomor rekening/no. e-wallet, nama pemilik,
   opsi "simpan untuk berikutnya".
@@ -295,6 +299,15 @@ M-16 Edit akun [F2]
 M-17 Identitas visual [F1-F2]
 - Logo Rumah Hijau dan desain baru (splash, login, header).
   Desain detail disusun terpisah.
+
+M-18 Pencarian lokasi tunai [F2; discovery only]
+- Dari layar Tarik Saldo, pengguna dapat membuka pencarian Agen tarik
+  tunai, Alfamart, dan Indomaret terdekat melalui Google Maps.
+- Opsi Rumah Hijau membuka detail mitra dan petunjuk arah yang sudah
+  tersedia pada M-14.
+- Fitur ini hanya pencarian lokasi/petunjuk arah: tidak membuat
+  permintaan uang tunai, tidak menghasilkan kode/QR pencairan, dan
+  tidak menjamin outlet yang ditemukan merupakan mitra payout Setor.in.
 
 
 ## 8. KEBUTUHAN FUNGSIONAL - WEB PETUGAS

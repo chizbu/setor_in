@@ -1,307 +1,166 @@
 import 'package:flutter/material.dart';
-import 'package:proyek_2_setor_in/screens/auth/app_theme.dart';
 
-class BantuanScreen extends StatefulWidget {
+import 'app_theme.dart';
+import 'rumah_hijau_screen.dart';
+import 'ui_components.dart';
+
+class BantuanScreen extends StatelessWidget {
   const BantuanScreen({super.key});
 
-  @override
-  State<BantuanScreen> createState() => _BantuanScreenState();
-}
-
-class _BantuanScreenState extends State<BantuanScreen> {
-  final List<Map<String, String>> _faqList = [
+  static const _faqList = <Map<String, String>>[
     {
-      'pertanyaan': 'Bagaimana cara menyetorkan sampah?',
-      'jawaban':
-          'Anda dapat menyetorkan sampah dengan memilih menu Setor pada halaman utama, lalu ikuti langkah-langkah yang tersedia.',
+      'question': 'Bagaimana cara menyetorkan sampah?',
+      'answer':
+          'Periksa harga dan jadwal Rumah Hijau, pilah serta bersihkan sampah, lalu tunjukkan QR nasabah kepada petugas. Petugas menimbang dan memverifikasi setoran.',
     },
     {
-      'pertanyaan': 'Bagaimana cara mencairkan saldo?',
-      'jawaban':
-          'Saldo dapat dicairkan melalui menu Tarik Saldo. Pastikan Anda sudah menghubungkan rekening atau dompet digital terlebih dahulu.',
+      'question': 'Bagaimana nilai setoran dihitung?',
+      'answer':
+          'Nilai setoran dihitung petugas berdasarkan jenis dan berat sampah serta harga beli yang berlaku saat transaksi diverifikasi.',
     },
     {
-      'pertanyaan': 'Apa saja jenis sampah yang diterima?',
-      'jawaban':
-          'Kami menerima berbagai jenis sampah anorganik seperti plastik, kertas, logam, dan kaca. Pastikan sampah dalam kondisi bersih dan terpilah.',
+      'question': 'Apa saja jenis sampah yang diterima?',
+      'answer':
+          'Jenis yang diterima dapat berubah. Lihat daftar harga aktif di aplikasi sebelum berangkat dan pastikan sampah bersih serta terpilah.',
     },
     {
-      'pertanyaan': 'Berapa lama proses verifikasi akun?',
-      'jawaban':
-          'Proses verifikasi akun biasanya memakan waktu 1x24 jam setelah data lengkap dikirimkan.',
+      'question': 'Mengapa QR nasabah belum tampil?',
+      'answer':
+          'QR diterbitkan backend setelah akun aktif. Jika akun sudah aktif tetapi QR belum muncul, muat ulang aplikasi dan hubungi pengelola Rumah Hijau.',
     },
     {
-      'pertanyaan': 'Bagaimana jika poin saya tidak bertambah?',
-      'jawaban':
-          'Jika poin tidak bertambah setelah setoran dikonfirmasi, silakan hubungi tim kami melalui menu Hubungi Kami di bawah.',
+      'question': 'Di mana saya melihat status setoran?',
+      'answer':
+          'Buka menu Aktivitas untuk melihat detail dan status transaksi. Setoran muncul setelah petugas mengirim data transaksi ke server.',
+    },
+    {
+      'question': 'Apakah harga sampah selalu sama?',
+      'answer':
+          'Harga dapat diperbarui pengelola. Nilai transaksi mengikuti harga saat setoran dicatat oleh petugas.',
+    },
+    {
+      'question': 'Apa yang harus dilakukan jika OTP tidak diterima?',
+      'answer':
+          'Periksa kembali alamat email dan folder spam. Jangan pernah membagikan kode OTP kepada orang lain. Jika masih terkendala, minta bantuan pengelola Rumah Hijau.',
+    },
+    {
+      'question': 'Bagaimana mengubah nomor HP atau alamat?',
+      'answer':
+          'Buka Profil, pilih Edit Profil, lalu simpan perubahan setelah terhubung ke server.',
+    },
+    {
+      'question': 'Di mana lokasi dan jadwal setor?',
+      'answer':
+          'Buka halaman Rumah Hijau untuk melihat informasi mitra yang tersedia. Jika jadwal belum ditampilkan, konfirmasi kepada pengelola sebelum datang.',
     },
   ];
 
-  int? _expandedIndex;
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: kBg,
+        appBar: AppBar(
+          title: const Text('Panduan & FAQ'),
+          backgroundColor: kBg,
+          scrolledUnderElevation: 0,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Row(
+            AppCard(
+              color: kPrimaryLight,
+              child: const Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.grey.shade300, width: 1.5),
-                      ),
-                      child: const Icon(Icons.chevron_left,
-                          size: 22, color: Colors.black87),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Bantuan',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                  BrandMark(size: 51.9),
+                  SizedBox(width: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Panduan Setor.in',
+                            style: TextStyle(
+                                color: kText,
+                                fontSize: 17.2,
+                                fontWeight: FontWeight.w800)),
+                        SizedBox(height: 4),
+                        Text(
+                            'Info singkat seputar setoran sampah bersama Rumah Hijau.',
+                            style: TextStyle(
+                                color: kTextSoft, fontSize: 13.8, height: 1.4)),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: Colors.black12),
-
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 28),
-
-                    // Banner
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: kPrimary.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: kPrimary.withOpacity(0.2), width: 1),
-                      ),
-                      child: Row(
+            const SizedBox(height: 23),
+            const SectionHeading('Pertanyaan umum'),
+            const SizedBox(height: 11),
+            ..._faqList.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 9),
+                  child: AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding:
+                            const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                        childrenPadding:
+                            const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        iconColor: kPrimary,
+                        collapsedIconColor: kTextSoft,
+                        title: Text(item['question']!,
+                            style: const TextStyle(
+                                color: kText,
+                                fontSize: 14.9,
+                                fontWeight: FontWeight.w700)),
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: kPrimary.withOpacity(0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.support_agent,
-                                color: kPrimary, size: 26),
-                          ),
-                          const SizedBox(width: 14),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Ada yang bisa kami bantu?',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Temukan jawaban atau hubungi tim kami.',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(item['answer']!,
+                                style: const TextStyle(
+                                    color: kTextSoft,
+                                    fontSize: 13.8,
+                                    height: 1.5)),
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 28),
-
-                    // FAQ Title
-                    const Text(
-                      'Pertanyaan Umum (FAQ)',
+                  ),
+                )),
+            const SizedBox(height: 13),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Butuh informasi lokasi?',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // FAQ List
-                    ...List.generate(_faqList.length, (index) {
-                      final item = _faqList[index];
-                      final isExpanded = _expandedIndex == index;
-                      return Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _expandedIndex =
-                                    isExpanded ? null : index;
-                              });
-                            },
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: isExpanded
-                                    ? kPrimary.withOpacity(0.05)
-                                    : Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isExpanded
-                                      ? kPrimary.withOpacity(0.3)
-                                      : Colors.grey.shade200,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          item['pertanyaan']!,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: isExpanded
-                                                ? kPrimary
-                                                : Colors.black87,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        isExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                        color: isExpanded
-                                            ? kPrimary
-                                            : Colors.grey.shade500,
-                                        size: 20,
-                                      ),
-                                    ],
-                                  ),
-                                  if (isExpanded) ...[
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      item['jawaban']!,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey.shade700,
-                                        height: 1.6,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      );
-                    }),
-
-                    const SizedBox(height: 24),
-
-                    // Kontak Kami Title
-                    const Text(
-                      'Hubungi Kami',
+                          color: kText,
+                          fontSize: 17.2,
+                          fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 5),
+                  const Text(
+                      'Buka detail lokasi mitra untuk melihat informasi Rumah Hijau yang tersedia.',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                          color: kTextSoft, fontSize: 13.8, height: 1.45)),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const RumahHijauScreen()),
                     ),
-                    const SizedBox(height: 14),
-
-                    _buildKontakItem(
-                      icon: Icons.email_outlined,
-                      label: 'Email',
-                      value: 'support@setorin.id',
+                    icon: const Icon(Icons.place_outlined, size: 21.2),
+                    label: const Text('Lihat lokasi Rumah Hijau'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: kPrimary,
+                      side: const BorderSide(color: kBorder),
                     ),
-                    const SizedBox(height: 10),
-                    _buildKontakItem(
-                      icon: Icons.phone_outlined,
-                      label: 'WhatsApp',
-                      value: '+62 812-3456-7890',
-                    ),
-                    const SizedBox(height: 10),
-                    _buildKontakItem(
-                      icon: Icons.access_time_outlined,
-                      label: 'Jam Operasional',
-                      value: 'Senin – Jumat, 08.00 – 17.00 WIB',
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildKontakItem({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: kPrimary, size: 22),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
-              const SizedBox(height: 2),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+      );
 }

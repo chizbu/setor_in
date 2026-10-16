@@ -14,7 +14,6 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   List<_NotifItem> _notifications = [];
   String _activeFilter = 'semua';
   String _activeTab = 'belum';
-  int? _confirmingTransaksiId;
 
   @override
   void initState() {
@@ -29,31 +28,29 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     if (res['success'] == true && res['data'] != null) {
       final rawData = res['data'];
       // API returns paginated data with 'data' key inside
-      final List items = rawData is Map ? (rawData['data'] ?? []) : (rawData is List ? rawData : []);
-      
+      final List items = rawData is Map
+          ? (rawData['data'] ?? [])
+          : (rawData is List ? rawData : []);
+
       _notifications = items.map((n) {
         final createdAt = n['created_at'] ?? '';
         final tipe = n['tipe']?.toString() ?? '';
-        final idTransaksi = n['id_transaksi'];
-        final perluKonfirmasi = n['memerlukan_konfirmasi'] == true ||
-            n['memerlukan_konfirmasi'] == 1;
 
         return _NotifItem(
           id: n['id'] ?? 0,
           unread: (n['status_notifikasi'] ?? '') == 'belum_dibaca',
           cat: _categorizeByCat(n['judul'] ?? '', tipe: tipe),
           iconData: _iconForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
-          iconColor: _colorForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
+          iconColor:
+              _colorForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
           title: n['judul'] ?? '',
           desc: n['pesan'] ?? '',
           time: _formatTime(createdAt),
-          badgeLabel: _badgeLabelForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
-          badgeColor: _colorForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
+          badgeLabel:
+              _badgeLabelForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
+          badgeColor:
+              _colorForCat(_categorizeByCat(n['judul'] ?? '', tipe: tipe)),
           group: _groupForTime(createdAt),
-          idTransaksi: idTransaksi is int
-              ? idTransaksi
-              : int.tryParse(idTransaksi?.toString() ?? ''),
-          memerlukanKonfirmasi: perluKonfirmasi && idTransaksi != null,
         );
       }).toList();
     }
@@ -66,36 +63,40 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     if (tipe == 'transaksi') return 'setor';
     final lower = judul.toLowerCase();
     if (lower.contains('setor') || lower.contains('sampah')) return 'setor';
-    if (lower.contains('koin') || lower.contains('saldo') || lower.contains('tukar')) return 'koin';
-    if (lower.contains('misi') || lower.contains('hadiah') || lower.contains('reward')) return 'info';
-    if (lower.contains('promo') || lower.contains('bonus')) return 'promo';
+    if (lower.contains('saldo') || lower.contains('tukar')) return 'saldo';
     return 'info';
   }
 
   IconData _iconForCat(String cat) {
     switch (cat) {
-      case 'setor': return Icons.recycling_rounded;
-      case 'koin': return Icons.monetization_on_outlined;
-      case 'promo': return Icons.local_offer_rounded;
-      default: return Icons.info_outline_rounded;
+      case 'setor':
+        return Icons.recycling_rounded;
+      case 'saldo':
+        return Icons.account_balance_wallet_outlined;
+      default:
+        return Icons.info_outline_rounded;
     }
   }
 
   Color _colorForCat(String cat) {
     switch (cat) {
-      case 'setor': return kPrimary;
-      case 'koin': return kWarning;
-      case 'promo': return kDanger;
-      default: return kInfo;
+      case 'setor':
+        return kPrimary;
+      case 'saldo':
+        return kInfo;
+      default:
+        return kInfo;
     }
   }
 
   String _badgeLabelForCat(String cat) {
     switch (cat) {
-      case 'setor': return 'Setor';
-      case 'koin': return 'Koin';
-      case 'promo': return 'Promo';
-      default: return 'Info';
+      case 'setor':
+        return 'Setor';
+      case 'saldo':
+        return 'Saldo';
+      default:
+        return 'Info';
     }
   }
 
@@ -134,137 +135,28 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   List<_NotifItem> get _filtered {
     var items = _notifications.where((n) {
       final matchCat = _activeFilter == 'semua' || n.cat == _activeFilter;
-      final matchTab = _activeTab == 'semua' || n.unread || n.memerlukanKonfirmasi;
+      final matchTab = _activeTab == 'semua' || n.unread;
       return matchCat && matchTab;
     }).toList();
     return items;
   }
 
-  int get _unreadCount =>
-      _notifications.where((n) => n.unread || n.memerlukanKonfirmasi).length;
-
-  void _markAllRead() {
-    setState(() {
-      for (final n in _notifications) {
-        n.unread = false;
-      }
-    });
-  }
-
-  void _readItem(int id) {
-    setState(() {
-      final n = _notifications.firstWhere((x) => x.id == id);
-      if (!n.memerlukanKonfirmasi) {
-        n.unread = false;
-      }
-    });
-  }
-
-  Future<void> _konfirmasiSetoran(_NotifItem item) async {
-    final idTransaksi = item.idTransaksi;
-    if (idTransaksi == null) return;
-
-    setState(() => _confirmingTransaksiId = idTransaksi);
-
-    final res = await ApiService().konfirmasiTransaksi(idTransaksi);
-
-    if (!mounted) return;
-
-    setState(() => _confirmingTransaksiId = null);
-
-    if (res['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res['message'] ?? 'Setoran berhasil dikonfirmasi'),
-          backgroundColor: kPrimary,
-        ),
-      );
-      await _loadNotifikasi();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res['message'] ?? 'Gagal mengonfirmasi'),
-          backgroundColor: kDanger,
-        ),
-      );
-    }
-  }
+  int get _unreadCount => _notifications.where((n) => n.unread).length;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBg,
-      body: Column(
-        children: [
-          _buildAppBar(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: kPrimary))
-                : _buildBody(),
-          ),
-        ],
-      ),
-    );
-  }
-
-    Widget _buildAppBar() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black87, width: 2),
-                ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 16, color: Colors.black87),
-              ),
-            ),
-            const Expanded(
-              child: Text(
-                'Notifikasi',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w800, color: Colors.black87),
-              ),
-            ),
-                if (_unreadCount > 0)
-                  GestureDetector(
-                    onTap: _markAllRead,
-                    child: const Text(
-                      'Tandai semua dibaca',
-                      style: TextStyle(
-                        color: kPrimary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                else
-                  const SizedBox(width: 38),
-              ],
-        ),
-      ),
+      appBar: AppBar(title: const Text('Notifikasi')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: kPrimary))
+          : _buildBody(),
     );
   }
 
   Widget _buildBody() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF5F7F5),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
+      decoration: const BoxDecoration(color: kBg),
       child: Column(
         children: [
           _buildFilterChips(),
@@ -279,9 +171,8 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     final filters = [
       {'key': 'semua', 'label': 'Semua'},
       {'key': 'setor', 'label': 'Setor'},
-      {'key': 'koin', 'label': 'Koin & Saldo'},
+      {'key': 'saldo', 'label': 'Saldo'},
       {'key': 'info', 'label': 'Info'},
-      {'key': 'promo', 'label': 'Promo'},
     ];
 
     return SizedBox(
@@ -310,7 +201,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               child: Text(
                 f['label']!,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13.8,
                   color: isActive ? Colors.white : kTextSoft,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
@@ -373,7 +264,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13.8,
                   color: isActive ? kPrimary : kTextSoft,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
@@ -381,7 +272,8 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               if (badge != null && badge > 0) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                   decoration: BoxDecoration(
                     color: kPrimary,
                     borderRadius: BorderRadius.circular(10),
@@ -390,7 +282,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
                     '$badge',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -410,24 +302,24 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.notifications_off_outlined,
-                size: 48, color: kTextSoft.withValues(alpha: 0.4)),
+            Icon(Icons.notifications_none_rounded,
+                size: 40.1, color: kTextSoft.withValues(alpha: 0.55)),
             const SizedBox(height: 12),
             Text(
               _notifications.isEmpty
                   ? 'Belum ada notifikasi'
                   : _activeTab == 'belum'
-                      ? 'Tidak ada notifikasi\nyang belum dibaca'
+                  ? 'Belum ada notifikasi'
                       : 'Tidak ada notifikasi',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: kTextSoft, fontSize: 13),
+              style: const TextStyle(color: kTextSoft, fontSize: 14.9),
             ),
             if (_notifications.isEmpty) ...[
               const SizedBox(height: 4),
               const Text(
-                'Notifikasi akan muncul saat ada\naktivitas di akunmu',
+                'Notifikasi akan muncul saat ada aktivitas di akunmu',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: kTextSoft, fontSize: 11),
+                style: TextStyle(color: kTextSoft, fontSize: 13.8),
               ),
             ],
           ],
@@ -463,7 +355,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       child: Text(
         label.toUpperCase(),
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: 13.8,
           fontWeight: FontWeight.w600,
           color: kTextSoft,
           letterSpacing: 0.5,
@@ -473,80 +365,40 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   }
 
   Widget _buildNotifItem(_NotifItem item) {
-    final isConfirming = _confirmingTransaksiId == item.idTransaksi;
-
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: item.unread || item.memerlukanKonfirmasi
-            ? kPrimary.withValues(alpha: 0.05)
-            : Colors.white,
+        color: item.unread ? kPrimary.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: item.memerlukanKonfirmasi
-              ? kPrimary.withValues(alpha: 0.35)
-              : item.unread
-                  ? kPrimary.withValues(alpha: 0.2)
-                  : const Color(0xFFEEEEEE),
-          width: item.memerlukanKonfirmasi ? 1.2 : 0.5,
+          color: item.unread
+              ? kPrimary.withValues(alpha: 0.2)
+              : const Color(0xFFEEEEEE),
+          width: 0.5,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          GestureDetector(
-            onTap: () => _readItem(item.id),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildIcon(item),
-                const SizedBox(width: 12),
-                Expanded(child: _buildContent(item)),
-                if (item.unread)
-                  Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsets.only(top: 4),
-                    decoration: const BoxDecoration(
-                      color: kPrimary,
-                      shape: BoxShape.circle,
-                    ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildIcon(item),
+              const SizedBox(width: 12),
+              Expanded(child: _buildContent(item)),
+              if (item.unread)
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: const BoxDecoration(
+                    color: kPrimary,
+                    shape: BoxShape.circle,
                   ),
-              ],
-            ),
-          ),
-          if (item.memerlukanKonfirmasi) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isConfirming ? null : () => _konfirmasiSetoran(item),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kPrimary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 0,
                 ),
-                child: isConfirming
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        'Konfirmasi Setoran',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                      ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ],
       ),
     );
@@ -560,7 +412,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         color: item.iconColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(item.iconData, color: item.iconColor, size: 22),
+      child: Icon(item.iconData, color: item.iconColor, size: 26),
     );
   }
 
@@ -571,7 +423,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         Text(
           item.title,
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 14.9,
             fontWeight: FontWeight.w600,
             color: kText,
           ),
@@ -579,14 +431,14 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         const SizedBox(height: 4),
         Text(
           item.desc,
-          style: const TextStyle(fontSize: 12, color: kTextSoft, height: 1.5),
+          style: const TextStyle(fontSize: 13.8, color: kTextSoft, height: 1.5),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             Text(
               item.time,
-              style: const TextStyle(fontSize: 11, color: kTextSoft),
+              style: const TextStyle(fontSize: 13.8, color: kTextSoft),
             ),
             const SizedBox(width: 8),
             Container(
@@ -598,7 +450,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               child: Text(
                 item.badgeLabel,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: item.badgeColor,
                 ),
@@ -623,8 +475,6 @@ class _NotifItem {
   final String badgeLabel;
   final Color badgeColor;
   final String group;
-  final int? idTransaksi;
-  final bool memerlukanKonfirmasi;
 
   _NotifItem({
     required this.id,
@@ -638,7 +488,5 @@ class _NotifItem {
     required this.badgeLabel,
     required this.badgeColor,
     required this.group,
-    this.idTransaksi,
-    this.memerlukanKonfirmasi = false,
   });
 }

@@ -189,20 +189,20 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                    color: misi.color.withOpacity(0.12),
+                    color: misi.color.withValues(alpha: 0.12),
                     shape: BoxShape.circle),
                 child: Icon(Icons.emoji_events_rounded,
-                    color: misi.color, size: 44),
+                    color: misi.color, size: 51.9),
               ),
             ),
             const SizedBox(height: 16),
             const Text('Misi Selesai!',
                 style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w800, color: kText)),
+                    fontSize: 24.2, fontWeight: FontWeight.w800, color: kText)),
             const SizedBox(height: 6),
             Text(misi.judul,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: kTextSoft)),
+                style: const TextStyle(fontSize: 16.1, color: kTextSoft)),
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -212,11 +212,11 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.monetization_on_rounded,
-                      color: kPrimary, size: 26),
+                      color: kPrimary, size: 30.7),
                   const SizedBox(width: 8),
                   Text('+${misi.koinReward} Koin',
                       style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 26.4,
                           fontWeight: FontWeight.w800,
                           color: kPrimary)),
                 ],
@@ -236,7 +236,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                   elevation: 0,
                 ),
                 child: const Text('Lanjutkan',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17.2)),
               ),
             ),
           ],
@@ -257,12 +257,12 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
             backgroundColor: kPrimary,
             foregroundColor: Colors.white,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+              icon: const Icon(Icons.arrow_back, size: 23.6),
               onPressed: () => Navigator.pop(context),
             ),
             title: const Text('Misi & Reward',
-                style: TextStyle(fontWeight: FontWeight.w700)),
-            centerTitle: true,
+                style: TextStyle(fontWeight: FontWeight.w800)),
+            centerTitle: false,
             expandedHeight: 160,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -285,12 +285,12 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                             children: [
                               const Text('Total Koinmu',
                                   style: TextStyle(
-                                      color: Colors.white70, fontSize: 12)),
+                                      color: Colors.white70, fontSize: 13.8)),
                               const SizedBox(height: 4),
                               Text('$_koin Koin',
                                   style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 28,
+                                      fontSize: 30.8,
                                       fontWeight: FontWeight.w800)),
                             ],
                           ),
@@ -300,18 +300,18 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 7),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               children: [
                                 const Icon(Icons.card_giftcard_rounded,
-                                    color: Colors.white, size: 15),
+                                    color: Colors.white, size: 17.7),
                                 const SizedBox(width: 5),
                                 Text('+$_totalSiapDiklaim koin siap diklaim',
                                     style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 11,
+                                        fontSize: 13.8,
                                         fontWeight: FontWeight.w600)),
                               ],
                             ),
@@ -329,7 +329,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white60,
               labelStyle: const TextStyle(
-                  fontWeight: FontWeight.w700, fontSize: 13),
+                  fontWeight: FontWeight.w700, fontSize: 14.9),
               tabs: const [
                 Tab(text: 'Misi Harian'),
                 Tab(text: 'Misi Mingguan'),
@@ -367,11 +367,11 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: isSelesai
-            ? Border.all(color: misi.color.withOpacity(0.4), width: 1.5)
+            ? Border.all(color: misi.color.withValues(alpha: 0.4), width: 1.5)
             : null,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 3)),
         ],
@@ -388,12 +388,12 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                 decoration: BoxDecoration(
                   color: isDiklaim
                       ? Colors.grey.shade100
-                      : misi.color.withOpacity(0.12),
+                      : misi.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(misi.icon,
                     color: isDiklaim ? Colors.grey.shade400 : misi.color,
-                    size: 24),
+                    size: 28.3),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -403,12 +403,12 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                     Text(misi.judul,
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                            fontSize: 16.1,
                             color: isDiklaim ? kTextSoft : kText)),
                     const SizedBox(height: 2),
                     Text(misi.deskripsi,
                         style: const TextStyle(
-                            fontSize: 11, color: kTextSoft),
+                            fontSize: 13.8, color: kTextSoft),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis),
                   ],
@@ -441,7 +441,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                     Text(
                       '${misi.progressJumlah}/${misi.targetJumlah} selesai',
                       style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 13.8,
                           color: isDiklaim ? kTextSoft : misi.color,
                           fontWeight: FontWeight.w500),
                     ),
@@ -460,12 +460,12 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
                 child: Row(
                   children: [
                     Icon(Icons.monetization_on_rounded,
-                        size: 13,
+                        size: 15.3,
                         color: isDiklaim ? Colors.grey.shade400 : kPrimary),
                     const SizedBox(width: 3),
                     Text('+${misi.koinReward}',
                         style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 13.8,
                             fontWeight: FontWeight.w700,
                             color: isDiklaim
                                 ? Colors.grey.shade400
@@ -483,7 +483,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () => _klaimMisi(misi),
-                icon: const Icon(Icons.card_giftcard_rounded, size: 16),
+                icon: const Icon(Icons.card_giftcard_rounded, size: 18.9),
                 label: const Text('Klaim Koin',
                     style: TextStyle(fontWeight: FontWeight.w700)),
                 style: ElevatedButton.styleFrom(
@@ -512,7 +512,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               borderRadius: BorderRadius.circular(20)),
           child: const Text('Diklaim',
               style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12.5,
                   color: kTextSoft,
                   fontWeight: FontWeight.w600)),
         );
@@ -523,7 +523,7 @@ class _MisiHarianScreenState extends State<MisiHarianScreen>
               color: kPrimaryLight, borderRadius: BorderRadius.circular(20)),
           child: const Text('Selesai!',
               style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12.5,
                   color: kPrimary,
                   fontWeight: FontWeight.w700)),
         );

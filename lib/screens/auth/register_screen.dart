@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../../services/api_service.dart';
 import 'app_theme.dart';
 import 'login_screen.dart';
 import 'otp_screen.dart';
-import '../../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,320 +13,208 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _namaController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _konfirmasiController = TextEditingController();
-  final _phoneController = TextEditingController();
-
-  bool _obscurePassword = true;
-  bool _obscureKonfirmasi = true;
-  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  final _nama = TextEditingController();
+  final _email = TextEditingController();
+  final _phone = TextEditingController();
+  final _alamat = TextEditingController();
+  final _password = TextEditingController();
+  final _confirmation = TextEditingController();
+  bool _hidePassword = true;
+  bool _hideConfirmation = true;
+  bool _loading = false;
 
   @override
   void dispose() {
-    _namaController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _konfirmasiController.dispose();
-    _phoneController.dispose();
+    _nama.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _alamat.dispose();
+    _password.dispose();
+    _confirmation.dispose();
     super.dispose();
   }
 
-  Future<void> _handleDaftar() async {
-    final nama = _namaController.text.trim();
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-    final konfirmasi = _konfirmasiController.text;
-    final phone = _phoneController.text.trim();
-
-    if (nama.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua field harus diisi')),
-      );
-      return;
-    }
-
-    if (password != konfirmasi) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password tidak cocok')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final apiService = ApiService();
-    final result = await apiService.register(
-      nama: nama,
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _loading = true);
+    final email = _email.text.trim();
+    final result = await ApiService().register(
+      nama: _nama.text.trim(),
       email: email,
-      password: password,
-      passwordConfirmation: konfirmasi,
-      noTelepon: phone,
+      alamat: _alamat.text.trim(),
+      password: _password.text,
+      passwordConfirmation: _confirmation.text,
+      noTelepon: _phone.text.trim(),
     );
-
     if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
+    setState(() => _loading = false);
     if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Berhasil. Cek email Anda.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
-      // Navigasi ke OTP screen setelah validasi & simpan ke DB sukses
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => OtpScreen(
-            email: email,
-            source: 'register',
-          ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.red,
-        ),
-      );
+      Navigator.push(context, MaterialPageRoute(
+          builder: (_) => OtpScreen(email: email, source: 'register')));
+      return;
     }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(result['message']?.toString() ?? 'Registrasi belum berhasil.'),
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
-      ),
-    );
-  }
+  String? _required(String? value, String field) =>
+      (value ?? '').trim().isEmpty ? '$field wajib diisi.' : null;
 
-  Widget _buildTextField({
+  Widget _field({
+    required String label,
     required TextEditingController controller,
     required String hint,
-    required IconData prefixIcon,
-    bool isPassword = false,
+    required IconData icon,
+    TextInputType keyboard = TextInputType.text,
+    String? Function(String?)? validator,
     bool obscure = false,
-    VoidCallback? onToggleObscure,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword ? obscure : false,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-        prefixIcon: Icon(prefixIcon, color: Colors.grey, size: 20),
-        suffixIcon: isPassword
-            ? GestureDetector(
-                onTap: onToggleObscure,
-                child: Icon(
-                  obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              )
-            : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: kPrimary, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildPhoneField() {
-    return TextField(
-      controller: _phoneController,
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        hintText: '+62',
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-        prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🇮🇩', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 4),
-              Container(width: 1, height: 20, color: Colors.black12),
-            ],
+    VoidCallback? toggle,
+    int minLines = 1,
+    int maxLines = 1,
+    TextCapitalization capitalization = TextCapitalization.none,
+  }) => Padding(
+        padding: const EdgeInsets.only(bottom: 11),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Text.rich(TextSpan(children: [
+              TextSpan(text: label, style: const TextStyle(color: kText, fontSize: 12.5, fontWeight: FontWeight.w700)),
+              const TextSpan(text: ' *', style: TextStyle(color: kDanger, fontSize: 12.5)),
+            ])),
           ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: kPrimary, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-    );
-  }
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboard,
+            textCapitalization: capitalization,
+            obscureText: obscure,
+            minLines: minLines,
+            maxLines: maxLines,
+            validator: validator ?? (value) => _required(value, label),
+            decoration: InputDecoration(
+              hintText: hint,
+              prefixIcon: Icon(icon, size: 18.9),
+              alignLabelWithHint: maxLines > 1,
+              suffixIcon: toggle == null ? null : IconButton(
+                tooltip: obscure ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi',
+                onPressed: toggle,
+                icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 21.2),
+              ),
+            ),
+          ),
+        ]),
+      );
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Bergabung Bersama\nSetor.in',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Daftar dengan memasukan identitas anda',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 28),
-              _buildLabel('Nama'),
-              _buildTextField(
-                controller: _namaController,
-                hint: 'Username',
-                prefixIcon: Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-              _buildLabel('Email'),
-              _buildTextField(
-                controller: _emailController,
-                hint: 'user@gmail.com',
-                prefixIcon: Icons.mail_outline,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              _buildLabel('Password'),
-              _buildTextField(
-                controller: _passwordController,
-                hint: 'Masukan Password',
-                prefixIcon: Icons.lock_outline,
-                isPassword: true,
-                obscure: _obscurePassword,
-                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
-              ),
-              const SizedBox(height: 16),
-              _buildLabel('Konfirmasi Password'),
-              _buildTextField(
-                controller: _konfirmasiController,
-                hint: 'Masukan ulang Password',
-                prefixIcon: Icons.lock_outline,
-                isPassword: true,
-                obscure: _obscureKonfirmasi,
-                onToggleObscure: () => setState(() => _obscureKonfirmasi = !_obscureKonfirmasi),
-              ),
-              const SizedBox(height: 16),
-              _buildLabel('Nomor telpon'),
-              _buildPhoneField(),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleDaftar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: kBg,
+        body: SafeArea(
+          child: LayoutBuilder(builder: (context, constraints) {
+            final horizontal = constraints.maxWidth > 600 ? 70.0 : 20.0;
+            return CustomScrollView(slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(horizontal, 7, horizontal, 0),
+                  child: Row(children: [
+                    IconButton(
+                      tooltip: 'Kembali',
+                      onPressed: () => Navigator.maybePop(context),
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.arrow_back, size: 23.6),
                     ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Daftar',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
+                    const Spacer(),
+                    const Text('RUMAH HIJAU', style: TextStyle(
+                        color: kTextSoft, fontSize: 11.2,
+                        fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                  ]),
                 ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Sudah punya akun? ',
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    ),
-                    child: const Text(
-                      'Masuk disini',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: kPrimary,
-                        fontWeight: FontWeight.w600,
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(horizontal, 3, horizontal, 28),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          _signupBanner(),
+                          const SizedBox(height: 12),
+                          const Text('Buat akun Setor.in', style: TextStyle(
+                              color: kText, fontSize: 19.8, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 3),
+                          const Text('Daftar sebagai nasabah Rumah Hijau. Email dipakai untuk verifikasi OTP.',
+                              style: TextStyle(color: kTextSoft, fontSize: 12.5, height: 1.4)),
+                          const SizedBox(height: 14),
+                          _field(label: 'Nama lengkap', controller: _nama, hint: 'Nama sesuai identitas', icon: Icons.person_outline_rounded, capitalization: TextCapitalization.words),
+                          _field(label: 'Nomor HP', controller: _phone, hint: 'Contoh: 08xxxxxxxxxx', icon: Icons.phone_outlined, keyboard: TextInputType.phone, validator: (value) {
+                            final number = (value ?? '').replaceAll(RegExp(r'\D'), '');
+                            if (number.isEmpty) return 'Nomor HP wajib diisi.';
+                            if (number.length < 9 || number.length > 15) return 'Periksa kembali nomor HP.';
+                            return null;
+                          }),
+                          _field(label: 'Alamat', controller: _alamat, hint: 'Alamat tempat tinggal', icon: Icons.location_on_outlined, minLines: 2, maxLines: 2, capitalization: TextCapitalization.sentences),
+                          _field(label: 'Email', controller: _email, hint: 'nama@email.com', icon: Icons.mail_outline_rounded, keyboard: TextInputType.emailAddress, validator: (value) {
+                            final email = (value ?? '').trim();
+                            if (email.isEmpty) return 'Email wajib diisi.';
+                            if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) return 'Format email belum valid.';
+                            return null;
+                          }),
+                          _field(label: 'Kata sandi', controller: _password, hint: 'Minimal 8 karakter', icon: Icons.lock_outline_rounded, obscure: _hidePassword, toggle: () => setState(() => _hidePassword = !_hidePassword), validator: (value) {
+                            if ((value ?? '').isEmpty) return 'Kata sandi wajib diisi.';
+                            if (value!.length < 8) return 'Minimal 8 karakter.';
+                            return null;
+                          }),
+                          _field(label: 'Konfirmasi kata sandi', controller: _confirmation, hint: 'Ulangi kata sandi', icon: Icons.lock_outline_rounded, obscure: _hideConfirmation, toggle: () => setState(() => _hideConfirmation = !_hideConfirmation), validator: (value) {
+                            if ((value ?? '').isEmpty) return 'Konfirmasi wajib diisi.';
+                            if (value != _password.text) return 'Kata sandi belum sama.';
+                            return null;
+                          }),
+                          const SizedBox(height: 2),
+                          SizedBox(height: 46, child: FilledButton(
+                            onPressed: _loading ? null : _register,
+                            child: _loading
+                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Daftar dan lanjutkan'), SizedBox(width: 7), Icon(Icons.arrow_forward_rounded, size: 18.9)]),
+                          )),
+                          const SizedBox(height: 9),
+                          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            const Text('Sudah punya akun? ', style: TextStyle(color: kTextSoft, fontSize: 12.5)),
+                            TextButton(
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                              style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 3)),
+                              child: const Text('Masuk', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800)),
+                            ),
+                          ]),
+                        ]),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ]);
+          }),
         ),
-      ),
-    );
-  }
+      );
+
+  Widget _signupBanner() => Container(
+        height: 92,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(color: kPrimaryDark, borderRadius: BorderRadius.circular(13)),
+        child: Stack(children: [
+          Positioned(right: -4, bottom: -18, width: 135, height: 102,
+              child: Image.asset('assets/images/setor_story_illustration.webp', fit: BoxFit.contain, alignment: Alignment.bottomRight)),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(14, 15, 125, 12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text('MULAI DI SINI', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+              SizedBox(height: 5),
+              Text('Kebiasaan baik,\nbermula dari rumah.', style: TextStyle(color: Colors.white, fontSize: 16.1, height: 1.08, fontWeight: FontWeight.w800)),
+            ]),
+          ),
+        ]),
+      );
 }

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import '../../services/api_service.dart';
 
-class AktivitasScreen extends StatefulWidget {
-  const AktivitasScreen({super.key});
+class RiwayatTransaksiScreen extends StatefulWidget {
+  const RiwayatTransaksiScreen({super.key});
 
   @override
-  State<AktivitasScreen> createState() => _AktivitasScreenState();
+  State<RiwayatTransaksiScreen> createState() => _RiwayatTransaksiScreenState();
 }
 
-class _AktivitasScreenState extends State<AktivitasScreen> {
+class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
   bool _isLoading = true;
   List<dynamic> _allAktivitas = [];
   List<dynamic> _filteredAktivitas = [];
@@ -43,11 +43,27 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
   void _applyFilter() {
     if (_selectedFilter == 'Semua') {
       _filteredAktivitas = _allAktivitas;
-    } else if (_selectedFilter == 'Setor') {
-      _filteredAktivitas = _allAktivitas.where((x) => x['type'] == 'setor').toList();
-    } else if (_selectedFilter == 'Misi') {
-      _filteredAktivitas = _allAktivitas.where((x) => x['type'] == 'misi').toList();
+    } else if (_selectedFilter == 'Setoran') {
+      _filteredAktivitas = _allAktivitas.where(_isSetoran).toList();
+    } else {
+      _filteredAktivitas = _allAktivitas.where(_isTukarSaldo).toList();
     }
+  }
+
+  String _typeOf(dynamic item) =>
+      (item is Map ? (item['type'] ?? item['tipe'] ?? '') : '')
+          .toString()
+          .toLowerCase();
+
+  bool _isSetoran(dynamic item) {
+    final type = _typeOf(item);
+    return type.contains('setor') || type.contains('deposit');
+  }
+
+  bool _isTukarSaldo(dynamic item) {
+    final type = _typeOf(item);
+    return type.contains('saldo') || type.contains('tarik') ||
+        type.contains('tukar') || type.contains('withdraw');
   }
 
   Color _getStatusColor(String? status) {
@@ -71,8 +87,9 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
     switch (type) {
       case 'setor':
         return Icons.recycling_rounded;
-      case 'misi':
-        return Icons.flag_rounded;
+      case 'tarik':
+      case 'tukar_saldo':
+        return Icons.account_balance_wallet_outlined;
       default:
         return Icons.history_rounded;
     }
@@ -82,11 +99,130 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
     switch (type) {
       case 'setor':
         return kPrimary;
-      case 'misi':
+      case 'tarik':
+      case 'tukar_saldo':
         return kInfo;
       default:
         return kTextSoft;
     }
+  }
+
+  String _rupiah(dynamic value) {
+    final amount = num.tryParse(value?.toString() ?? '');
+    if (amount == null) return 'Belum tersedia';
+    final digits = amount.round().toString().split('').reversed.toList();
+    final grouped = <String>[];
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && i % 3 == 0) grouped.add('.');
+      grouped.add(digits[i]);
+    }
+    return 'Rp${grouped.reversed.join()}';
+  }
+
+  void _showTransactionDetail(Map item) {
+    final details =
+        item['details'] is List ? item['details'] as List : <dynamic>[];
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.white,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text((item['title'] ?? 'Detail setoran').toString(),
+                    style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: kText)),
+                const SizedBox(height: 6),
+                Text((item['date'] ?? 'Tanggal belum tersedia').toString(),
+                    style: const TextStyle(color: kTextSoft, fontSize: 13.8)),
+                if (item['bank_name'] != null) ...[
+                  const SizedBox(height: 4),
+                  Text(item['bank_name'].toString(),
+                      style: const TextStyle(color: kTextSoft, fontSize: 13.8)),
+                ],
+                const SizedBox(height: 14),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(item['status']?.toString())
+                        .withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                      (item['status'] ?? 'Status belum tersedia')
+                          .toString()
+                          .toUpperCase(),
+                      style: TextStyle(
+                          fontSize: 13.8,
+                          fontWeight: FontWeight.w800,
+                          color: _getStatusColor(item['status']?.toString()))),
+                ),
+                const SizedBox(height: 20),
+                const Text('Rincian sampah',
+                    style: TextStyle(
+                        fontSize: 17.2,
+                        fontWeight: FontWeight.w800,
+                        color: kText)),
+                const SizedBox(height: 10),
+                if (details.isEmpty)
+                  const Text(
+                      'Rincian jenis, harga, dan subtotal belum dikirim oleh server.',
+                      style: TextStyle(color: kTextSoft, height: 1.4))
+                else
+                  ...details.whereType<Map>().map((detail) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                            color: kBg,
+                            borderRadius: BorderRadius.circular(14)),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  (detail['material'] ?? 'Jenis sampah')
+                                      .toString(),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: kText)),
+                              const SizedBox(height: 6),
+                              Text(
+                                  'Berat ${detail['weight'] ?? '—'} kg  •  ${_rupiah(detail['price_per_kg'])}/kg',
+                                  style: const TextStyle(
+                                      color: kTextSoft, fontSize: 13.8)),
+                              const SizedBox(height: 4),
+                              Text('Subtotal  ${_rupiah(detail['subtotal'])}',
+                                  style: const TextStyle(
+                                      color: kPrimary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13.8)),
+                            ]),
+                      )),
+                const Divider(height: 24),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total setoran',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, color: kText)),
+                      Text(_rupiah(item['total_amount']),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800, color: kPrimary)),
+                    ]),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -94,13 +230,13 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: const Text('Aktivitas Anda'),
-        backgroundColor: kPrimary,
-        foregroundColor: Colors.white,
+        title: const Text('Riwayat transaksi'),
+        backgroundColor: kBg,
+        foregroundColor: kText,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(Icons.arrow_back, size: 23.6),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -112,7 +248,8 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
               onRefresh: _fetchAktivitas,
               color: kPrimary,
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: kPrimary))
+                  ? const Center(
+                      child: CircularProgressIndicator(color: kPrimary))
                   : _filteredAktivitas.isEmpty
                       ? _buildEmptyState()
                       : _buildListView(),
@@ -124,7 +261,7 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
   }
 
   Widget _buildFilterBar() {
-    final filters = ['Semua', 'Setor', 'Misi'];
+    final filters = ['Semua', 'Setoran', 'Tarik Saldo'];
     return Container(
       height: 60,
       color: Colors.white,
@@ -143,7 +280,7 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
                 style: TextStyle(
                   color: isSelected ? Colors.white : kText,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  fontSize: 12,
+                  fontSize: 13.8,
                 ),
               ),
               selected: isSelected,
@@ -189,21 +326,23 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Belum ada aktivitas terbaru',
+              'Belum ada transaksi',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18.4,
                 fontWeight: FontWeight.w700,
                 color: kText,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              _selectedFilter == 'Semua'
-                  ? 'Ayo lakukan setor sampah pertama Anda untuk mengumpulkan koin!'
-                  : 'Tidak ada aktivitas untuk kategori $_selectedFilter.',
+                _selectedFilter == 'Semua'
+                  ? 'Setoran dan penukaran saldo akan muncul di sini.'
+                  : _selectedFilter == 'Setoran'
+                      ? 'Setoran akan muncul di sini setelah dicatat petugas.'
+                      : 'Penukaran saldo akan muncul di sini setelah diajukan.',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 14.9,
                 color: kTextSoft,
               ),
             ),
@@ -226,89 +365,95 @@ class _AktivitasScreenState extends State<AktivitasScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: AppTheme.cardDecoration,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: _getIconColor(type).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: () => _showTransactionDetail(item as Map),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: _getIconColor(type).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _getIcon(type),
+                      color: _getIconColor(type),
+                      size: 26,
+                    ),
                   ),
-                  child: Icon(
-                    _getIcon(type),
-                    color: _getIconColor(type),
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item['title'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: kText,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item['subtitle'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: kPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item['detail'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: kTextSoft,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${item['date']} • ${item['time']}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: kTextSoft,
-                            ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['title'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 16.1,
+                            fontWeight: FontWeight.w700,
+                            color: kText,
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(status).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              status.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: _getStatusColor(status),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item['subtitle'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 14.9,
+                            fontWeight: FontWeight.w600,
+                            color: kPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item['detail'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 13.8,
+                            color: kTextSoft,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              (item['date'] ?? 'Tanggal belum tersedia')
+                                  .toString(),
+                              style: const TextStyle(
+                                fontSize: 13.8,
+                                color: kTextSoft,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(status)
+                                    .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                status.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 11.2,
+                                  fontWeight: FontWeight.w700,
+                                  color: _getStatusColor(status),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

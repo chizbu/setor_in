@@ -1,237 +1,154 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'app_theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+import 'app_theme.dart';
+import 'rumah_hijau_screen.dart';
+import 'ui_components.dart';
+
 class TarikSaldoScreen extends StatefulWidget {
   final double saldoAwal;
+
   const TarikSaldoScreen({super.key, this.saldoAwal = 0});
 
   @override
   State<TarikSaldoScreen> createState() => _TarikSaldoScreenState();
 }
 
-class _TarikSaldoScreenState extends State<TarikSaldoScreen>
-    with SingleTickerProviderStateMixin {
-  late double _saldo;
-  String _metodeSelected = '';
-  final TextEditingController _nominalCtrl = TextEditingController();
-  String _nominal = '';
-  late AnimationController _bounceCtrl;
-  late Animation<double> _bounceAnim;
-
-  final List<Map<String, dynamic>> _metode = [
-    {'nama': 'Dana', 'icon': Icons.account_balance_wallet_rounded, 'color': const Color(0xFF118EEA)},
-    {'nama': 'OVO', 'icon': Icons.account_balance_wallet_rounded, 'color': const Color(0xFF4C3494)},
-    {'nama': 'GoPay', 'icon': Icons.account_balance_wallet_rounded, 'color': const Color(0xFF00AA5B)},
-    {'nama': 'ShopeePay', 'icon': Icons.account_balance_wallet_rounded, 'color': const Color(0xFFEE4D2D)},
-    {'nama': 'BCA', 'icon': Icons.account_balance_rounded, 'color': const Color(0xFF003D6B)},
-    {'nama': 'Mandiri', 'icon': Icons.account_balance_rounded, 'color': const Color(0xFF003087)},
+class _TarikSaldoScreenState extends State<TarikSaldoScreen> {
+  static const _providers = <_PayoutProvider>[
+    _PayoutProvider(
+      name: 'DANA',
+      mark: 'DANA',
+      type: 'E-wallet',
+      color: Color(0xFF118EEA),
+    ),
+    _PayoutProvider(
+      name: 'OVO',
+      mark: 'OVO',
+      type: 'E-wallet',
+      color: Color(0xFF4C3494),
+    ),
+    _PayoutProvider(
+      name: 'GoPay',
+      mark: 'GoPay',
+      type: 'E-wallet',
+      color: Color(0xFF00AA5B),
+    ),
+    _PayoutProvider(
+      name: 'ShopeePay',
+      mark: 'SPay',
+      type: 'E-wallet',
+      color: Color(0xFFEE4D2D),
+    ),
+    _PayoutProvider(
+      name: 'BCA',
+      mark: 'BCA',
+      type: 'Bank',
+      color: Color(0xFF0060A8),
+    ),
+    _PayoutProvider(
+      name: 'Mandiri',
+      mark: 'mandiri',
+      type: 'Bank',
+      color: Color(0xFF003B71),
+    ),
   ];
+  static const _quickAmounts = [10000, 25000, 50000, 100000, 200000];
 
-  final List<int> _nominalCepat = [10000, 25000, 50000, 100000, 200000];
+  final _formKey = GlobalKey<FormState>();
+  final _nominal = TextEditingController();
+  final _accountNumber = TextEditingController();
+  final _accountName = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _saldo = widget.saldoAwal;
-    _bounceCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-    _bounceAnim = CurvedAnimation(parent: _bounceCtrl, curve: Curves.elasticOut);
-    _bounceCtrl.forward();
-  }
+  String _mode = 'transfer';
+  _PayoutProvider? _selectedProvider;
+  String? _providerError;
+  bool _saveDestination = false;
+
+  int get _balance =>
+      widget.saldoAwal.isFinite && widget.saldoAwal > 0
+          ? widget.saldoAwal.round()
+          : 0;
+  int get _amount => int.tryParse(_nominal.text) ?? 0;
 
   @override
   void dispose() {
-    _bounceCtrl.dispose();
-    _nominalCtrl.dispose();
+    _nominal.dispose();
+    _accountNumber.dispose();
+    _accountName.dispose();
     super.dispose();
   }
 
-  int get _nominalInt => int.tryParse(_nominal) ?? 0;
-  bool get _canWithdraw =>
-      _metodeSelected.isNotEmpty && _nominalInt >= 10000 && _nominalInt <= _saldo;
+  String _money(int value) => value.toString().replaceAllMapped(
+        RegExp(r'\B(?=(\d{3})+(?!\d))'),
+        (_) => '.',
+      );
 
-  String _fmt(int n) => n.toString()
-      .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
-
-  void _konfirmasi() {
-    if (!_canWithdraw) return;
-    HapticFeedback.mediumImpact();
-    _showKonfirmasiSheet();
-  }
-
-  void _showKonfirmasiSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Konfirmasi Penarikan',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: kText)),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0D9146), Color(0xFF26D077)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(children: [
-                    const Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 22),
-                    const SizedBox(height: 4),
-                    Text('Rp ${_fmt(_nominalInt)}',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
-                    const Text('Nominal', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                  ]),
-                  const Icon(Icons.arrow_forward_rounded, color: Colors.white54, size: 28),
-                  Column(children: [
-                    const Icon(Icons.send_rounded, color: Colors.white, size: 22),
-                    const SizedBox(height: 4),
-                    Text(_metodeSelected,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
-                    const Text('Tujuan', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                  ]),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _konfRow('Saldo Saat Ini', 'Rp ${_fmt(_saldo.toInt())}'),
-            _konfRow('Nominal Ditarik', 'Rp ${_fmt(_nominalInt)}'),
-            _konfRow('Saldo Setelah', 'Rp ${_fmt((_saldo - _nominalInt).toInt())}', isHighlight: true),
-            _konfRow('Metode', _metodeSelected),
-            const SizedBox(height: 20),
-            Row(children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.grey),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: const Text('Batal', style: TextStyle(color: kTextSoft, fontWeight: FontWeight.w600)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton(
-                  onPressed: () { Navigator.pop(context); _lakukan(); },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary, foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                  child: const Text('Ya, Tarik!', style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ]),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _konfRow(String label, String val, {bool isHighlight = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(children: [
-        Text(label, style: const TextStyle(fontSize: 13, color: kTextSoft)),
-        const Spacer(),
-        Text(val, style: TextStyle(
-            fontSize: 13,
-            fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w600,
-            color: isHighlight ? kPrimary : kText)),
-      ]),
-    );
-  }
-
-  void _lakukan() {
+  void _selectProvider(_PayoutProvider provider) {
     setState(() {
-      _saldo -= _nominalInt;
-      _nominalCtrl.clear();
-      _nominal = '';
-      _metodeSelected = '';
+      if (_selectedProvider?.name != provider.name) {
+        _accountNumber.clear();
+        _accountName.clear();
+      }
+      _selectedProvider = provider;
+      _providerError = null;
     });
-    _bounceCtrl.reset();
-    _bounceCtrl.forward();
-    _showSukses();
   }
 
-  void _showSukses() {
-    showModalBottomSheet(
+  void _review() {
+    FocusScope.of(context).unfocus();
+    final valid = _formKey.currentState?.validate() ?? false;
+    setState(() {
+      _providerError = _selectedProvider == null
+          ? 'Pilih bank atau e-wallet tujuan.'
+          : null;
+    });
+    if (!valid || _selectedProvider == null) return;
+
+    showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isDismissible: false,
-      builder: (_) => WillPopScope(
-        onWillPop: () async => false,
-        child: Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28)),
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: kSurface,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: 1),
-                duration: const Duration(milliseconds: 700),
-                curve: Curves.elasticOut,
-                builder: (_, v, child) => Transform.scale(scale: v, child: child),
-                child: Container(
-                  width: 80, height: 80,
-                  decoration: BoxDecoration(color: kPrimary.withValues(alpha: 0.12), shape: BoxShape.circle),
-                  child: const Icon(Icons.check_circle_rounded, color: kPrimary, size: 48),
+              const Text(
+                'Ringkasan penarikan',
+                style: TextStyle(
+                  color: kText,
+                  fontSize: 18.7,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text('Penarikan Berhasil!',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: kText)),
-              const SizedBox(height: 8),
-              const Text('Saldo akan masuk dalam 1x24 jam.',
-                  style: TextStyle(color: kTextSoft, fontSize: 13)),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                    color: kPrimaryLight,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: kPrimary.withValues(alpha: 0.25))),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.account_balance_wallet_outlined, color: kPrimary, size: 20),
-                    const SizedBox(width: 8),
-                    Text('Saldo Tersisa: Rp ${_fmt(_saldo.toInt())}',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kPrimary)),
-                  ],
-                ),
+              const SizedBox(height: 12),
+              _reviewRow('Nominal', 'Rp ${_money(_amount)}'),
+              _reviewRow('Jenis tujuan', _selectedProvider!.type),
+              _reviewRow('Penyedia', _selectedProvider!.name),
+              _reviewRow(
+                _selectedProvider!.type == 'Bank'
+                    ? 'Nomor rekening'
+                    : 'Nomor e-wallet',
+                _accountNumber.text.trim(),
               ),
-              const SizedBox(height: 24),
+              _reviewRow('Nama pemilik', _accountName.text.trim()),
+              _reviewRow('Simpan tujuan', _saveDestination ? 'Ya' : 'Tidak'),
+              const SizedBox(height: 10),
+              const InlineNotice(
+                message:
+                    'Langkah pengajuan berikutnya memerlukan PIN 6 digit. API pengajuan/PIN belum tersedia, jadi penarikan ini belum dikirim dan saldo tidak berubah.',
+              ),
+              const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary, foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0,
-                  ),
-                  child: const Text('Selesai', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(sheetContext),
+                  child: const Text('Kembali ke formulir'),
                 ),
               ),
             ],
@@ -240,238 +157,518 @@ class _TarikSaldoScreenState extends State<TarikSaldoScreen>
       ),
     );
   }
+
+  Widget _reviewRow(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Text(label, style: const TextStyle(color: kTextSoft, fontSize: 13.8)),
+            const Spacer(),
+            Flexible(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  color: kText,
+                  fontSize: 13.8,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _fieldLabel(String value) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(
+          value,
+          style: const TextStyle(
+            color: kText,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
+
+  Widget _modeButton({
+    required String value,
+    required String label,
+    required IconData icon,
+  }) {
+    final selected = _mode == value;
+    return Expanded(
+      child: InkWell(
+        key: ValueKey('withdraw-mode-$value'),
+        onTap: () => setState(() => _mode = value),
+        borderRadius: BorderRadius.circular(11),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? kPrimaryLight : kSurface,
+            borderRadius: BorderRadius.circular(11),
+            border: Border.all(color: selected ? kPrimary : kBorder),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18.9, color: selected ? kPrimaryDark : kTextSoft),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: selected ? kPrimaryDark : kTextSoft,
+                  fontSize: 11.2,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _providerTile(_PayoutProvider provider) {
+    final selected = _selectedProvider?.name == provider.name;
+    return InkWell(
+      key: ValueKey('payout-provider-${provider.name}'),
+      onTap: () => _selectProvider(provider),
+      borderRadius: BorderRadius.circular(11),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? provider.color.withValues(alpha: .08) : kSurface,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(
+            color: selected ? provider.color : kBorder,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              constraints: const BoxConstraints(minWidth: 48, maxWidth: 70),
+              height: 27,
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: provider.color,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Text(
+                provider.mark,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.2,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              provider.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: selected ? provider.color : kText,
+                fontSize: 11.2,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _locationCard({
+    required String title,
+    required String subtitle,
+    required String actionLabel,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: kSurface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        key: ValueKey('cash-location-$title'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorder),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: .10),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: color, size: 22.4),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: kText,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: kTextSoft, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    actionLabel,
+                    style: const TextStyle(
+                      color: kPrimaryDark,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Icon(Icons.open_in_new_rounded,
+                      color: kPrimaryDark, size: 14.2),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMapsSearch(String query) async {
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      'query': query,
+    });
+    try {
+      final opened =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google Maps tidak dapat dibuka.')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google Maps tidak dapat dibuka.')),
+        );
+      }
+    }
+  }
+
+  void _openRumahHijau() {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const RumahHijauScreen()),
+    );
+  }
+
+  Widget _cashLocationsSection() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const InlineNotice(
+            message:
+                'Pencarian ini hanya untuk menemukan lokasi dan petunjuk arah. Lokasi yang ditemukan belum terverifikasi sebagai mitra pencairan saldo; aplikasi tidak membuat permintaan tunai atau menjamin pembayaran di outlet.',
+          ),
+          const SizedBox(height: 14),
+          _fieldLabel('Cari lokasi di sekitar Anda'),
+          _locationCard(
+            title: 'Agen tarik tunai',
+            subtitle: 'Cari agen di sekitar melalui Google Maps',
+            actionLabel: 'Cari lokasi',
+            icon: Icons.storefront_outlined,
+            color: const Color(0xFF427B55),
+            onTap: () => _openMapsSearch('agen tarik tunai terdekat'),
+          ),
+          const SizedBox(height: 8),
+          _locationCard(
+            title: 'Alfamart',
+            subtitle: 'Cari gerai di sekitar melalui Google Maps',
+            actionLabel: 'Cari lokasi',
+            icon: Icons.store_mall_directory_outlined,
+            color: const Color(0xFFEE4D2D),
+            onTap: () => _openMapsSearch('Alfamart terdekat'),
+          ),
+          const SizedBox(height: 8),
+          _locationCard(
+            title: 'Indomaret',
+            subtitle: 'Cari gerai di sekitar melalui Google Maps',
+            actionLabel: 'Cari lokasi',
+            icon: Icons.store_mall_directory_outlined,
+            color: const Color(0xFF1769AA),
+            onTap: () => _openMapsSearch('Indomaret terdekat'),
+          ),
+          const SizedBox(height: 8),
+          _locationCard(
+            title: 'Bank Sampah Rumah Hijau',
+            subtitle: 'Lihat informasi mitra dan petunjuk arah',
+            actionLabel: 'Detail & arah',
+            icon: Icons.eco_outlined,
+            color: kPrimary,
+            onTap: _openRumahHijau,
+          ),
+        ],
+      );
+
+  Widget _transferForm() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const InlineNotice(
+            message:
+                'Minimum penarikan Rp10.000, tanpa biaya. Pengajuan bank/e-wallet memerlukan PIN 6 digit dan persetujuan admin. Endpoint pengajuan/PIN belum aktif; halaman ini hanya meninjau detail dan tidak mengubah saldo.',
+          ),
+          const SizedBox(height: 14),
+          _fieldLabel('Nominal penarikan'),
+          TextFormField(
+            controller: _nominal,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(
+              prefixText: 'Rp ',
+              hintText: 'Minimal 10.000',
+            ),
+            validator: (value) {
+              final amount = int.tryParse(value ?? '') ?? 0;
+              if (amount < 10000) return 'Minimum penarikan Rp10.000.';
+              if (amount > _balance) return 'Saldo tersedia tidak mencukupi.';
+              return null;
+            },
+          ),
+          if (_balance >= 10000) ...[
+            const SizedBox(height: 9),
+            Wrap(
+              spacing: 7,
+              runSpacing: 6,
+              children: [
+                for (final amount
+                    in _quickAmounts.where((value) => value <= _balance))
+                  ActionChip(
+                    label: Text('Rp ${_money(amount)}'),
+                    onPressed: () {
+                      _nominal.text = amount.toString();
+                      setState(() {});
+                    },
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 14),
+          _fieldLabel('Pilih bank atau e-wallet tujuan'),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisExtent: 72,
+              crossAxisSpacing: 7,
+              mainAxisSpacing: 7,
+            ),
+            itemCount: _providers.length,
+            itemBuilder: (context, index) => _providerTile(_providers[index]),
+          ),
+          if (_providerError != null) ...[
+            const SizedBox(height: 5),
+            Text(
+              _providerError!,
+              style: const TextStyle(color: kDanger, fontSize: 11.2),
+            ),
+          ],
+          if (_selectedProvider != null) ...[
+            const SizedBox(height: 13),
+            _fieldLabel(
+              _selectedProvider!.type == 'Bank'
+                  ? 'Nomor rekening'
+                  : 'Nomor HP e-wallet',
+            ),
+            TextFormField(
+              controller: _accountNumber,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                hintText: _selectedProvider!.type == 'Bank'
+                    ? 'Masukkan nomor rekening'
+                    : 'Masukkan nomor HP yang terdaftar',
+              ),
+              validator: (value) => (value ?? '').trim().isEmpty
+                  ? 'Nomor tujuan wajib diisi.'
+                  : null,
+            ),
+            const SizedBox(height: 10),
+            _fieldLabel(
+              _selectedProvider!.type == 'Bank'
+                  ? 'Nama pemilik rekening'
+                  : 'Nama pemilik e-wallet',
+            ),
+            TextFormField(
+              controller: _accountName,
+              textCapitalization: TextCapitalization.words,
+              decoration:
+                  const InputDecoration(hintText: 'Sesuai nama akun tujuan'),
+              validator: (value) => (value ?? '').trim().isEmpty
+                  ? 'Nama pemilik wajib diisi.'
+                  : null,
+            ),
+            const SizedBox(height: 6),
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              value: _saveDestination,
+              activeColor: kPrimary,
+              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (value) =>
+                  setState(() => _saveDestination = value ?? false),
+              title: const Text(
+                'Simpan tujuan ini untuk berikutnya',
+                style: TextStyle(
+                  color: kText,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              subtitle: const Text(
+                'Penyimpanan akan aktif setelah endpoint tujuan tersimpan tersedia.',
+                style: TextStyle(color: kTextSoft, fontSize: 10),
+              ),
+            ),
+          ],
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBg,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: kText),
-          ),
-        ),
-        title: const Text('Tarik Saldo',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(title: const Text('Tarik Saldo')),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
           children: [
-            // ── Saldo Card ──
-            ScaleTransition(
-              scale: _bounceAnim,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0D9146), Color(0xFF26D077)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [BoxShadow(color: kPrimary.withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
-                ),
-                child: Column(children: [
-                  const Text('Saldo Tersedia', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  const SizedBox(height: 8),
-                  Text('Rp ${_fmt(_saldo.toInt())}',
-                      style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
-                ]),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ── Info minimum ──
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: kInfo.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: kInfo.withValues(alpha: 0.2)),
+                color: kPrimaryDark,
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(children: [
-                Icon(Icons.info_outline_rounded, color: kInfo, size: 16),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text('Minimum penarikan Rp 10.000. Proses 1x24 jam.',
-                      style: TextStyle(fontSize: 12, color: kInfo)),
-                ),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'TABUNGAN RUMAH HIJAU',
+                    style: TextStyle(
+                      color: Color(0xFFDDE5C9),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Saldo tersedia',
+                    style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 12.5),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Rp ${_money(_balance)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-
-            // ── Pilih Metode ──
-            const Text('Pilih Metode Penarikan',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kText)),
             const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1.6,
-              ),
-              itemCount: _metode.length,
-              itemBuilder: (_, i) {
-                final m = _metode[i];
-                final sel = _metodeSelected == m['nama'];
-                return GestureDetector(
-                  onTap: () { HapticFeedback.selectionClick(); setState(() => _metodeSelected = m['nama']); },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: sel ? (m['color'] as Color).withValues(alpha: 0.1) : Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: sel ? m['color'] as Color : Colors.grey.shade200,
-                        width: sel ? 2 : 1,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(m['icon'] as IconData,
-                            color: sel ? m['color'] as Color : kTextSoft, size: 20),
-                        const SizedBox(height: 4),
-                        Text(m['nama'],
-                            style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
-                                color: sel ? m['color'] as Color : kTextSoft)),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // ── Input Nominal ──
-            const Text('Nominal Penarikan',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kText)),
-            const SizedBox(height: 10),
-            Container(
-              decoration: AppTheme.cardDecoration,
-              child: Row(children: [
-                const SizedBox(width: 16),
-                const Text('Rp', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: kText)),
+            Row(
+              children: [
+                _modeButton(
+                  value: 'transfer',
+                  label: 'Transfer bank/e-wallet',
+                  icon: Icons.account_balance_wallet_outlined,
+                ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _nominalCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (v) => setState(() => _nominal = v),
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: kText),
-                    decoration: const InputDecoration(
-                      hintText: '0',
-                      hintStyle: TextStyle(fontSize: 22, color: kTextSoft, fontWeight: FontWeight.w400),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 18),
-                    ),
-                  ),
+                _modeButton(
+                  value: 'locations',
+                  label: 'Lokasi tunai',
+                  icon: Icons.location_on_outlined,
                 ),
-                if (_nominal.isNotEmpty)
-                  IconButton(
-                    onPressed: () { setState(() { _nominalCtrl.clear(); _nominal = ''; }); },
-                    icon: const Icon(Icons.close_rounded, color: kTextSoft, size: 18),
-                  ),
-              ]),
+              ],
             ),
-
-            if (_nominalInt > 0 && _nominalInt > _saldo)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text('Nominal melebihi saldo tersedia',
-                    style: TextStyle(color: kDanger, fontSize: 12)),
-              ),
-
-            const SizedBox(height: 14),
-
-            // Nominal cepat
-            Wrap(
-              spacing: 8, runSpacing: 8,
-              children: _nominalCepat.where((n) => n <= _saldo).map((n) {
-                final sel = _nominalInt == n;
-                return GestureDetector(
-                  onTap: () {
-                    _nominalCtrl.text = n.toString();
-                    setState(() => _nominal = n.toString());
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: sel ? kPrimary : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: sel ? kPrimary : Colors.grey.shade300),
-                    ),
-                    child: Text('Rp ${_fmt(n)}',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: sel ? Colors.white : kTextSoft)),
-                  ),
-                );
-              }).toList(),
-            ),
-
-            if (_canWithdraw) ...[
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: AppTheme.cardDecoration,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Ringkasan',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
-                    const SizedBox(height: 12),
-                    _konfRow('Nominal', 'Rp ${_fmt(_nominalInt)}'),
-                    const SizedBox(height: 4),
-                    _konfRow('Tujuan', _metodeSelected),
-                    const Divider(height: 20),
-                    _konfRow('Saldo Setelah', 'Rp ${_fmt((_saldo - _nominalInt).toInt())}', isHighlight: true),
-                  ],
-                ),
-              ),
-            ],
+            const SizedBox(height: 12),
+            if (_mode == 'transfer') _transferForm() else _cashLocationsSection(),
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + MediaQuery.of(context).padding.bottom),
-        child: ElevatedButton(
-          onPressed: _canWithdraw ? _konfirmasi : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: kPrimary,
-            disabledBackgroundColor: Colors.grey.shade200,
-            foregroundColor: Colors.white,
-            disabledForegroundColor: kTextSoft,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            elevation: 0,
-          ),
-          child: Text(
-            _canWithdraw ? 'Tarik Rp ${_fmt(_nominalInt)} ke $_metodeSelected' : 'Pilih Metode & Nominal',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-          ),
-        ),
-      ),
+      bottomNavigationBar: _mode == 'transfer'
+          ? SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 9, 16, 10),
+                decoration: BoxDecoration(
+                  color: kBg,
+                  border: Border(
+                    top: BorderSide(color: kBorder.withValues(alpha: .8)),
+                  ),
+                ),
+                child: SizedBox(
+                  height: 44,
+                  child: FilledButton(
+                    onPressed: _review,
+                    child: const Text('Tinjau detail'),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
+}
+
+class _PayoutProvider {
+  const _PayoutProvider({
+    required this.name,
+    required this.mark,
+    required this.type,
+    required this.color,
+  });
+
+  final String name;
+  final String mark;
+  final String type;
+  final Color color;
 }

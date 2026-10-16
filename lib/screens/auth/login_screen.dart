@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
+import '../../services/api_service.dart';
 import 'app_theme.dart';
+import 'dashboard_screen.dart';
 import 'register_screen.dart';
 import 'resetpassword_screen.dart';
-import 'dashboard_screen.dart';
-import '../../services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,9 +14,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -27,239 +28,206 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleMasuk() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email dan password harus diisi')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final apiService = ApiService();
-    final result = await apiService.login(email, password);
-
+    if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _isLoading = true);
+    final result = await ApiService().login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
     if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
+    setState(() => _isLoading = false);
     if (result['success'] == true) {
-      // Login sukses
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login berhasil!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
       );
     } else {
-      // Login gagal
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Login gagal'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(result['message'] ?? 'Email atau kata sandi belum sesuai.'),
+        behavior: SnackBarBehavior.floating,
+      ));
     }
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    required IconData prefixIcon,
-    bool isPassword = false,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword ? _obscurePassword : false,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-        prefixIcon: Icon(prefixIcon, color: Colors.grey, size: 20),
-        suffixIcon: isPassword
-            ? GestureDetector(
-                onTap: () => setState(() => _obscurePassword = !_obscurePassword),
-                child: Icon(
-                  _obscurePassword
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              )
-            : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: kPrimary, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: kBg,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (Navigator.canPop(context)) ...[
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black26),
-                    ),
-                    child: const Icon(Icons.chevron_left, size: 24),
-                  ),
+        child: LayoutBuilder(builder: (context, constraints) {
+          final horizontal = constraints.maxWidth > 600 ? 72.0 : 22.0;
+          final heroHeight = constraints.maxWidth > 700 ? 220.0 : 188.0;
+          final illustrationWidth = constraints.maxWidth > 700 ? 280.0 : 190.0;
+          return SingleChildScrollView(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Container(
+                height: heroHeight,
+                padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 16),
+                decoration: const BoxDecoration(
+                  color: kPrimaryDark,
                 ),
-                const SizedBox(height: 24),
-              ],
-              const Text(
-                'Selamat Datang Kembali\ndi Setor.in',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Masukan Email dan Passwordmu',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 28),
-              _buildLabel('Email'),
-              _buildTextField(
-                controller: _emailController,
-                hint: 'user@gmail.com',
-                prefixIcon: Icons.mail_outline,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              _buildLabel('Password'),
-              _buildTextField(
-                controller: _passwordController,
-                hint: 'Masukan Password',
-                prefixIcon: Icons.lock_outline,
-                isPassword: true,
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ResetPasswordScreen()),
-                  ),
-                  child: const Text(
-                    'Lupa Password?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.red,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleMasuk,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Masuk',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Tidak punya akun?  ',
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                    ),
-                    child: const Text(
-                      'Daftar disini',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: kPrimary,
-                        fontWeight: FontWeight.w600,
+                child: Stack(clipBehavior: Clip.hardEdge, children: [
+                  Positioned(
+                    right: -34,
+                    top: -70,
+                    child: Container(
+                      width: 180,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withValues(alpha: .08)),
                       ),
                     ),
                   ),
-                ],
+                  Positioned(
+                    right: -12,
+                    bottom: -22,
+                    width: illustrationWidth,
+                    height: heroHeight * .86,
+                    child: Image.asset(
+                      'assets/images/setor_story_illustration.webp',
+                      fit: BoxFit.contain,
+                      alignment: Alignment.bottomRight,
+                    ),
+                  ),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      const Icon(Icons.eco_rounded, color: Color(0xFFDDE5C9), size: 15.3),
+                      const SizedBox(width: 6),
+                      const Text('SETOR.IN', style: TextStyle(
+                          color: Colors.white, fontSize: 11.2,
+                          fontWeight: FontWeight.w800, letterSpacing: 1.4)),
+                      const Spacer(),
+                      const Text('RUMAH HIJAU', style: TextStyle(
+                          color: Color(0xFFDDE5C9), fontSize: 11.2,
+                          fontWeight: FontWeight.w700, letterSpacing: 1.1)),
+                    ]),
+                    const Spacer(),
+                    const Padding(
+                      padding: EdgeInsets.only(right: 112),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('NASABAH RUMAH HIJAU', style: TextStyle(
+                            color: Color(0xFFDDE5C9), fontSize: 11.2,
+                            fontWeight: FontWeight.w700, letterSpacing: 1.1)),
+                        SizedBox(height: 5),
+                        Text('Sampah terpilah.\nNilai yang berarti.', style: TextStyle(
+                            color: Colors.white, fontSize: 22, height: 1.08,
+                            fontWeight: FontWeight.w800, letterSpacing: -.35)),
+                      ]),
+                    ),
+                  ]),
+                ]),
               ),
-            ],
-          ),
-        ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 22, horizontal, 30),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 460),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        const Text('AKUN SETOR.IN', style: TextStyle(
+                            color: kPrimary, fontSize: 11.2,
+                            fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                        const SizedBox(height: 5),
+                        const Text('Masuk kembali', style: TextStyle(
+                            color: kText, fontSize: 24.2,
+                            fontWeight: FontWeight.w800, letterSpacing: -.4)),
+                        const SizedBox(height: 3),
+                        const Text('Lanjutkan langkah baikmu hari ini.',
+                            style: TextStyle(color: kTextSoft, fontSize: 13.8)),
+                        const SizedBox(height: 18),
+                        const _AuthLabel('Email'),
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.username, AutofillHints.email],
+                          decoration: const InputDecoration(
+                            hintText: 'nama@email.com',
+                            prefixIcon: Icon(Icons.mail_outline_rounded, size: 21.2),
+                          ),
+                          validator: (value) {
+                            final email = (value ?? '').trim();
+                            if (email.isEmpty) return 'Email wajib diisi.';
+                            if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+                              return 'Periksa kembali format email.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 13),
+                        const _AuthLabel('Kata sandi'),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _handleMasuk(),
+                          autofillHints: const [AutofillHints.password],
+                          decoration: InputDecoration(
+                            hintText: 'Masukkan kata sandi',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 21.2),
+                            suffixIcon: IconButton(
+                              tooltip: _obscurePassword ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi',
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                            ),
+                          ),
+                          validator: (value) => (value ?? '').isEmpty ? 'Kata sandi wajib diisi.' : null,
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (_) => const ResetPasswordScreen())),
+                            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5)),
+                            child: const Text('Lupa kata sandi?', style: TextStyle(fontSize: 13.8)),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          height: 46,
+                          child: FilledButton(
+                            onPressed: _isLoading ? null : _handleMasuk,
+                            child: _isLoading
+                                ? const SizedBox(width: 20, height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    Text('Masuk'), SizedBox(width: 7), Icon(Icons.arrow_forward_rounded, size: 18.9),
+                                  ]),
+                          ),
+                        ),
+                        const SizedBox(height: 13),
+                        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          const Text('Belum punya akun? ', style: TextStyle(color: kTextSoft, fontSize: 13.8)),
+                          TextButton(
+                            onPressed: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4)),
+                            child: const Text('Daftar', style: TextStyle(fontSize: 13.8, fontWeight: FontWeight.w800)),
+                          ),
+                        ]),
+                      ]),
+                    ),
+                  ),
+                ),
+              ),
+            ]),
+          );
+        }),
       ),
     );
   }
+}
+
+class _AuthLabel extends StatelessWidget {
+  const _AuthLabel(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(text, style: const TextStyle(
+            color: kText, fontSize: 12.5, fontWeight: FontWeight.w700)),
+      );
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_theme.dart';
+
 // ══════════════════════════════════════════════════════
 //  TargetSampahScreen  –  Form penargetan sampah
 //  Mockup: image 2 (form target) & image 2.1 (panduan estimasi)
@@ -117,32 +119,32 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
   // ── AppBar ───────────────────────────────────────────
   Widget _buildAppBar() {
     return Container(
-      color: Colors.white,
+      color: kBg,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black87, width: 2),
+                color: kPrimaryLight,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: Colors.black87),
+              child: const Icon(Icons.arrow_back,
+                  size: 23.6, color: kText),
             ),
           ),
           const Expanded(
             child: Text(
               'Targetkan Sampah',
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               style: TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w800, color: Colors.black87),
+                  fontSize: 18.4, fontWeight: FontWeight.w800, color: kText),
             ),
           ),
-          const SizedBox(width: 38),
+          const SizedBox(width: 40),
         ],
       ),
     );
@@ -166,12 +168,12 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
               child: Row(
                 children: [
                   const Icon(Icons.info_outline_rounded,
-                      color: Color(0xFF374151), size: 18),
+                      color: Color(0xFF374151), size: 21.2),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
                       'Panduan Estimasi Berat Sampah',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF374151)),
+                      style: TextStyle(fontSize: 14.9, fontWeight: FontWeight.w500, color: Color(0xFF374151)),
                     ),
                   ),
                   Icon(
@@ -268,7 +270,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
           ),
           child: const Text(
             '⚠️ Catatan: Angka di atas adalah estimasi. Berat aktual dapat bervariasi tergantung merek, ketebalan material, dan kondisi sampah. Gunakan sebagai panduan untuk menentukan target Anda.',
-            style: TextStyle(fontSize: 11, color: Color(0xFF92400E), height: 1.4),
+            style: TextStyle(fontSize: 13.8, color: Color(0xFF92400E), height: 1.4),
           ),
         ),
       ],
@@ -282,18 +284,18 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black87)),
+              style: const TextStyle(fontSize: 14.9, fontWeight: FontWeight.w700, color: Colors.black87)),
           const SizedBox(height: 4),
           ...lines.map(
             (l) => Padding(
               padding: const EdgeInsets.only(bottom: 2),
               child: Text(l,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF374151), height: 1.4)),
+                  style: const TextStyle(fontSize: 13.8, color: Color(0xFF374151), height: 1.4)),
             ),
           ),
           const SizedBox(height: 4),
           Text(referensi,
-              style: const TextStyle(fontSize: 11, color: Color(0xFFD97706), fontWeight: FontWeight.w500)),
+              style: const TextStyle(fontSize: 13.8, color: Color(0xFFD97706), fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -305,7 +307,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Text(text,
           style: const TextStyle(
-              fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black87)),
+              fontSize: 16.1, fontWeight: FontWeight.w700, color: Colors.black87)),
     );
   }
 
@@ -334,26 +336,26 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
             child: Row(
               children: [
                 Text(s['icon'] as String,
-                    style: const TextStyle(fontSize: 16)),
+                    style: const TextStyle(fontSize: 18.4)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(s['nama'] as String,
                       style: const TextStyle(color: Colors.white,
-                          fontSize: 14, fontWeight: FontWeight.w600)),
+                          fontSize: 16.1, fontWeight: FontWeight.w600)),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     const Text('1 kg',
-                        style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        style: TextStyle(color: Colors.white70, fontSize: 13.8)),
                     const SizedBox(height: 2),
                     Text('${s['koin']} koin',
                         style: const TextStyle(
-                            color: Colors.white70, fontSize: 12)),
+                            color: Colors.white70, fontSize: 13.8)),
                     const SizedBox(height: 2),
                     Text(_rupiah((s['harga'] as num).toInt()),
                         style: const TextStyle(
-                            color: Colors.white70, fontSize: 12)),
+                            color: Colors.white70, fontSize: 13.8)),
                   ],
                 ),
               ],
@@ -389,12 +391,12 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
             ),
             child: Row(
               children: [
-                Text(s['icon'] as String, style: const TextStyle(fontSize: 16)),
+                Text(s['icon'] as String, style: const TextStyle(fontSize: 18.4)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(s['nama'] as String,
                       style: const TextStyle(
-                          color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                          color: Colors.white, fontSize: 16.1, fontWeight: FontWeight.w600)),
                 ),
                 _CounterButton(
                   icon: Icons.remove,
@@ -412,7 +414,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
                   child: Text(
                     '${s['jumlah']}',
                     style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black87),
+                        fontSize: 16.1, fontWeight: FontWeight.w700, color: Colors.black87),
                   ),
                 ),
                 _CounterButton(
@@ -420,7 +422,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
                   onTap: () => _ubahJumlah(i, 1),
                 ),
                 const SizedBox(width: 8),
-                const Text('Kg', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                const Text('Kg', style: TextStyle(color: Colors.white70, fontSize: 14.9)),
               ],
             ),
           );
@@ -447,13 +449,13 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
           const Align(
             alignment: Alignment.centerLeft,
             child: Text('Target bulan ini :',
-                style: TextStyle(color: Colors.white70, fontSize: 13)),
+                style: TextStyle(color: Colors.white70, fontSize: 14.9)),
           ),
           const SizedBox(height: 4),
           Text(
             '${_totalKg.toStringAsFixed(0)}kg',
             style: const TextStyle(
-                color: Colors.white, fontSize: 40, fontWeight: FontWeight.w900),
+                color: Colors.white, fontSize: 44, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Row(
@@ -461,7 +463,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
             children: [
               Text(
                 'Estimasi koin yang di dapatkan : ${_totalKg > 0 ? _totalKoin : '-'}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 13.8),
               ),
             ],
           ),
@@ -469,7 +471,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
             children: [
               Text(
                 'Estimasi saldo yang di dapatkan : ${_totalKg > 0 ? _rupiah(_totalSaldo) : '-'}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 13.8),
               ),
             ],
           ),
@@ -497,7 +499,7 @@ class _TargetSampahScreenState extends State<TargetSampahScreen> {
           ),
           child: const Text(
             'Buat penargetan',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: TextStyle(fontSize: 18.4, fontWeight: FontWeight.w700),
           ),
         ),
       ),
@@ -525,7 +527,7 @@ class _CounterButton extends StatelessWidget {
           color: Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
+        child: Icon(icon, color: Colors.white, size: 21.2),
       ),
     );
   }

@@ -11,29 +11,22 @@ class SetorSampahScreen extends StatefulWidget {
   State<SetorSampahScreen> createState() => _SetorSampahScreenState();
 }
 
-class _SetorSampahScreenState extends State<SetorSampahScreen>
-    with SingleTickerProviderStateMixin {
+class _SetorSampahScreenState extends State<SetorSampahScreen> {
   final UserData _userData = UserData();
   bool _isLoading = true;
   String _nama = '';
   String _noTelpon = '';
   String _qrCode = '';
   List<Map<String, dynamic>> _hargaList = [];
-  late AnimationController _animCtrl;
 
   @override
   void initState() {
     super.initState();
-    _animCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(); // scanning effect
     _loadData();
   }
 
   @override
   void dispose() {
-    _animCtrl.dispose();
     super.dispose();
   }
 
@@ -46,9 +39,9 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
       final p = profileRes['data'];
       _nama = p['nama'] ?? 'Nasabah SetorIn';
       _noTelpon = p['no_telepon'] ?? '-';
-      final userId = p['id'];
-      _qrCode = p['qr_code']?.toString() ??
-          (userId != null ? 'SETORIN:NASABAH:$userId' : '');
+      // Never derive a scannable member code from a sequential database ID.
+      // The backend must issue and return its dedicated QR value.
+      _qrCode = (p['kode_qr'] ?? p['qr_code'] ?? p['code_qr'] ?? '').toString();
     } else {
       await _userData.load();
       _nama = _userData.nama;
@@ -61,18 +54,24 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
     if (bankRes['success'] == true && bankRes['data'] != null) {
       final List banks = bankRes['data'] is List ? bankRes['data'] : [];
       final List<Map<String, dynamic>> tempHarga = [];
-      
-      for (final b in banks) {
-        final List hargas = b['harga_sampah'] ?? [];
-        for (final h in hargas) {
+
+      final partner = banks.whereType<Map>().where((bank) =>
+          (bank['nama_bank'] ?? '')
+              .toString()
+              .toLowerCase()
+              .contains('rumah hijau'));
+      final harga = partner.isEmpty ? null : partner.first['harga_sampah'];
+      if (harga is List) {
+        for (final h in harga.whereType<Map>()) {
           tempHarga.add({
             'jenis': h['jenis_sampah']?.toString() ?? '',
-            'harga': double.tryParse(h['harga_per_kg']?.toString() ?? '') ?? 0.0,
-            'bank': b['nama_bank']?.toString() ?? '',
+            'harga':
+                double.tryParse(h['harga_per_kg']?.toString() ?? '') ?? 0.0,
+            'bank': partner.first['nama_bank']?.toString() ?? 'Rumah Hijau',
           });
         }
       }
-      
+
       // Filter unik berdasarkan jenis sampah
       final seenJenis = <String>{};
       _hargaList = [];
@@ -85,24 +84,14 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
       }
     }
 
-    // Fallback harga jika kosong
-    if (_hargaList.isEmpty) {
-      _hargaList = [
-        {'jenis': 'Plastik HDPE / Botol', 'harga': 2000.0, 'bank': 'Mitra SetorIn'},
-        {'jenis': 'Kertas Karton / Kardus', 'harga': 1500.0, 'bank': 'Mitra SetorIn'},
-        {'jenis': 'Logam Besi / Aluminium', 'harga': 4500.0, 'bank': 'Mitra SetorIn'},
-        {'jenis': 'Kaca Bening', 'harga': 1200.0, 'bank': 'Mitra SetorIn'},
-        {'jenis': 'Sampah Organik Kompos', 'harga': 800.0, 'bank': 'Mitra SetorIn'},
-      ];
-    }
-
     if (mounted) setState(() => _isLoading = false);
   }
 
   void _showQrDialog() {
     if (_qrCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('QR Code belum tersedia. Coba muat ulang halaman.')),
+        const SnackBar(
+            content: Text('QR Code belum tersedia. Coba muat ulang halaman.')),
       );
       return;
     }
@@ -118,13 +107,14 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
             children: [
               const Text(
                 'QR Kartu Nasabah',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: kText),
+                style: TextStyle(
+                    fontSize: 18.7, fontWeight: FontWeight.w800, color: kText),
               ),
               const SizedBox(height: 6),
               const Text(
                 'Tunjukkan ke petugas Bank Sampah untuk di-scan',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: kTextSoft),
+                style: TextStyle(fontSize: 13.8, color: kTextSoft),
               ),
               const SizedBox(height: 20),
               Container(
@@ -144,13 +134,14 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
               const SizedBox(height: 16),
               Text(
                 _nama,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: 16.1, color: kText),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
                 _noTelpon,
-                style: const TextStyle(fontSize: 12, color: kTextSoft),
+                style: const TextStyle(fontSize: 13.8, color: kTextSoft),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -161,9 +152,11 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                     backgroundColor: kPrimary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Tutup',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -179,7 +172,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
         width: size,
         height: size,
         child: const Center(
-          child: Icon(Icons.qr_code_2_rounded, size: 48, color: Colors.black26),
+          child: Icon(Icons.qr_code_2_rounded, size: 56.6, color: Colors.black26),
         ),
       );
     }
@@ -197,54 +190,46 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kBg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black87, width: 2),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 16,
-              color: Colors.black87,
-            ),
-          ),
+          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
         ),
-        title: const Text(
-          'Setor Sampah',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
-            color: kText,
-          ),
-        ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, color: Colors.grey.shade200),
-        ),
+        title: const Text('Kartu nasabah'),
+        centerTitle: false,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: kPrimary))
           : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
               children: [
                 // ── BAGIAN 1: KARTU DIGITAL & QR ──
                 _buildDigitalCard(),
+                if (_qrCode.isEmpty) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF5E8),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Text(
+                      'QR unik belum diterbitkan oleh server. Kode tidak dibuat dari ID akun.',
+                      style: TextStyle(color: Color(0xFF704300), fontSize: 13.8),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 28),
 
                 // ── BAGIAN 2: PANDUAN LANGKAH ──
                 const Text(
                   'Panduan Setor Sampah',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 14.9,
+                    fontWeight: FontWeight.w800,
                     color: kText,
                   ),
                 ),
@@ -259,24 +244,29 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                     const Text(
                       'Harga Sampah Terkini',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18.4,
                         fontWeight: FontWeight.w700,
                         color: kText,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: kPrimary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.check_circle_rounded, color: kPrimary, size: 12),
+                          Icon(Icons.check_circle_rounded,
+                              color: kPrimary, size: 14.2),
                           SizedBox(width: 4),
                           Text(
                             'Live API',
-                            style: TextStyle(fontSize: 10, color: kPrimary, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                color: kPrimary,
+                                fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -294,194 +284,78 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
   Widget _buildDigitalCard() {
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        gradient: kGradientPrimary,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: kPrimary.withValues(alpha: 0.3),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+        color: kPrimaryDark,
+        borderRadius: BorderRadius.circular(17),
+      ),
+      child: Stack(children: [
+        Positioned(
+          right: -48,
+          top: -62,
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: .07)),
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          children: [
-            // Background Pattern Accent
-            Positioned(
-              right: -30,
-              top: -30,
-              child: Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-            Positioned(
-              left: -50,
-              bottom: -50,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo & Judul Kartu
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'KARTU NASABAH',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'SetorIn Digital Bank',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: _showQrDialog,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 24),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // QR Code & Info Row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Styled QR Code Container
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))
-                          ],
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            _buildQrWidget(size: 100),
-                            // Scanning Line Animation
-                            AnimatedBuilder(
-                              animation: _animCtrl,
-                              builder: (context, child) {
-                                return Positioned(
-                                  top: 100 * _animCtrl.value,
-                                  left: 0,
-                                  right: 0,
-                                  child: Container(
-                                    height: 2.5,
-                                    decoration: BoxDecoration(
-                                      color: kPrimary,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: kPrimary.withValues(alpha: 0.6),
-                                          blurRadius: 4,
-                                          spreadRadius: 1,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-
-                      // User Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'NAMA LENGKAP',
-                              style: TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1),
-                            ),
-                            Text(
-                              _nama,
-                              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'NO. HANDPHONE / ID',
-                              style: TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1),
-                            ),
-                            Text(
-                              _noTelpon,
-                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.5),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.camera_front_rounded, color: Colors.white, size: 12),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'Tunjukkan ke Petugas',
-                                    style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.all(13),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('KARTU NASABAH', style: TextStyle(
+                    color: Color(0xFFDDE5C9), fontSize: 10,
+                    fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+                SizedBox(height: 3),
+                Text('Rumah Hijau', style: TextStyle(
+                    color: Colors.white, fontSize: 16.1, fontWeight: FontWeight.w800)),
+              ])),
+              IconButton(
+                tooltip: 'Perbesar QR',
+                onPressed: _showQrDialog,
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.open_in_full_rounded, color: Colors.white70, size: 18.9),
+              ),
+            ]),
+            const SizedBox(height: 9),
+            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              GestureDetector(
+                onTap: _showQrDialog,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(9)),
+                  child: _buildQrWidget(size: 76),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('NAMA NASABAH', style: TextStyle(
+                    color: Color(0xFFCCD2C2), fontSize: 8.8,
+                    fontWeight: FontWeight.w800, letterSpacing: .8)),
+                const SizedBox(height: 2),
+                Text(_nama.isEmpty ? 'Nasabah' : _nama, maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.8, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                const Text('KONTAK NASABAH', style: TextStyle(
+                    color: Color(0xFFCCD2C2), fontSize: 8.8,
+                    fontWeight: FontWeight.w800, letterSpacing: .8)),
+                const SizedBox(height: 2),
+                Text(_noTelpon.isEmpty ? 'Kontak belum tersedia' : _noTelpon,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 5),
+                const Text('Tunjukkan QR ini kepada petugas',
+                    style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 10)),
+              ])),
+            ]),
+          ]),
+        ),
+      ]),
     );
   }
 
@@ -491,28 +365,32 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
       {
         'step': '1',
         'title': 'Pilah Dari Rumah',
-        'desc': 'Pisahkan sampah anorganik (Plastik, Kertas, Logam, Kaca) dari sampah organik basah.',
+        'desc':
+            'Pisahkan sampah anorganik (Plastik, Kertas, Logam, Kaca) dari sampah organik basah.',
         'icon': Icons.cleaning_services_rounded,
         'color': const Color(0xFF3B82F6),
       },
       {
         'step': '2',
-        'title': 'Bawa ke Bank Sampah',
-        'desc': 'Kunjungi mitra Bank Sampah SetorIn terdekat dari lokasi hunian Anda.',
+        'title': 'Kunjungi Rumah Hijau',
+        'desc':
+            'Periksa lokasi dan jadwal Rumah Hijau sebelum datang menyetor.',
         'icon': Icons.map_rounded,
         'color': const Color(0xFF0D9146),
       },
       {
         'step': '3',
-        'title': 'Scan QR Code Anggota',
-        'desc': 'Tunjukkan QR Code di kartu digital atas kepada petugas di lokasi timbangan.',
+        'title': 'Tunjukkan QR kepada petugas',
+        'desc':
+            'Tunjukkan QR Code di kartu digital atas kepada petugas di lokasi timbangan.',
         'icon': Icons.qr_code_scanner_rounded,
         'color': const Color(0xFFF59E0B),
       },
       {
         'step': '4',
-        'title': 'Terima Koin & Saldo',
-        'desc': 'Petugas menimbang sampah, dan Saldo rupiah beserta Koin langsung masuk ke akun!',
+        'title': 'Petugas memverifikasi setoran',
+        'desc':
+            'Petugas menimbang dan mencatat sampah. Nilai setoran mengikuti harga yang berlaku saat transaksi.',
         'icon': Icons.payments_rounded,
         'color': const Color(0xFF8B5CF6),
       },
@@ -522,15 +400,15 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
       children: steps.map((s) {
         final stepC = s['color'] as Color;
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           decoration: AppTheme.cardDecoration,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 25,
+                height: 25,
                 decoration: BoxDecoration(
                   color: stepC.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
@@ -538,28 +416,36 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                 child: Center(
                   child: Text(
                     s['step'] as String,
-                    style: TextStyle(color: stepC, fontSize: 15, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: stepC,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 9),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       s['title'] as String,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kText),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11.2,
+                          color: kText),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       s['desc'] as String,
-                      style: const TextStyle(fontSize: 11, color: kTextSoft, height: 1.4),
+                      style: const TextStyle(
+                          fontSize: 10, color: kTextSoft, height: 1.35),
                     ),
                   ],
                 ),
               ),
-              Icon(s['icon'] as IconData, color: stepC.withValues(alpha: 0.4), size: 24),
+              Icon(s['icon'] as IconData,
+                  color: stepC.withValues(alpha: 0.4), size: 18.9),
             ],
           ),
         );
@@ -569,6 +455,18 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
 
   // ── 3. LIST HARGA TERKINI DARI API ──
   Widget _buildHargaList() {
+    if (_hargaList.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: AppTheme.cardDecoration,
+        child: const Text(
+          'Harga belum tersedia dari server. Tarik ke bawah untuk memuat ulang.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: kTextSoft, fontSize: 13.8, height: 1.45),
+        ),
+      );
+    }
     return Container(
       decoration: AppTheme.cardDecoration,
       child: Column(
@@ -578,17 +476,20 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
           final String jenis = h['jenis'];
           final double harga = h['harga'];
           final String bank = h['bank'];
-          
+
           IconData iconData = Icons.recycling_rounded;
           Color c = kPrimary;
 
           if (jenis.toLowerCase().contains('plastik')) {
             iconData = Icons.water_drop_outlined;
             c = const Color(0xFF0D9146);
-          } else if (jenis.toLowerCase().contains('kertas') || jenis.toLowerCase().contains('karton')) {
+          } else if (jenis.toLowerCase().contains('kertas') ||
+              jenis.toLowerCase().contains('karton')) {
             iconData = Icons.article_outlined;
             c = const Color(0xFF3B82F6);
-          } else if (jenis.toLowerCase().contains('logam') || jenis.toLowerCase().contains('besi') || jenis.toLowerCase().contains('aluminium')) {
+          } else if (jenis.toLowerCase().contains('logam') ||
+              jenis.toLowerCase().contains('besi') ||
+              jenis.toLowerCase().contains('aluminium')) {
             iconData = Icons.hardware_outlined;
             c = const Color(0xFFF59E0B);
           } else if (jenis.toLowerCase().contains('kaca')) {
@@ -602,7 +503,8 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(
                   children: [
                     Container(
@@ -612,7 +514,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                         color: c.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(iconData, color: c, size: 20),
+                      child: Icon(iconData, color: c, size: 23.6),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -621,25 +523,34 @@ class _SetorSampahScreenState extends State<SetorSampahScreen>
                         children: [
                           Text(
                             jenis,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kText),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.9,
+                                color: kText),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             bank,
-                            style: const TextStyle(fontSize: 10, color: kTextSoft),
+                            style:
+                                const TextStyle(fontSize: 12.5, color: kTextSoft),
                           ),
                         ],
                       ),
                     ),
                     Text(
                       'Rp ${harga.toStringAsFixed(0)}/kg',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: c),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 14.9, color: c),
                     ),
                   ],
                 ),
               ),
               if (i < _hargaList.length - 1)
-                Divider(height: 1, color: Colors.grey.shade100, indent: 16, endIndent: 16),
+                Divider(
+                    height: 1,
+                    color: Colors.grey.shade100,
+                    indent: 16,
+                    endIndent: 16),
             ],
           );
         }).toList(),

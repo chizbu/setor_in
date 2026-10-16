@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
@@ -17,9 +17,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
   late TextEditingController _namaController;
   late TextEditingController _emailController;
   late TextEditingController _noTelponController;
+  late TextEditingController _alamatController;
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
-  File? _fotoSementara;
+  Uint8List? _fotoSementara;
   bool _isSaving = false;
 
   @override
@@ -28,6 +29,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
     _namaController = TextEditingController(text: widget.userData.nama);
     _emailController = TextEditingController(text: widget.userData.email);
     _noTelponController = TextEditingController(text: widget.userData.noTelpon);
+    _alamatController = TextEditingController(text: widget.userData.alamat);
     _fotoSementara = widget.userData.fotoProfil;
   }
 
@@ -36,6 +38,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
     _namaController.dispose();
     _emailController.dispose();
     _noTelponController.dispose();
+    _alamatController.dispose();
     super.dispose();
   }
 
@@ -63,19 +66,19 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
               children: [
                 const Text('Foto Profil',
                     style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        TextStyle(fontSize: 18.4, fontWeight: FontWeight.w700)),
                 GestureDetector(
                     onTap: () => Navigator.pop(ctx),
-                    child: const Icon(Icons.close, size: 20)),
+                    child: const Icon(Icons.close, size: 23.6)),
               ],
             ),
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.camera_alt_outlined,
-                  color: Colors.black54, size: 24),
+                  color: Colors.black54, size: 28.3),
               title: const Text('Kamera',
-                  style: TextStyle(fontSize: 15, color: Colors.black87)),
+                  style: TextStyle(fontSize: 17.2, color: Colors.black87)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await _ambilFoto(ImageSource.camera);
@@ -85,9 +88,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.image_outlined,
-                  color: Colors.black54, size: 24),
+                  color: Colors.black54, size: 28.3),
               title: const Text('Galeri',
-                  style: TextStyle(fontSize: 15, color: Colors.black87)),
+                  style: TextStyle(fontSize: 17.2, color: Colors.black87)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await _ambilFoto(ImageSource.gallery);
@@ -105,11 +108,14 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
       final XFile? foto = await _picker.pickImage(
         source: source,
         imageQuality: 85,
-        maxWidth: 800,
-        maxHeight: 800,
+        maxWidth: 640,
+        maxHeight: 640,
       );
-      if (foto != null && mounted) {
-        setState(() => _fotoSementara = File(foto.path));
+      if (foto != null) {
+        final bytes = await foto.readAsBytes();
+        if (mounted && bytes.isNotEmpty) {
+          setState(() => _fotoSementara = bytes);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -128,88 +134,71 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
     final nama = _namaController.text.trim();
     final email = _emailController.text.trim();
     final noTelpon = _noTelponController.text.trim();
+    final alamat = _alamatController.text.trim();
 
-    // Kirim ke server via API
+    widget.userData
+      ..nama = nama
+      ..email = email
+      ..noTelpon = noTelpon
+      ..alamat = alamat
+      ..fotoProfil = _fotoSementara
+      ..profileNeedsSync = true;
+    await widget.userData.simpan();
+    if (!mounted) return;
+
     final res = await ApiService().updateProfil({
       'nama': nama,
       'email': email,
       'no_telepon': noTelpon,
+      'alamat': alamat,
     });
 
-    // Update data lokal juga
-    widget.userData.nama = nama;
-    widget.userData.email = email;
-    widget.userData.noTelpon = noTelpon;
-    widget.userData.fotoProfil = _fotoSementara;
-    await widget.userData.simpan();
-
+    if (res['success'] == true) {
+      widget.userData.profileNeedsSync = false;
+      await widget.userData.simpan();
+    }
     if (!mounted) return;
     setState(() => _isSaving = false);
-
-    if (res['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Profil berhasil diperbarui'),
-          backgroundColor: kPrimary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res['message'] ?? 'Gagal memperbarui profil di server'),
-          backgroundColor: kWarning,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      // Tetap pop meskipun API gagal — data lokal sudah terupdate
-      Navigator.pop(context);
-    }
+    final messenger = ScaffoldMessenger.of(context);
+    final message = res['success'] == true
+        ? 'Profil berhasil diperbarui.'
+        : 'Perubahan profil tersimpan di perangkat. Server belum berhasil diperbarui.';
+    final background = res['success'] == true ? kPrimary : kWarning;
+    Navigator.pop(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: background,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kBg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black87, width: 2),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 16,
-              color: Colors.black87,
-            ),
-          ),
+          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
         ),
         title: const Text(
           'Edit Profil',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
+            fontSize: 18.4,
+            fontWeight: FontWeight.w800,
+            color: kText,
           ),
         ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, color: Colors.grey.shade200),
-        ),
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: _formKey,
           child: Column(
@@ -223,14 +212,11 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                     radius: 56,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage: _fotoSementara != null
-                        ? ResizeImage(
-                            FileImage(_fotoSementara!),
-                            width: 250,
-                          )
+                        ? MemoryImage(_fotoSementara!)
                         : null,
                     child: _fotoSementara == null
                         ? Icon(Icons.person,
-                            size: 56, color: Colors.grey.shade400)
+                            size: 66.1, color: Colors.grey.shade400)
                         : null,
                   ),
                   GestureDetector(
@@ -243,20 +229,20 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child:
-                          const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                      child: const Icon(Icons.camera_alt,
+                          size: 18.9, color: Colors.white),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text('Ketuk ikon kamera untuk ganti foto',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  style: TextStyle(fontSize: 13.8, color: Colors.grey.shade500)),
               const SizedBox(height: 28),
-              _buildLabel('Nama'),
+              _buildLabel('Nama lengkap'),
               _buildTextField(
                 controller: _namaController,
-                hint: 'Masukan nama',
+                hint: 'Nama lengkap',
                 icon: Icons.person_outline,
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Nama tidak boleh kosong' : null,
@@ -265,9 +251,10 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
               _buildLabel('Email'),
               _buildTextField(
                 controller: _emailController,
-                hint: 'Masukan email',
+                hint: 'nama@email.com',
                 icon: Icons.mail_outline,
                 keyboardType: TextInputType.emailAddress,
+                readOnly: true,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Email tidak boleh kosong';
                   final regex = RegExp(
@@ -277,14 +264,38 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              _buildLabel('Nomor Telpon'),
+              _buildLabel('Nomor HP'),
               _buildTextField(
                 controller: _noTelponController,
-                hint: 'Masukan nomor telpon',
+                hint: 'Nomor HP',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 validator: (v) => v == null || v.isEmpty
-                    ? 'Nomor telpon tidak boleh kosong'
+                    ? 'Nomor HP tidak boleh kosong'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Alamat'),
+              TextFormField(
+                controller: _alamatController,
+                minLines: 2,
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  hintText: 'Alamat tempat tinggal',
+                  prefixIcon: const Icon(Icons.location_on_outlined,
+                      color: Colors.grey),
+                  alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: kSurface,
+                  contentPadding: const EdgeInsets.all(16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: kBorder),
+                  ),
+                ),
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Alamat tidak boleh kosong'
                     : null,
               ),
               const SizedBox(height: 36),
@@ -299,18 +310,20 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                     disabledBackgroundColor: kPrimary.withValues(alpha: 0.6),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isSaving
                       ? const SizedBox(
-                          width: 22, height: 22,
+                          width: 22,
+                          height: 22,
                           child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2.5,
+                            color: Colors.white,
+                            strokeWidth: 2.5,
                           ),
                         )
                       : const Text('Simpan Perubahan',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
+                              fontSize: 18.4, fontWeight: FontWeight.w600)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -328,9 +341,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(text,
             style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87)),
+                fontSize: 13.8,
+            fontWeight: FontWeight.w800,
+                color: kText)),
       ),
     );
   }
@@ -341,34 +354,36 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    bool readOnly = false,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 14, color: Colors.black87),
+      readOnly: readOnly,
+      style: const TextStyle(fontSize: 13.8, color: kText),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
+        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 16.1),
+        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 23.6),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: kSurface,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kBorder, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: kPrimary, width: 1.8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kDanger, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kDanger, width: 1.5),
         ),
       ),
       validator: validator,

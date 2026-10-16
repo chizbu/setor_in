@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
+
 import 'app_theme.dart';
-import 'login_screen.dart';
+import 'ui_components.dart';
 
 class NewPasswordScreen extends StatefulWidget {
   final String email;
   final String otp;
-
-  const NewPasswordScreen({
-    super.key,
-    required this.email,
-    required this.otp,
-  });
+  const NewPasswordScreen({super.key, required this.email, required this.otp});
 
   @override
   State<NewPasswordScreen> createState() => _NewPasswordScreenState();
@@ -22,56 +18,48 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
-  void _handleSubmit() async {
+  void _handleSubmit() {
     final password = _passwordController.text.trim();
     final confirm = _confirmController.text.trim();
-
     if (password.isEmpty || confirm.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Harap isi semua kolom')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lengkapi semua kolom.')));
       return;
     }
-
     if (password.length < 8) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password minimal 8 karakter')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kata sandi minimal 8 karakter.')));
       return;
     }
-
     if (password != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password tidak cocok')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kata sandi belum sama.')));
       return;
     }
-
-    // TODO: Hubungkan ke API reset password
-    // Kirim: widget.email, widget.otp, password ke endpoint reset
-    // Contoh body:
-    // {
-    //   "email": widget.email,
-    //   "otp": widget.otp,
-    //   "new_password": password
-    // }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Password berhasil diubah! Silakan masuk.'),
-        backgroundColor: kPrimary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-
-    // Kembali ke LoginScreen dan hapus semua route sebelumnya
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Fitur reset kata sandi belum tersedia. Kata sandi tidak diubah.'),
+    ));
   }
+
+  Widget _passwordField({
+    required String label,
+    required TextEditingController controller,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(label, style: const TextStyle(color: kText, fontSize: 12.5, fontWeight: FontWeight.w700))),
+        TextField(
+          controller: controller,
+          obscureText: obscure,
+          style: const TextStyle(fontSize: 13.8, color: kText),
+          decoration: InputDecoration(
+            hintText: 'Minimal 8 karakter',
+            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20.1),
+            suffixIcon: IconButton(
+              tooltip: obscure ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi',
+              icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 20.1),
+              onPressed: onToggle,
+            ),
+          ),
+        ),
+      ]);
 
   @override
   void dispose() {
@@ -80,163 +68,44 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     super.dispose();
   }
 
-  Widget _buildPasswordField({
-    required String label,
-    required TextEditingController controller,
-    required bool obscure,
-    required VoidCallback onToggle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          obscureText: obscure,
-          style: const TextStyle(fontSize: 15, color: Colors.black87),
-          decoration: InputDecoration(
-            hintText: 'Masukan password',
-            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: kPrimary, width: 2),
-            ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                color: Colors.grey.shade500,
-                size: 20,
-              ),
-              onPressed: onToggle,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border:
-                        Border.all(color: Colors.grey.shade300, width: 1.5),
-                  ),
-                  child: const Icon(
-                    Icons.chevron_left,
-                    size: 24,
-                    color: Colors.black87,
-                  ),
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: kBg,
+        body: SafeArea(
+          child: LayoutBuilder(builder: (context, constraints) {
+            final horizontal = constraints.maxWidth > 600 ? 72.0 : 22.0;
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(horizontal, 8, horizontal, 26),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Align(alignment: Alignment.centerLeft, child: IconButton(
+                      tooltip: 'Kembali', onPressed: () => Navigator.pop(context),
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
+                    )),
+                    const SizedBox(height: 12),
+                    Container(height: 34, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(9)), child: const Center(child: Icon(Icons.eco_rounded, color: kPrimary, size: 18.9))),
+                    const SizedBox(height: 15),
+                    const Text('BANTUAN AKUN', style: TextStyle(color: kPrimary, fontSize: 11.2, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+                    const SizedBox(height: 5),
+                    const Text('Buat kata sandi baru', style: TextStyle(color: kText, fontSize: 23.1, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 5),
+                    const Text('Kata sandi baru minimal 8 karakter.', style: TextStyle(color: kTextSoft, fontSize: 13.8)),
+                    const SizedBox(height: 14),
+                    const InlineNotice(message: 'Backend belum menyediakan endpoint reset kata sandi. Kata sandi tidak akan diubah dari layar ini.'),
+                    const SizedBox(height: 17),
+                    _passwordField(label: 'Kata sandi baru', controller: _passwordController, obscure: _obscurePassword, onToggle: () => setState(() => _obscurePassword = !_obscurePassword)),
+                    const SizedBox(height: 13),
+                    _passwordField(label: 'Konfirmasi kata sandi', controller: _confirmController, obscure: _obscureConfirm, onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm)),
+                    const SizedBox(height: 19),
+                    SizedBox(height: 46, child: FilledButton(onPressed: _handleSubmit, child: const Text('Periksa ketersediaan'))),
+                  ]),
                 ),
               ),
-
-              const SizedBox(height: 40),
-
-              // Title
-              const Text(
-                'Buat Password Baru',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                  letterSpacing: -0.3,
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Text(
-                'Password baru harus berbeda dari password yang pernah digunakan sebelumnya.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                  height: 1.5,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Password Field
-              _buildPasswordField(
-                label: 'Password Baru',
-                controller: _passwordController,
-                obscure: _obscurePassword,
-                onToggle: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Confirm Field
-              _buildPasswordField(
-                label: 'Konfirmasi Password',
-                controller: _confirmController,
-                obscure: _obscureConfirm,
-                onToggle: () =>
-                    setState(() => _obscureConfirm = !_obscureConfirm),
-              ),
-
-              const SizedBox(height: 36),
-
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text(
-                    'Simpan Password',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          }),
         ),
-      ),
-    );
-  }
+      );
 }

@@ -61,24 +61,18 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kBg,
+        foregroundColor: kText,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-                color: kBg, borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 16, color: kText),
-          ),
+          icon: const Icon(Icons.arrow_back),
         ),
         title: const Text('Penargetan Sampah',
             style: TextStyle(
-                fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
-        centerTitle: true,
+                fontWeight: FontWeight.w800, fontSize: 18.4, color: kText)),
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -89,7 +83,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             // ── Daftar Harga ──
             const Text('Daftar Harga Sampah',
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+                    fontSize: 18.4, fontWeight: FontWeight.w700, color: kText)),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -104,7 +98,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                   const Text('Harga per kilogram sampah',
                       style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 13.8,
                           fontWeight: FontWeight.w500)),
                   const SizedBox(height: 12),
                   ..._sampahList.map((s) => _buildHargaItem(s)),
@@ -117,10 +111,10 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             // ── Input Jumlah ──
             const Text('Target Sampah per Jenis',
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+                    fontSize: 18.4, fontWeight: FontWeight.w700, color: kText)),
             const SizedBox(height: 4),
             const Text('Masukkan jumlah kilogram yang ingin ditargetkan',
-                style: TextStyle(fontSize: 12, color: kTextSoft)),
+                style: TextStyle(fontSize: 13.8, color: kTextSoft)),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -142,7 +136,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             // ── Ringkasan Target ──
             const Text('Ringkasan Target',
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+                    fontSize: 18.4, fontWeight: FontWeight.w700, color: kText)),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -161,7 +155,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                             color: kPrimaryLight,
                             shape: BoxShape.circle),
                         child: const Icon(Icons.scale_rounded,
-                            color: kPrimary, size: 28),
+                            color: kPrimary, size: 33),
                       ),
                       const SizedBox(width: 16),
                       Column(
@@ -171,12 +165,12 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                             '${_totalKg.toStringAsFixed(0)} kg',
                             style: const TextStyle(
                                 color: kPrimary,
-                                fontSize: 32,
+                                fontSize: 35.2,
                                 fontWeight: FontWeight.w800),
                           ),
                           const Text('Target bulan ini',
                               style: TextStyle(
-                                  color: kTextSoft, fontSize: 12)),
+                                  color: kTextSoft, fontSize: 13.8)),
                         ],
                       ),
                     ],
@@ -223,13 +217,13 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                 border: Border.all(color: kInfo.withValues(alpha: 0.18)),
               ),
               child: const Row(children: [
-                Icon(Icons.info_outline_rounded, color: kInfo, size: 18),
+                Icon(Icons.info_outline_rounded, color: kInfo, size: 21.2),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Estimasi dihitung berdasarkan harga saat ini. Nilai final ditentukan saat setor.',
                     style:
-                        TextStyle(fontSize: 12, color: kInfo, height: 1.4),
+                        TextStyle(fontSize: 13.8, color: kInfo, height: 1.4),
                   ),
                 ),
               ]),
@@ -257,7 +251,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             _totalKg > 0
                 ? 'Buat Target ${_totalKg.toStringAsFixed(0)} kg'
                 : 'Masukkan Target Dulu',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17.2),
           ),
         ),
       ),
@@ -276,7 +270,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             child: Text(s['nama'],
                 style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 16.1,
                     fontWeight: FontWeight.w600)),
           ),
           Column(
@@ -284,10 +278,10 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             children: [
               Text('${s['koinPerKg']} koin/kg',
                   style:
-                      const TextStyle(color: Colors.white70, fontSize: 12)),
+                      const TextStyle(color: Colors.white70, fontSize: 13.8)),
               Text('Rp ${_fmt(s['hargaPerKg'])}/kg',
                   style:
-                      const TextStyle(color: Colors.white70, fontSize: 12)),
+                      const TextStyle(color: Colors.white70, fontSize: 13.8)),
             ],
           ),
         ],
@@ -306,7 +300,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             child: Text(s['nama'],
                 style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 16.1,
                     fontWeight: FontWeight.w600)),
           ),
           GestureDetector(
@@ -318,7 +312,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                 color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.remove, color: Colors.white, size: 18),
+              child: const Icon(Icons.remove, color: Colors.white, size: 21.2),
             ),
           ),
           Container(
@@ -330,7 +324,7 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
             child: Center(
               child: Text('${s['jumlah']}',
                   style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16.1,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87)),
             ),
@@ -344,11 +338,11 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
                 color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 18),
+              child: const Icon(Icons.add, color: Colors.white, size: 21.2),
             ),
           ),
           const SizedBox(width: 8),
-          const Text('kg', style: TextStyle(color: Colors.white70, fontSize: 13)),
+          const Text('kg', style: TextStyle(color: Colors.white70, fontSize: 14.9)),
         ],
       ),
     );
@@ -358,13 +352,13 @@ class _PenargentanSampahScreenState extends State<PenargentanSampahScreen> {
       IconData icon, String val, String label, Color color) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 20),
+        Icon(icon, color: color, size: 23.6),
         const SizedBox(height: 4),
         Text(val,
             style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+                fontSize: 16.1, fontWeight: FontWeight.w700, color: color)),
         Text(label,
-            style: const TextStyle(fontSize: 11, color: kTextSoft)),
+            style: const TextStyle(fontSize: 13.8, color: kTextSoft)),
       ],
     );
   }

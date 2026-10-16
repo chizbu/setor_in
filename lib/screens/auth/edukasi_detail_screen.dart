@@ -35,8 +35,8 @@ class EdukasiDetailScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Colors.black.withValues(alpha: 0.35),
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 15, color: Colors.white),
+                child: const Icon(Icons.arrow_back,
+                    size: 23.6, color: Colors.white),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -51,7 +51,7 @@ class EdukasiDetailScreen extends StatelessWidget {
                       color: Colors.grey.shade400,
                       child: const Center(
                         child: Icon(Icons.image_outlined,
-                            size: 60, color: Colors.white54),
+                            size: 70.8, color: Colors.white54),
                       ),
                     ),
                   ),
@@ -94,7 +94,7 @@ class EdukasiDetailScreen extends StatelessWidget {
                               kategori,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 10,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -103,7 +103,7 @@ class EdukasiDetailScreen extends StatelessWidget {
                           title,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             height: 1.3,
                           ),
@@ -111,18 +111,18 @@ class EdukasiDetailScreen extends StatelessWidget {
                         const SizedBox(height: 10),
                         Row(children: [
                           const Icon(Icons.access_time_rounded,
-                              color: Colors.white70, size: 13),
+                              color: Colors.white70, size: 15.3),
                           const SizedBox(width: 4),
                           Text(durasi,
                               style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12)),
+                                  color: Colors.white70, fontSize: 13.8)),
                           const SizedBox(width: 14),
                           const Icon(Icons.person_outline_rounded,
-                              color: Colors.white70, size: 13),
+                              color: Colors.white70, size: 15.3),
                           const SizedBox(width: 4),
                           Text(penulis,
                               style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12)),
+                                  color: Colors.white70, fontSize: 13.8)),
                         ]),
                       ],
                     ),
@@ -151,7 +151,7 @@ class EdukasiDetailScreen extends StatelessWidget {
                         Text(
                           heading,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18.4,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1A1A1A),
                             height: 1.4,
@@ -172,7 +172,7 @@ class EdukasiDetailScreen extends StatelessWidget {
                         Text(
                           body,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 16.1,
                             color: Color(0xFF4A4A4A),
                             height: 1.7,
                           ),

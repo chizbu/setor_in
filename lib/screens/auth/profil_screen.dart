@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:proyek_2_setor_in/screens/auth/app_theme.dart';
-import 'edit_profil_screen.dart';
-import 'user_data.dart';
-import 'login_screen.dart';
-import 'bantuan_screen.dart'; // ← tambahkan import ini
+
 import '../../services/api_service.dart';
+import 'aktivitas_screen.dart';
+import 'app_theme.dart';
+import 'bantuan_screen.dart';
+import 'edit_profil_screen.dart';
+import 'login_screen.dart';
+import 'notifikasi_screen.dart';
+import 'rumah_hijau_screen.dart';
+import 'ui_components.dart';
+import 'user_data.dart';
 
 class ProfilScreen extends StatefulWidget {
-  final VoidCallback? onUpdate;
   const ProfilScreen({super.key, this.onUpdate});
+  final VoidCallback? onUpdate;
 
   @override
   State<ProfilScreen> createState() => _ProfilScreenState();
@@ -16,10 +21,12 @@ class ProfilScreen extends StatefulWidget {
 
 class _ProfilScreenState extends State<ProfilScreen> {
   final UserData _userData = UserData();
-  bool _isLoading = true;
+  bool _loading = true;
+  String? _loadError;
   String _nama = '';
   String _email = '';
   String _noTelpon = '';
+  String _alamat = '';
 
   @override
   void initState() {
@@ -28,233 +35,189 @@ class _ProfilScreenState extends State<ProfilScreen> {
   }
 
   Future<void> _loadProfil() async {
-    setState(() => _isLoading = true);
-    final res = await ApiService().getProfil();
-
-    if (res['success'] == true && res['data'] != null) {
-      final data = res['data'];
-      _nama = data['nama'] ?? 'User';
-      _email = data['email'] ?? '-';
-      _noTelpon = data['no_telepon'] ?? '-';
-      
-      // Sync ke UserData singleton juga
-      _userData.nama = _nama;
-      _userData.email = _email;
-      _userData.noTelpon = _noTelpon;
+    if (mounted) setState(() => _loading = true);
+    await _userData.load();
+    if (!mounted) return;
+    final result = await ApiService().getProfil();
+    if (!mounted) return;
+    if (result['success'] == true && result['data'] is Map) {
+      final data = Map<String, dynamic>.from(result['data'] as Map);
+      if (_userData.profileNeedsSync) {
+        _nama = _userData.nama;
+        _email = _userData.email;
+        _noTelpon = _userData.noTelpon;
+        _alamat = _userData.alamat;
+        _loadError = 'Perubahan profil tersimpan di perangkat dan menunggu sinkronisasi.';
+      } else {
+        _nama = (data['nama'] ?? '').toString();
+        _email = (data['email'] ?? '').toString();
+        _noTelpon = (data['no_telepon'] ?? '').toString();
+        _alamat = (data['alamat'] ?? '').toString();
+        _userData
+          ..nama = _nama
+          ..email = _email
+          ..noTelpon = _noTelpon
+          ..alamat = _alamat;
+        await _userData.simpan();
+        if (!mounted) return;
+        _loadError = null;
+      }
     } else {
-      // Fallback ke data lokal
       await _userData.load();
+      if (!mounted) return;
       _nama = _userData.nama;
       _email = _userData.email;
       _noTelpon = _userData.noTelpon;
+      _alamat = _userData.alamat;
+      _loadError = (result['message'] ?? 'Profil belum dapat diperbarui.').toString();
     }
+    if (mounted) setState(() => _loading = false);
+  }
 
-    if (mounted) setState(() => _isLoading = false);
+  Future<void> _editProfile() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfilScreen(userData: _userData)));
+    if (!mounted) return;
+    setState(() {
+      _nama = _userData.nama;
+      _email = _userData.email;
+      _noTelpon = _userData.noTelpon;
+      _alamat = _userData.alamat;
+      _loadError = _userData.profileNeedsSync
+          ? 'Perubahan profil tersimpan di perangkat dan menunggu sinkronisasi.'
+          : null;
+    });
+    widget.onUpdate?.call();
+  }
+
+  Future<void> _logout() async {
+    final navigator = Navigator.of(context);
+    await ApiService().logoutServer();
+    if (!mounted) return;
+    navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Row(
-                children: [
-                  const SizedBox(width: 8),
-                  const Text('Profil',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87)),
-                ],
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: kBg,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _loadProfil,
+            color: kPrimary,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 82),
+                  children: [
+                    const Text('AKUN NASABAH', style: TextStyle(color: kPrimary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+                    const SizedBox(height: 3),
+                    const Text('Profil', style: TextStyle(color: kText, fontSize: 18.4, fontWeight: FontWeight.w800, letterSpacing: -.2)),
+                    const SizedBox(height: 11),
+                    _profileCard(),
+                    if (_loadError != null) ...[
+                      const SizedBox(height: 8),
+                      InlineNotice(message: _loadError!),
+                    ],
+                    const SizedBox(height: 15),
+                    const SectionHeading('Informasi akun'),
+                    const SizedBox(height: 7),
+                    AppCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(children: [
+                        _infoRow('NAMA LENGKAP', _nama),
+                        const Divider(height: 1),
+                        _infoRow('EMAIL', _email, footnote: 'Email tidak dapat diubah'),
+                        const Divider(height: 1),
+                        _infoRow('NOMOR HP', _noTelpon),
+                        const Divider(height: 1),
+                        _infoRow('ALAMAT', _alamat),
+                      ]),
+                    ),
+                    const SizedBox(height: 15),
+                    const SectionHeading('Layanan Setor.in'),
+                    const SizedBox(height: 7),
+                    AppCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(children: [
+                        _menuRow(Icons.receipt_long_outlined, 'Riwayat transaksi', 'Rincian dan status transaksi', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RiwayatTransaksiScreen()))),
+                        const Divider(height: 1),
+                        _menuRow(Icons.place_outlined, 'Rumah Hijau', 'Lokasi dan jadwal mitra', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RumahHijauScreen()))),
+                        const Divider(height: 1),
+                        _menuRow(Icons.notifications_none_rounded, 'Notifikasi', 'Pembaruan akun dan aktivitas', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotifikasiScreen()))),
+                        const Divider(height: 1),
+                        _menuRow(Icons.help_outline_rounded, 'Panduan & FAQ', 'Cara pilah dan setor sampah', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BantuanScreen()))),
+                      ]),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: _loading ? null : _logout,
+                      icon: const Icon(Icons.logout_rounded, size: 16.5),
+                      label: const Text('Keluar dari akun', style: TextStyle(fontSize: 12.5)),
+                      style: OutlinedButton.styleFrom(foregroundColor: kDanger, backgroundColor: kSurface, side: const BorderSide(color: Color(0xFFE4D2CD)), minimumSize: const Size.fromHeight(34)),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: Colors.black12),
-            const SizedBox(height: 28),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: kPrimary))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              CircleAvatar(
-                                radius: 56,
-                                backgroundColor: Colors.grey.shade200,
-                                backgroundImage: _userData.fotoProfil != null
-                                    ? ResizeImage(
-                                        FileImage(_userData.fotoProfil!),
-                                        width: 250,
-                                      )
-                                    : null,
-                                child: _userData.fotoProfil == null
-                                    ? Icon(Icons.person,
-                                        size: 56, color: Colors.grey.shade400)
-                                    : null,
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          EditProfilScreen(userData: _userData),
-                                    ),
-                                  );
-                                  widget.onUpdate?.call();
-                                  // Reload profil dari API setelah edit
-                                  _loadProfil();
-                                },
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    color: kPrimary,
-                                    shape: BoxShape.circle,
-                                    border:
-                                        Border.all(color: Colors.white, width: 2),
-                                  ),
-                                  child: const Icon(Icons.edit,
-                                      size: 14, color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Text(_nama,
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87)),
-                          const SizedBox(height: 4),
-                          Text(_email,
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey.shade500)),
-                          const SizedBox(height: 32),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: const Text('Personal Info',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87)),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoItem(
-                            icon: Icons.location_on_outlined,
-                            title: 'Nomor Telpon',
-                            subtitle: _noTelpon,
-                          ),
-                          const Divider(height: 1, color: Colors.black12),
-                          // ✅ Notifikasi dihapus
-                          // ✅ Bantuan sekarang navigasi ke BantuanScreen
-                          _buildMenuItem(
-                            icon: Icons.help_outline,
-                            label: 'Bantuan',
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const BantuanScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          const Divider(height: 1, color: Colors.black12),
-                          const SizedBox(height: 36),
-                          GestureDetector(
-                            onTap: () async {
-                              await ApiService().logoutServer();
-                              if (mounted) {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const LoginScreen()),
-                                  (route) => false,
-                                );
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.logout, color: Colors.red, size: 20),
-                                SizedBox(width: 8),
-                                Text('Keluar',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.black54, size: 26),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style:
-                      TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-              const SizedBox(height: 2),
-              Text(subtitle,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87)),
-            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.black54, size: 26),
-            const SizedBox(width: 16),
-            Text(label,
-                style: const TextStyle(fontSize: 15, color: Colors.black87)),
-          ],
         ),
-      ),
-    );
-  }
+      );
+
+  Widget _profileCard() => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: kPrimaryDark, borderRadius: BorderRadius.circular(14)),
+        child: Row(children: [
+          CircleAvatar(
+            radius: 19,
+            backgroundColor: kBg,
+            backgroundImage: _userData.fotoProfil == null ? null : MemoryImage(_userData.fotoProfil!),
+            child: _userData.fotoProfil == null ? const Icon(Icons.person_outline_rounded, color: kPrimaryDark, size: 24.8) : null,
+          ),
+          const SizedBox(width: 9),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('ANGGOTA RUMAH HIJAU', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 8.8, fontWeight: FontWeight.w800, letterSpacing: .8)),
+            const SizedBox(height: 2),
+            Text(_loading ? 'Memuat profil…' : _nama.isEmpty ? 'Nasabah' : _nama, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 13.8, fontWeight: FontWeight.w800)),
+            Text(_email.isEmpty ? 'Email belum tersedia' : _email, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFFDDE5C9), fontSize: 10)),
+          ])),
+          const SizedBox(width: 6),
+          Material(color: Colors.white.withValues(alpha: .15), shape: const CircleBorder(), child: IconButton(
+            tooltip: 'Edit profil',
+            onPressed: _loading ? null : _editProfile,
+            visualDensity: VisualDensity.compact,
+            iconSize: 17.7,
+            color: Colors.white,
+            icon: const Icon(Icons.edit_outlined),
+          )),
+        ]),
+      );
+
+  Widget _infoRow(String label, String value, {String? footnote}) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, textAlign: TextAlign.left, style: const TextStyle(color: kTextSoft, fontSize: 8.8, fontWeight: FontWeight.w800, letterSpacing: .7)),
+            const SizedBox(height: 2),
+            Text(_loading ? 'Memuat…' : value.isEmpty ? 'Belum dilengkapi' : value, textAlign: TextAlign.left, style: const TextStyle(color: kText, fontSize: 11.2, fontWeight: FontWeight.w600)),
+            if (footnote != null) ...[
+              const SizedBox(height: 1),
+              Text(footnote, textAlign: TextAlign.left, style: const TextStyle(color: kTextSoft, fontSize: 8.8)),
+            ],
+          ]),
+        ),
+      );
+
+  Widget _menuRow(IconData icon, String title, String subtitle, VoidCallback onTap) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        dense: true,
+        minLeadingWidth: 28,
+        horizontalTitleGap: 8,
+        leading: Container(width: 25, height: 25, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: kPrimaryDark, size: 16.5)),
+        title: Text(title, style: const TextStyle(color: kText, fontSize: 11.2, fontWeight: FontWeight.w800)),
+        subtitle: Text(subtitle, style: const TextStyle(color: kTextSoft, fontSize: 8.8)),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 11.8, color: kPrimaryDark),
+        onTap: onTap,
+      );
 }
