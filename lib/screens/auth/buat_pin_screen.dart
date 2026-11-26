@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+
+import '../../services/api_service.dart';
 import 'app_theme.dart';
 import 'user_data.dart';
-import '../../services/api_service.dart';
-
-// ══════════════════════════════════════════════════════════════
-//  BUAT PIN SCREEN — Input PIN 2x (buat + konfirmasi)
-// ══════════════════════════════════════════════════════════════
 
 class BuatPinScreen extends StatefulWidget {
-  const BuatPinScreen({super.key});
+  const BuatPinScreen({super.key, this.isEdit = false});
+
+  final bool isEdit;
 
   @override
   State<BuatPinScreen> createState() => _BuatPinScreenState();
@@ -18,23 +17,31 @@ class _BuatPinScreenState extends State<BuatPinScreen>
     with SingleTickerProviderStateMixin {
   static const int _pinLength = 6;
 
-  String _pin1 = '';
-  String _pin2 = '';
-  bool _isStep2 = false;
+  int _step = 1;
+  String _pinLama = '';
+  String _pinBaru = '';
+  String _pinKonfirmasi = '';
   bool _isLoading = false;
   String? _errorMsg;
 
-  late AnimationController _shakeCtrl;
-  late Animation<double> _shakeAnim;
+  late final AnimationController _shakeCtrl;
+  late final Animation<double> _shakeAnim;
 
   @override
   void initState() {
     super.initState();
+
+    _step = widget.isEdit ? 0 : 1;
+
     _shakeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _shakeAnim = Tween<double>(begin: 0, end: 12).chain(
+
+    _shakeAnim = Tween<double>(
+      begin: 0,
+      end: 12,
+    ).chain(
       CurveTween(curve: Curves.elasticIn),
     ).animate(_shakeCtrl);
   }
@@ -45,228 +52,336 @@ class _BuatPinScreenState extends State<BuatPinScreen>
     super.dispose();
   }
 
+  String get _currentPin {
+    if (_step == 0) return _pinLama;
+    if (_step == 1) return _pinBaru;
+    return _pinKonfirmasi;
+  }
+
+  String get _title {
+    if (_step == 0) return 'Masukkan PIN lama';
+    if (_step == 1) return 'Masukkan PIN baru';
+    return 'Konfirmasi PIN baru';
+  }
+
+  String get _subtitle {
+    if (_step == 0) {
+      return 'Verifikasi PIN saat ini untuk melanjutkan';
+    }
+
+    if (_step == 1) {
+      return 'Buat PIN 6 digit untuk keamanan transaksi';
+    }
+
+    return 'Masukkan ulang PIN baru Anda';
+  }
+
   void _onKey(String key) {
+    if (_isLoading) return;
+
     setState(() => _errorMsg = null);
 
-    if (_isStep2) {
-      if (key == 'DEL') {
-        if (_pin2.isNotEmpty) setState(() => _pin2 = _pin2.substring(0, _pin2.length - 1));
-      } else if (_pin2.length < _pinLength) {
-        setState(() => _pin2 += key);
-        if (_pin2.length == _pinLength) _validateAndSubmit();
-      }
-    } else {
-      if (key == 'DEL') {
-        if (_pin1.isNotEmpty) setState(() => _pin1 = _pin1.substring(0, _pin1.length - 1));
-      } else if (_pin1.length < _pinLength) {
-        setState(() => _pin1 += key);
-        if (_pin1.length == _pinLength) {
-          Future.delayed(const Duration(milliseconds: 200), () {
-            if (mounted) setState(() => _isStep2 = true);
-          });
+    if (key == 'DEL') {
+      setState(() {
+        if (_step == 0 && _pinLama.isNotEmpty) {
+          _pinLama = _pinLama.substring(0, _pinLama.length - 1);
+        } else if (_step == 1 && _pinBaru.isNotEmpty) {
+          _pinBaru = _pinBaru.substring(0, _pinBaru.length - 1);
+        } else if (_step == 2 && _pinKonfirmasi.isNotEmpty) {
+          _pinKonfirmasi =
+              _pinKonfirmasi.substring(0, _pinKonfirmasi.length - 1);
         }
+      });
+
+      return;
+    }
+
+    if (_currentPin.length >= _pinLength) return;
+
+    setState(() {
+      if (_step == 0) {
+        _pinLama += key;
+      } else if (_step == 1) {
+        _pinBaru += key;
+      } else {
+        _pinKonfirmasi += key;
       }
+    });
+
+    if (_currentPin.length != _pinLength) return;
+
+    if (_step == 0 || _step == 1) {
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted) {
+          setState(() => _step++);
+        }
+      });
+    } else {
+      _validateAndSubmit();
     }
   }
 
   Future<void> _validateAndSubmit() async {
-    if (_pin1 != _pin2) {
+    if (_pinBaru != _pinKonfirmasi) {
       _shakeCtrl.forward(from: 0);
+
       setState(() {
-        _errorMsg = 'PIN tidak cocok. Silakan ulangi.';
-        _pin2 = '';
+        _errorMsg = 'PIN baru tidak cocok. Silakan ulangi.';
+        _pinKonfirmasi = '';
+        _step = 2;
       });
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted) {
-        setState(() {
-          _isStep2 = false;
-          _pin1 = '';
-        });
-      }
+
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final res = await ApiService().setPin(pin: _pin1);
+    final result = await ApiService().setPin(
+      pin: _pinBaru,
+      pinLama: widget.isEdit ? _pinLama : null,
+    );
 
     if (!mounted) return;
+
     setState(() => _isLoading = false);
 
-    if (res['success']) {
-      UserData().hasPin = true;
-      await UserData().simpan();
+    if (result['success'] == true) {
+      final userData = UserData();
+
+      userData.hasPin = true;
+      await userData.simpan();
+
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('PIN berhasil dibuat! 🎉'),
-        backgroundColor: kPrimary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ));
-      Navigator.pop(context, true); // return true = PIN berhasil dibuat
-    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.isEdit
+                ? 'PIN berhasil diubah.'
+                : 'PIN berhasil dibuat.',
+          ),
+          backgroundColor: kPrimary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+        ),
+      );
+
+      Navigator.pop(context, true);
+      return;
+    }
+
+    setState(() {
+      _errorMsg = (result['message'] ?? 'Gagal menyimpan PIN.').toString();
+      _pinBaru = '';
+      _pinKonfirmasi = '';
+      _step = widget.isEdit ? 0 : 1;
+
+      if (widget.isEdit) {
+        _pinLama = '';
+      }
+    });
+  }
+
+  void _handleBack() {
+    if (_isLoading) return;
+
+    if (_step == 2) {
       setState(() {
-        _errorMsg = res['message'] ?? 'Gagal menyimpan PIN';
-        _isStep2 = false;
-        _pin1 = '';
-        _pin2 = '';
+        _step = 1;
+        _pinKonfirmasi = '';
+        _errorMsg = null;
       });
+    } else if (_step == 1 && widget.isEdit) {
+      setState(() {
+        _step = 0;
+        _pinBaru = '';
+        _errorMsg = null;
+      });
+    } else {
+      Navigator.pop(context, false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentPin = _isStep2 ? _pin2 : _pin1;
-
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: kBg,
-        foregroundColor: kText,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
-          onPressed: () {
-            if (_isStep2) {
-              setState(() {
-                _isStep2 = false;
-                _pin2 = '';
-                _errorMsg = null;
-              });
-            } else {
-              Navigator.pop(context, false);
-            }
-          },
+        title: Text(
+          widget.isEdit ? 'Ubah PIN' : 'Buat PIN Transaksi',
         ),
-        title: const Text('Buat PIN Transaksi'),
-        centerTitle: false,
+        leading: IconButton(
+          tooltip: 'Kembali',
+          onPressed: _handleBack,
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
       ),
-      body: Column(
-        children: [
-          const Spacer(flex: 1),
-
-          // ── Icon ──
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: kPrimary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _isStep2 ? Icons.lock_outline : Icons.vpn_key_rounded,
-              color: kPrimary,
-              size: 37.8,
-            ),
+      body: SafeArea(
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.xl,
+            AppSpacing.lg,
+            AppSpacing.xxl,
           ),
-          const SizedBox(height: 20),
-
-          // ── Title ──
-          Text(
-            _isStep2 ? 'Konfirmasi PIN Baru' : 'Masukkan PIN Baru',
-            style: const TextStyle(fontSize: 19.8, fontWeight: FontWeight.w600, color: Colors.black87),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _isStep2
-                ? 'Masukkan ulang PIN 6 digit Anda'
-                : 'Buat PIN 6 digit untuk keamanan transaksi',
-            style: TextStyle(fontSize: 14.9, color: Colors.grey.shade600),
-          ),
-          const SizedBox(height: 28),
-
-          // ── Dots ──
-          AnimatedBuilder(
-            animation: _shakeAnim,
-            builder: (_, child) => Transform.translate(
-              offset: Offset(_shakeAnim.value * (_shakeCtrl.isAnimating ? 1 : 0), 0),
-              child: child,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              margin: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xxl,
+              ),
+              decoration: const BoxDecoration(
+                color: kPrimaryLight,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _step == 0
+                    ? Icons.lock_outline
+                    : Icons.vpn_key_outlined,
+                color: kPrimaryDark,
+                size: AppIconSize.xl,
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_pinLength, (i) {
-                final filled = i < currentPin.length;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                  width: filled ? 16 : 14,
-                  height: filled ? 16 : 14,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: filled ? kPrimary : Colors.grey.shade300,
-                    boxShadow: filled
-                        ? [BoxShadow(color: kPrimary.withValues(alpha: 0.3), blurRadius: 6, spreadRadius: 1)]
-                        : null,
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              _title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: kText,
+                fontSize: AppTypography.title,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              _subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: kTextSoft,
+                fontSize: AppTypography.body,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AnimatedBuilder(
+              animation: _shakeAnim,
+              builder: (_, child) {
+                return Transform.translate(
+                  offset: Offset(
+                    _shakeAnim.value * (_shakeCtrl.isAnimating ? 1 : 0),
+                    0,
                   ),
+                  child: child,
                 );
-              }),
-            ),
-          ),
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_pinLength, (index) {
+                  final filled = index < _currentPin.length;
 
-          // ── Error message ──
-          if (_errorMsg != null) ...[
-            const SizedBox(height: 16),
-            Text(_errorMsg!,
-                style: const TextStyle(color: Colors.red, fontSize: 14.9, fontWeight: FontWeight.w500)),
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs,
+                    ),
+                    width: filled ? 16 : 14,
+                    height: filled ? 16 : 14,
+                    decoration: BoxDecoration(
+                      color: filled ? kPrimary : kBorder,
+                      shape: BoxShape.circle,
+                    ),
+                  );
+                }),
+              ),
+            ),
+            if (_errorMsg != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                _errorMsg!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: kDanger,
+                  fontSize: AppTypography.caption,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.xxl),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: kPrimary,
+                  ),
+                ),
+              )
+            else
+              _buildKeypad(),
           ],
-
-          const SizedBox(height: 32),
-
-          // ── Keypad ──
-          if (_isLoading)
-            Padding(
-              padding: const EdgeInsets.all(40),
-              child: Column(
-                children: [
-                  CircularProgressIndicator(color: kPrimary),
-                  const SizedBox(height: 16),
-                  const Text('Menyimpan PIN...', style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Column(
-                children: [
-                  _keyRow(['1', '2', '3']),
-                  const SizedBox(height: 12),
-                  _keyRow(['4', '5', '6']),
-                  const SizedBox(height: 12),
-                  _keyRow(['7', '8', '9']),
-                  const SizedBox(height: 12),
-                  _keyRow(['', '0', 'DEL']),
-                ],
-              ),
-            ),
-
-          const Spacer(flex: 2),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildKeypad() {
+    return Column(
+      children: [
+        _keyRow(['1', '2', '3']),
+        const SizedBox(height: AppSpacing.sm),
+        _keyRow(['4', '5', '6']),
+        const SizedBox(height: AppSpacing.sm),
+        _keyRow(['7', '8', '9']),
+        const SizedBox(height: AppSpacing.sm),
+        _keyRow(['', '0', 'DEL']),
+      ],
     );
   }
 
   Widget _keyRow(List<String> keys) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: keys.map((key) {
-        if (key.isEmpty) return const SizedBox(width: 80, height: 60);
-        return GestureDetector(
-          onTap: () => _onKey(key),
-          child: Container(
-            width: 80,
-            height: 60,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(16),
+        if (key.isEmpty) {
+          return const Expanded(
+            child: SizedBox(height: 56),
+          );
+        }
+
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xs,
             ),
-            child: key == 'DEL'
-                ? Icon(Icons.backspace_outlined, color: Colors.grey.shade700, size: 26)
-                : Text(key,
-                    style: const TextStyle(
-                        fontSize: 26.4, fontWeight: FontWeight.w500, color: Colors.black87)),
+            child: Material(
+              color: kSurface,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: InkWell(
+                onTap: () => _onKey(key),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: SizedBox(
+                  height: 56,
+                  child: Center(
+                    child: key == 'DEL'
+                        ? const Icon(
+                            Icons.backspace_outlined,
+                            color: kTextSoft,
+                            size: AppIconSize.lg,
+                          )
+                        : Text(
+                            key,
+                            style: const TextStyle(
+                              color: kText,
+                              fontSize: AppTypography.title,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       }).toList(),

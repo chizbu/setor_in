@@ -4,6 +4,7 @@ import '../../services/api_service.dart';
 import 'aktivitas_screen.dart';
 import 'app_theme.dart';
 import 'bantuan_screen.dart';
+import 'buat_pin_screen.dart';
 import 'edit_profil_screen.dart';
 import 'login_screen.dart';
 import 'notifikasi_screen.dart';
@@ -53,6 +54,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
         _email = (data['email'] ?? '').toString();
         _noTelpon = (data['no_telepon'] ?? '').toString();
         _alamat = (data['alamat'] ?? '').toString();
+        if (data.containsKey('has_pin')) {
+          _userData.hasPin = data['has_pin'] == true || data['has_pin'] == 1;
+        }
         _userData
           ..nama = _nama
           ..email = _email
@@ -89,6 +93,22 @@ class _ProfilScreenState extends State<ProfilScreen> {
     widget.onUpdate?.call();
   }
 
+  Future<void> _managePin() async {
+  final changed = await Navigator.push<bool>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => BuatPinScreen(
+        isEdit: _userData.hasPin,
+      ),
+    ),
+  );
+
+  if (changed == true && mounted) {
+    await _userData.load();
+    setState(() {});
+  }
+}
+
   Future<void> _logout() async {
     final navigator = Navigator.of(context);
     await ApiService().logoutServer();
@@ -110,9 +130,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 82),
                   children: [
-                    const Text('AKUN NASABAH', style: TextStyle(color: kPrimary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+                    const Text('AKUN NASABAH', style: TextStyle(color: kPrimary, fontSize: AppTypography.overline, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
                     const SizedBox(height: 3),
-                    const Text('Profil', style: TextStyle(color: kText, fontSize: 18.4, fontWeight: FontWeight.w800, letterSpacing: -.2)),
+                    const Text('Profil', style: TextStyle(color: kText, fontSize: AppTypography.subtitle, fontWeight: FontWeight.w800, letterSpacing: -.2)),
                     const SizedBox(height: 11),
                     _profileCard(),
                     if (_loadError != null) ...[
@@ -135,6 +155,20 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       ]),
                     ),
                     const SizedBox(height: 15),
+                    const SectionHeading('Keamanan akun'),
+                    const SizedBox(height: 7),
+                    AppCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: _menuRow(
+                        Icons.lock_outline_rounded,
+                        _userData.hasPin ? 'Ubah PIN transaksi' : 'Buat PIN transaksi',
+                        _userData.hasPin
+                            ? 'Perbarui PIN untuk keamanan saldo'
+                            : 'Lindungi transaksi dengan PIN 6 digit',
+                        _loading ? () {} : _managePin,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
                     const SectionHeading('Layanan Setor.in'),
                     const SizedBox(height: 7),
                     AppCard(
@@ -152,8 +186,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     const SizedBox(height: 10),
                     OutlinedButton.icon(
                       onPressed: _loading ? null : _logout,
-                      icon: const Icon(Icons.logout_rounded, size: 16.5),
-                      label: const Text('Keluar dari akun', style: TextStyle(fontSize: 12.5)),
+                      icon: const Icon(Icons.logout_rounded, size: AppIconSize.sm),
+                      label: const Text('Keluar dari akun', style: TextStyle(fontSize: AppTypography.caption)),
                       style: OutlinedButton.styleFrom(foregroundColor: kDanger, backgroundColor: kSurface, side: const BorderSide(color: Color(0xFFE4D2CD)), minimumSize: const Size.fromHeight(34)),
                     ),
                   ],
@@ -172,14 +206,14 @@ class _ProfilScreenState extends State<ProfilScreen> {
             radius: 19,
             backgroundColor: kBg,
             backgroundImage: _userData.fotoProfil == null ? null : MemoryImage(_userData.fotoProfil!),
-            child: _userData.fotoProfil == null ? const Icon(Icons.person_outline_rounded, color: kPrimaryDark, size: 24.8) : null,
+            child: _userData.fotoProfil == null ? const Icon(Icons.person_outline_rounded, color: kPrimaryDark, size: AppIconSize.lg) : null,
           ),
           const SizedBox(width: 9),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('ANGGOTA RUMAH HIJAU', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 8.8, fontWeight: FontWeight.w800, letterSpacing: .8)),
+            const Text('ANGGOTA RUMAH HIJAU', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: AppTypography.overline, fontWeight: FontWeight.w800, letterSpacing: .8)),
             const SizedBox(height: 2),
-            Text(_loading ? 'Memuat profil…' : _nama.isEmpty ? 'Nasabah' : _nama, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 13.8, fontWeight: FontWeight.w800)),
-            Text(_email.isEmpty ? 'Email belum tersedia' : _email, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFFDDE5C9), fontSize: 10)),
+            Text(_loading ? 'Memuat profil…' : _nama.isEmpty ? 'Nasabah' : _nama, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: AppTypography.bodySmall, fontWeight: FontWeight.w800)),
+            Text(_email.isEmpty ? 'Email belum tersedia' : _email, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFFDDE5C9), fontSize: AppTypography.overline)),
           ])),
           const SizedBox(width: 6),
           Material(color: Colors.white.withValues(alpha: .15), shape: const CircleBorder(), child: IconButton(
@@ -198,12 +232,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
         child: SizedBox(
           width: double.infinity,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, textAlign: TextAlign.left, style: const TextStyle(color: kTextSoft, fontSize: 8.8, fontWeight: FontWeight.w800, letterSpacing: .7)),
+            Text(label, textAlign: TextAlign.left, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline, fontWeight: FontWeight.w800, letterSpacing: .7)),
             const SizedBox(height: 2),
-            Text(_loading ? 'Memuat…' : value.isEmpty ? 'Belum dilengkapi' : value, textAlign: TextAlign.left, style: const TextStyle(color: kText, fontSize: 11.2, fontWeight: FontWeight.w600)),
+            Text(_loading ? 'Memuat…' : value.isEmpty ? 'Belum dilengkapi' : value, textAlign: TextAlign.left, style: const TextStyle(color: kText, fontSize: AppTypography.caption, fontWeight: FontWeight.w600)),
             if (footnote != null) ...[
               const SizedBox(height: 1),
-              Text(footnote, textAlign: TextAlign.left, style: const TextStyle(color: kTextSoft, fontSize: 8.8)),
+              Text(footnote, textAlign: TextAlign.left, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
             ],
           ]),
         ),
@@ -214,10 +248,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
         dense: true,
         minLeadingWidth: 28,
         horizontalTitleGap: 8,
-        leading: Container(width: 25, height: 25, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: kPrimaryDark, size: 16.5)),
-        title: Text(title, style: const TextStyle(color: kText, fontSize: 11.2, fontWeight: FontWeight.w800)),
-        subtitle: Text(subtitle, style: const TextStyle(color: kTextSoft, fontSize: 8.8)),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 11.8, color: kPrimaryDark),
+        leading: Container(width: 32, height: 32, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: kPrimaryDark, size: AppIconSize.sm)),
+        title: Text(title, style: const TextStyle(color: kText, fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
+        subtitle: Text(subtitle, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: AppIconSize.sm, color: kPrimaryDark),
         onTap: onTap,
       );
 }
