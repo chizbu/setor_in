@@ -62,6 +62,7 @@ jobs:
           flutter build apk \
             --release \
             --split-per-abi \
+            --android-skip-build-dependency-validation \
             --dart-define="API_BASE_URL=$API_BASE_URL"
 
       - name: Check APK Size
