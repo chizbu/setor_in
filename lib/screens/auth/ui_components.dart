@@ -11,28 +11,44 @@ class SectionHeading extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         children: [
           Expanded(
-            child: Text(title,
-                style: const TextStyle(
-                    color: kText,
-                    fontSize: 16.1,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -.2)),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: kText,
+                fontSize: AppTypography.subtitle,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -.2,
+              ),
+            ),
           ),
           if (action != null)
             TextButton(
               onPressed: onAction,
               style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 4)),
-              child: Text(action!,
-                  style: const TextStyle(
-                      color: kPrimary, fontWeight: FontWeight.w700)),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                minimumSize: const Size(44, 44),
+              ),
+              child: Text(
+                action!,
+                style: const TextStyle(
+                  color: kPrimary,
+                  fontSize: AppTypography.caption,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
         ],
       );
 }
 
 class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.padding = const EdgeInsets.all(12), this.margin, this.color});
+  const AppCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(AppSpacing.lg),
+    this.margin,
+    this.color,
+  });
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry? margin;
@@ -42,12 +58,12 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         margin: margin,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(color: kBorder),
         ),
         child: Material(
           color: color ?? kSurface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           clipBehavior: Clip.antiAlias,
           child: Padding(padding: padding, child: child),
         ),
@@ -73,7 +89,14 @@ class BrandMark extends StatelessWidget {
 }
 
 class AppStateCard extends StatelessWidget {
-  const AppStateCard({super.key, required this.icon, required this.title, required this.message, this.action, this.compact = false});
+  const AppStateCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.action,
+    this.compact = false,
+  });
   final IconData icon;
   final String title;
   final String message;
@@ -82,22 +105,32 @@ class AppStateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppCard(
-        padding: EdgeInsets.all(compact ? 12 : 18),
+        padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: kTextSoft, size: compact ? 26 : 34),
-            SizedBox(height: compact ? 8 : 12),
-            Text(title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: kText, fontSize: compact ? 11 : 14, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 5),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: kTextSoft, fontSize: compact ? 9 : 12, height: 1.4)),
-            if (action != null) ...[const SizedBox(height: 8), action!],
+            Icon(icon, color: kTextSoft, size: compact ? AppIconSize.lg : AppIconSize.hero),
+            SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: kText,
+                fontSize: compact ? AppTypography.bodySmall : AppTypography.body,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: kTextSoft,
+                fontSize: compact ? AppTypography.caption : AppTypography.bodySmall,
+                height: 1.4,
+              ),
+            ),
+            if (action != null) ...[const SizedBox(height: AppSpacing.sm), action!],
           ],
         ),
       );
@@ -110,13 +143,18 @@ class FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
         child: Row(children: [
-          Text(text,
-              style: const TextStyle(
-                  color: kText, fontSize: 13.8, fontWeight: FontWeight.w700)),
+          Text(
+            text,
+            style: const TextStyle(
+              color: kText,
+              fontSize: AppTypography.bodySmall,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           if (required)
-            const Text(' *', style: TextStyle(color: kDanger, fontSize: 14.9)),
+            const Text(' *', style: TextStyle(color: kDanger, fontSize: AppTypography.body)),
         ]),
       );
 }
@@ -128,19 +166,21 @@ class InlineNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: const Color(0xFFF3EEE5),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: const Color(0xFFE9DDCA)),
         ),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon, size: 17.7, color: kWarning),
-          const SizedBox(width: 7),
+          const Icon(Icons.info_outline_rounded, size: AppIconSize.md, color: kWarning),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
-              child: Text(message,
-                  style: const TextStyle(
-                      color: kText, fontSize: 12.5, height: 1.4))),
+            child: Text(
+              message,
+              style: const TextStyle(color: kText, fontSize: AppTypography.bodySmall, height: 1.4),
+            ),
+          ),
         ]),
       );
 }

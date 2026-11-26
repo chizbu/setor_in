@@ -219,12 +219,12 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
               Navigator.pop(context);
             }
           },
-          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
+          icon: const Icon(Icons.arrow_back, size: AppIconSize.lg, color: kText),
         ),
         title: const Text(
           'Edukasi',
           style: TextStyle(
-            fontSize: 18.4,
+            fontSize: AppTypography.subtitle,
             fontWeight: FontWeight.w800,
             color: kText,
           ),
@@ -235,24 +235,24 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
         padding: const EdgeInsets.fromLTRB(16, 5, 16, 80),
         children: [
           const Text('RUMAH HIJAU  /  PENGETAHUAN', style: TextStyle(
-              color: kPrimary, fontSize: 10, fontWeight: FontWeight.w800,
+              color: kPrimary, fontSize: AppTypography.overline, fontWeight: FontWeight.w800,
               letterSpacing: 1.1)),
           const SizedBox(height: 5),
           const Text('Pilih lebih bijak.\nMulai dari yang sederhana.',
-              style: TextStyle(color: kText, fontSize: 20.9, height: 1.12,
+              style: TextStyle(color: kText, fontSize: AppTypography.title, height: 1.12,
                   fontWeight: FontWeight.w800, letterSpacing: -.4)),
           const SizedBox(height: 5),
           const Text('Kenali material, siapkan dengan benar, lalu bawa ke Rumah Hijau.',
-              style: TextStyle(color: kTextSoft, fontSize: 12.5, height: 1.4)),
+              style: TextStyle(color: kTextSoft, fontSize: AppTypography.bodySmall, height: 1.4)),
           const SizedBox(height: 14),
           const Text('JELAJAHI JENIS SAMPAH', style: TextStyle(
-              color: kTextSoft, fontSize: 8.8, fontWeight: FontWeight.w800,
+              color: kTextSoft, fontSize: AppTypography.overline, fontWeight: FontWeight.w800,
               letterSpacing: .9)),
           const SizedBox(height: 6),
           _buildKategoriRow(),
           const SizedBox(height: 16),
           const Text('Bacaan pilihan', style: TextStyle(
-              color: kText, fontSize: 16.1, fontWeight: FontWeight.w800)),
+              color: kText, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w800)),
           const SizedBox(height: 7),
           if (_isLoading)
             const Padding(
@@ -263,9 +263,9 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
             AppCard(
               child: Column(children: [
                 Text(_loadError!, textAlign: TextAlign.center,
-                    style: const TextStyle(color: kTextSoft, fontSize: 12.5)),
+                    style: const TextStyle(color: kTextSoft, fontSize: AppTypography.bodySmall)),
                 TextButton.icon(onPressed: _loadEdukasi,
-                    icon: const Icon(Icons.refresh_rounded, size: 17.7),
+                    icon: const Icon(Icons.refresh_rounded, size: AppIconSize.md),
                     label: const Text('Coba lagi')),
               ]),
             )
@@ -273,21 +273,21 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
             AppCard(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
               child: Row(children: [
-                Container(width: 28, height: 28,
+                Container(width: 28, height: 40,
                     decoration: BoxDecoration(color: kPrimaryLight,
                         borderRadius: BorderRadius.circular(8)),
                     child: const Icon(Icons.menu_book_outlined,
-                        color: kPrimaryDark, size: 17.7)),
+                        color: kPrimaryDark, size: AppIconSize.md)),
                 const SizedBox(width: 9),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(_selectedKategori != null
                       ? 'Belum ada bacaan untuk $_selectedKategori'
                       : 'Belum ada bacaan',
-                      style: const TextStyle(color: kText, fontSize: 11.2,
+                      style: const TextStyle(color: kText, fontSize: AppTypography.caption,
                           fontWeight: FontWeight.w800)),
                   const SizedBox(height: 2),
                   const Text('Konten dari pengelola Rumah Hijau akan muncul di sini.',
-                      style: TextStyle(color: kTextSoft, fontSize: 10)),
+                      style: TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
                 ])),
               ]),
             )
@@ -300,7 +300,7 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
 
   Widget _buildKategoriRow() {
     return SizedBox(
-      height: 28,
+      height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
@@ -331,9 +331,9 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
                 border: Border.all(color: isSelected ? kPrimary : kBorder),
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(k['icon'] as IconData, color: isSelected ? kPrimaryDark : kTextSoft, size: 13),
+                Icon(k['icon'] as IconData, color: isSelected ? kPrimaryDark : kTextSoft, size: AppIconSize.sm),
                 const SizedBox(width: 4),
-                Text(label, style: TextStyle(fontSize: 10,
+                Text(label, style: TextStyle(fontSize: AppTypography.overline,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected ? kPrimaryDark : kText)),
               ]),
@@ -363,7 +363,7 @@ class _ModulCard extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         height: 180,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           color: Colors.grey.shade200,
           boxShadow: [
             BoxShadow(
@@ -374,7 +374,7 @@ class _ModulCard extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -411,7 +411,7 @@ class _ModulCard extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
                       border: Border.all(
                           color: Colors.white.withValues(alpha: 0.4)),
                     ),
@@ -419,7 +419,7 @@ class _ModulCard extends StatelessWidget {
                       modul['kategori'] as String,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12.5,
+                        fontSize: AppTypography.bodySmall,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -433,7 +433,7 @@ class _ModulCard extends StatelessWidget {
                   modul['title'] as String,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 17.2,
+                    fontSize: AppTypography.bodyLarge,
                     fontWeight: FontWeight.w700,
                     height: 1.35,
                   ),
@@ -458,7 +458,7 @@ class _ModulCard extends StatelessWidget {
       ),
       child: Center(
         child: Icon(Icons.menu_book_rounded,
-            size: 56.6, color: Colors.white.withValues(alpha: 0.3)),
+            size: AppIconSize.hero, color: Colors.white.withValues(alpha: 0.3)),
       ),
     );
   }

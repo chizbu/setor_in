@@ -175,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     ClipOval(child: Image.asset('assets/images/setobot-icon.png', width: 26, height: 26, fit: BoxFit.cover)),
                     const SizedBox(height: 1),
-                    const Text('SetoBot', style: TextStyle(color: kPrimaryDark, fontSize: 11.2, fontWeight: FontWeight.w800)),
+                    const Text('SetoBot', style: TextStyle(color: kPrimaryDark, fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
                   ]),
                 ),
               ),
@@ -195,10 +195,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               constraints: const BoxConstraints(maxWidth: 720),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 36),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 36),
                 children: [
                   _header(),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: AppSpacing.lg),
                   _balanceCard(),
                   const SizedBox(height: 12),
                   _dashboardShortcuts(),
@@ -228,14 +228,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ? null
             : MemoryImage(_profilePhoto!),
         child: _profilePhoto == null || _profilePhoto!.isEmpty
-            ? const Icon(Icons.person_outline_rounded, color: kPrimaryDark, size: 20.1)
+            ? const Icon(Icons.person_outline_rounded, color: kPrimaryDark, size: AppIconSize.md)
             : null,
       ),
       const SizedBox(width: 8),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('SETOR.IN  /  RUMAH HIJAU', style: TextStyle(color: kTextSoft, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+        const Text('SETOR.IN  /  RUMAH HIJAU', style: TextStyle(color: kTextSoft, fontSize: AppTypography.overline, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
         const SizedBox(height: 1),
-        Text('Halo, $firstName', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kText, fontSize: 17.2, fontWeight: FontWeight.w800)),
+        Text('Halo, $firstName', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kText, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w800)),
       ])),
       _headerButton(Icons.notifications_none_rounded, 'Notifikasi', () {
         _recordOpen('Membuka Notifikasi', 'Melihat pembaruan akun', Icons.notifications_none_rounded);
@@ -247,8 +247,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _headerButton(IconData icon, String tooltip, VoidCallback onTap) => Container(
-        width: 27,
-        height: 27,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(color: kPrimaryLight.withValues(alpha: .7), borderRadius: BorderRadius.circular(9)),
         child: IconButton(
           tooltip: tooltip,
@@ -281,17 +281,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: LayoutBuilder(builder: (context, constraints) => SizedBox(
               width: constraints.maxWidth * .66,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('TABUNGAN NASABAH', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+              const Text('TABUNGAN NASABAH', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: AppTypography.overline, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
               const SizedBox(height: 8),
               Row(children: [
-                const Expanded(child: Text('Saldo tersedia', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 11.2, fontWeight: FontWeight.w600))),
+                const Expanded(child: Text('Saldo tersedia', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: AppTypography.caption, fontWeight: FontWeight.w600))),
                 IconButton(
                   tooltip: _showBalance ? 'Sembunyikan saldo' : 'Tampilkan saldo',
                   onPressed: () => setState(() => _showBalance = !_showBalance),
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints.tightFor(width: 22, height: 22),
-                  icon: Icon(_showBalance ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 16.5, color: Colors.white),
+                  icon: Icon(_showBalance ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: AppIconSize.sm, color: Colors.white),
                 ),
               ]),
               AnimatedSwitcher(
@@ -305,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           : 'Rp••••••',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 18.7, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -.4),
+                  style: const TextStyle(color: Colors.white, fontSize: AppTypography.title, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -.4),
                 ),
               ),
               const SizedBox(height: 7),
@@ -315,14 +315,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(child: _balanceAction(Icons.swap_horiz_rounded, 'Tarik Saldo', _openWithdraw)),
               ]),
               const SizedBox(height: 10),
-              const Text('Tabungan hasil setoran terverifikasi', style: TextStyle(color: Color(0xFFE1E5D8), fontSize: 10, fontWeight: FontWeight.w600)),
+              const Text('Tabungan hasil setoran terverifikasi', style: TextStyle(color: Color(0xFFE1E5D8), fontSize: AppTypography.overline, fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               Container(height: 1, color: Colors.white.withValues(alpha: .16)),
               const SizedBox(height: 4),
               const Row(children: [
                 Icon(Icons.eco_outlined, size: 13, color: Color(0xFFDDE5C9)),
                 SizedBox(width: 4),
-                Text('Nilai baik, dimulai dari rumah', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 10)),
+                Text('Nilai baik, dimulai dari rumah', style: TextStyle(color: Color(0xFFDDE5C9), fontSize: AppTypography.overline)),
               ]),
             ]),
             )),
@@ -336,10 +336,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
-          child: SizedBox(height: 18, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          child: SizedBox(height: 40, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(icon, size: 13, color: Colors.white),
             const SizedBox(width: 3),
-            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700))),
+            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: AppTypography.overline, fontWeight: FontWeight.w700))),
           ])),
         ),
       );
@@ -391,20 +391,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(10)),
-                  child: Icon(icon, color: kPrimaryDark, size: 20.1),
+                  child: Icon(icon, color: kPrimaryDark, size: AppIconSize.md),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kText, fontSize: 12.5, fontWeight: FontWeight.w800)),
+                      Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kText, fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 2),
-                      Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kTextSoft, fontSize: 10)),
+                      Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: kPrimaryDark, size: 18.9),
+                const Icon(Icons.chevron_right_rounded, color: kPrimaryDark, size: AppIconSize.md),
               ],
             ),
           ),
@@ -416,16 +416,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(color: const Color(0xFFF4EEDF), borderRadius: BorderRadius.circular(11), border: Border.all(color: const Color(0xFFE5DDC9))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Padding(padding: EdgeInsets.only(top: 1), child: Icon(Icons.info_outline_rounded, color: kWarning, size: 15.3)),
+            const Padding(padding: EdgeInsets.only(top: 1), child: Icon(Icons.info_outline_rounded, color: kWarning, size: AppIconSize.sm)),
             const SizedBox(width: 6),
-            Expanded(child: Text(message, style: const TextStyle(color: kTextSoft, fontSize: 10, height: 1.35))),
+            Expanded(child: Text(message, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline, height: 1.35))),
           ]),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: _loadData,
               icon: const Icon(Icons.refresh_rounded, size: 13),
-              label: const Text('Coba lagi', style: TextStyle(fontSize: 11.2, fontWeight: FontWeight.w800)),
+              label: const Text('Coba lagi', style: TextStyle(fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
               style: TextButton.styleFrom(
                 foregroundColor: kPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
@@ -440,7 +440,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _activityHeading() => Row(children: [
         const Expanded(
           child: Text('Aktivitas terakhir',
-              style: TextStyle(color: kText, fontSize: 14.9, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w800)),
         ),
         TextButton(
           onPressed: _openActivity,
@@ -450,7 +450,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: const Text('Lihat semua',
-              style: TextStyle(color: kPrimaryDark, fontSize: 11.2, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: kPrimaryDark, fontSize: AppTypography.caption, fontWeight: FontWeight.w700)),
         ),
       ]);
 
@@ -466,10 +466,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               dense: true,
               contentPadding: EdgeInsets.zero,
               minLeadingWidth: 30,
-              leading: Container(width: 28, height: 28, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(9)), child: Icon(item.icon, size: 17.7, color: kPrimaryDark)),
-              title: Text(item.title, style: const TextStyle(color: kText, fontSize: 12.5, fontWeight: FontWeight.w800)),
-              subtitle: Text(item.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kTextSoft, fontSize: 10)),
-              trailing: Text(_relativeTime(item.when), style: const TextStyle(color: kTextSoft, fontSize: 10)),
+              leading: Container(width: 28, height: 28, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(9)), child: Icon(item.icon, size: AppIconSize.sm, color: kPrimaryDark)),
+              title: Text(item.title, style: const TextStyle(color: kText, fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
+              subtitle: Text(item.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
+              trailing: Text(_relativeTime(item.when), style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
             ),
             if (entry.key != items.length - 1) const Divider(height: 1),
           ]);
@@ -483,12 +483,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return AppCard(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(children: [
-          const Icon(Icons.touch_app_outlined, color: kPrimary, size: 21.2),
+          const Icon(Icons.touch_app_outlined, color: kPrimary, size: AppIconSize.md),
           const SizedBox(width: 10),
           const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Belum ada aktivitas', style: TextStyle(color: kText, fontSize: 12.5, fontWeight: FontWeight.w800)),
+            Text('Belum ada aktivitas', style: TextStyle(color: kText, fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
             SizedBox(height: 2),
-            Text('Aktivitas penggunaan aplikasi akan muncul di sini. Transaksi uang ada di menu Riwayat.', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: kTextSoft, fontSize: 10, height: 1.3)),
+            Text('Aktivitas penggunaan aplikasi akan muncul di sini. Transaksi uang ada di menu Riwayat.', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: kTextSoft, fontSize: AppTypography.overline, height: 1.3)),
           ])),
         ]),
       );
@@ -502,10 +502,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             dense: true,
             contentPadding: EdgeInsets.zero,
             minLeadingWidth: 30,
-            leading: Container(width: 28, height: 28, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(9)), child: const Icon(Icons.recycling_rounded, size: 17.7, color: kPrimaryDark)),
-            title: Text((row['title'] ?? 'Setoran').toString(), style: const TextStyle(color: kText, fontSize: 12.5, fontWeight: FontWeight.w800)),
-            subtitle: Text((row['subtitle'] ?? row['status'] ?? 'Rincian belum tersedia').toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kTextSoft, fontSize: 10)),
-            trailing: Text((row['date'] ?? '').toString(), style: const TextStyle(color: kTextSoft, fontSize: 10)),
+            leading: Container(width: 28, height: 28, decoration: BoxDecoration(color: kPrimaryLight, borderRadius: BorderRadius.circular(9)), child: const Icon(Icons.recycling_rounded, size: AppIconSize.sm, color: kPrimaryDark)),
+            title: Text((row['title'] ?? 'Setoran').toString(), style: const TextStyle(color: kText, fontSize: AppTypography.caption, fontWeight: FontWeight.w800)),
+            subtitle: Text((row['subtitle'] ?? row['status'] ?? 'Rincian belum tersedia').toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
+            trailing: Text((row['date'] ?? '').toString(), style: const TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
             onTap: _openTransactionHistory,
           ),
           if (entry.key != _recent.length - 1) const Divider(height: 1),
@@ -518,7 +518,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _bottomNavigation() => SafeArea(
         top: false,
         child: Container(
-              height: 39,
+              height: 64,
           decoration: const BoxDecoration(color: kSurface, border: Border(top: BorderSide(color: kBorder))),
           child: Row(children: [
             _navItem('Beranda', Icons.home_outlined, 0),
@@ -526,7 +526,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(child: Center(child: InkResponse(
               onTap: () => _selectTab(2),
               radius: 25,
-              child: Container(width: 29, height: 29, decoration: BoxDecoration(color: kPrimaryDark, borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 20.1)),
+              child: Container(width: 48, height: 48, decoration: BoxDecoration(color: kPrimaryDark, borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: AppIconSize.md)),
             ))),
             _navItem('Edukasi', Icons.menu_book_outlined, 3),
             _navItem('Profil', Icons.person_outline_rounded, 4),
@@ -544,9 +544,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: InkWell(
         onTap: () => _selectTab(index),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon, size: 16.5, color: active ? kPrimaryDark : kTextSoft),
+          Icon(icon, size: AppIconSize.sm, color: active ? kPrimaryDark : kTextSoft),
           const SizedBox(height: 1),
-          Text(label, style: TextStyle(color: active ? kPrimaryDark : kTextSoft, fontSize: 8.8, fontWeight: active ? FontWeight.w800 : FontWeight.w500)),
+          Text(label, style: TextStyle(color: active ? kPrimaryDark : kTextSoft, fontSize: AppTypography.overline, fontWeight: active ? FontWeight.w800 : FontWeight.w500)),
         ]),
       ),
     ));

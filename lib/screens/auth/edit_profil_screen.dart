@@ -66,19 +66,19 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
               children: [
                 const Text('Foto Profil',
                     style:
-                        TextStyle(fontSize: 18.4, fontWeight: FontWeight.w700)),
+                        TextStyle(fontSize: AppTypography.subtitle, fontWeight: FontWeight.w700)),
                 GestureDetector(
                     onTap: () => Navigator.pop(ctx),
-                    child: const Icon(Icons.close, size: 23.6)),
+                    child: const Icon(Icons.close, size: AppIconSize.lg)),
               ],
             ),
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.camera_alt_outlined,
-                  color: Colors.black54, size: 28.3),
+                  color: Colors.black54, size: AppIconSize.lg),
               title: const Text('Kamera',
-                  style: TextStyle(fontSize: 17.2, color: Colors.black87)),
+                  style: TextStyle(fontSize: AppTypography.bodyLarge, color: Colors.black87)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await _ambilFoto(ImageSource.camera);
@@ -88,9 +88,9 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.image_outlined,
-                  color: Colors.black54, size: 28.3),
+                  color: Colors.black54, size: AppIconSize.lg),
               title: const Text('Galeri',
-                  style: TextStyle(fontSize: 17.2, color: Colors.black87)),
+                  style: TextStyle(fontSize: AppTypography.bodyLarge, color: Colors.black87)),
               onTap: () async {
                 Navigator.pop(ctx);
                 await _ambilFoto(ImageSource.gallery);
@@ -185,12 +185,12 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
+          icon: const Icon(Icons.arrow_back, size: AppIconSize.lg, color: kText),
         ),
         title: const Text(
           'Edit Profil',
           style: TextStyle(
-            fontSize: 18.4,
+            fontSize: AppTypography.subtitle,
             fontWeight: FontWeight.w800,
             color: kText,
           ),
@@ -216,7 +216,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         : null,
                     child: _fotoSementara == null
                         ? Icon(Icons.person,
-                            size: 66.1, color: Colors.grey.shade400)
+                            size: 64, color: Colors.grey.shade400)
                         : null,
                   ),
                   GestureDetector(
@@ -230,14 +230,14 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: const Icon(Icons.camera_alt,
-                          size: 18.9, color: Colors.white),
+                          size: AppIconSize.md, color: Colors.white),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text('Ketuk ikon kamera untuk ganti foto',
-                  style: TextStyle(fontSize: 13.8, color: Colors.grey.shade500)),
+                  style: TextStyle(fontSize: AppTypography.bodySmall, color: Colors.grey.shade500)),
               const SizedBox(height: 28),
               _buildLabel('Nama lengkap'),
               _buildTextField(
@@ -301,7 +301,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
               const SizedBox(height: 36),
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 48,
                 child: ElevatedButton(
                   onPressed: _isSaving ? null : _handleSimpan,
                   style: ElevatedButton.styleFrom(
@@ -323,7 +323,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
                         )
                       : const Text('Simpan Perubahan',
                           style: TextStyle(
-                              fontSize: 18.4, fontWeight: FontWeight.w600)),
+                              fontSize: AppTypography.subtitle, fontWeight: FontWeight.w600)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -341,7 +341,7 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(text,
             style: const TextStyle(
-                fontSize: 13.8,
+                fontSize: AppTypography.bodySmall,
             fontWeight: FontWeight.w800,
                 color: kText)),
       ),
@@ -360,11 +360,11 @@ class _EditProfilScreenState extends State<EditProfilScreen> {
       controller: controller,
       keyboardType: keyboardType,
       readOnly: readOnly,
-      style: const TextStyle(fontSize: 13.8, color: kText),
+      style: const TextStyle(fontSize: AppTypography.bodySmall, color: kText),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 16.1),
-        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 23.6),
+        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: AppTypography.body),
+        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: AppIconSize.lg),
         filled: true,
         fillColor: kSurface,
         contentPadding:

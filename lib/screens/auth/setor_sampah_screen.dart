@@ -108,13 +108,13 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
               const Text(
                 'QR Kartu Nasabah',
                 style: TextStyle(
-                    fontSize: 18.7, fontWeight: FontWeight.w800, color: kText),
+                    fontSize: AppTypography.subtitle, fontWeight: FontWeight.w800, color: kText),
               ),
               const SizedBox(height: 6),
               const Text(
                 'Tunjukkan ke petugas Bank Sampah untuk di-scan',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13.8, color: kTextSoft),
+                style: TextStyle(fontSize: AppTypography.bodySmall, color: kTextSoft),
               ),
               const SizedBox(height: 20),
               Container(
@@ -135,13 +135,13 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
               Text(
                 _nama,
                 style: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 16.1, color: kText),
+                    fontWeight: FontWeight.w700, fontSize: AppTypography.bodyLarge, color: kText),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
                 _noTelpon,
-                style: const TextStyle(fontSize: 13.8, color: kTextSoft),
+                style: const TextStyle(fontSize: AppTypography.bodySmall, color: kTextSoft),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -172,7 +172,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
         width: size,
         height: size,
         child: const Center(
-          child: Icon(Icons.qr_code_2_rounded, size: 56.6, color: Colors.black26),
+          child: Icon(Icons.qr_code_2_rounded, size: AppIconSize.hero, color: Colors.black26),
         ),
       );
     }
@@ -195,7 +195,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, size: 23.6, color: kText),
+          icon: const Icon(Icons.arrow_back, size: AppIconSize.lg, color: kText),
         ),
         title: const Text('Kartu nasabah'),
         centerTitle: false,
@@ -217,7 +217,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                     ),
                     child: const Text(
                       'QR unik belum diterbitkan oleh server. Kode tidak dibuat dari ID akun.',
-                      style: TextStyle(color: Color(0xFF704300), fontSize: 13.8),
+                      style: TextStyle(color: Color(0xFF704300), fontSize: AppTypography.bodySmall),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -228,7 +228,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                 const Text(
                   'Panduan Setor Sampah',
                   style: TextStyle(
-                    fontSize: 14.9,
+                    fontSize: AppTypography.body,
                     fontWeight: FontWeight.w800,
                     color: kText,
                   ),
@@ -244,7 +244,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                     const Text(
                       'Harga Sampah Terkini',
                       style: TextStyle(
-                        fontSize: 18.4,
+                        fontSize: AppTypography.subtitle,
                         fontWeight: FontWeight.w700,
                         color: kText,
                       ),
@@ -259,12 +259,12 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                       child: const Row(
                         children: [
                           Icon(Icons.check_circle_rounded,
-                              color: kPrimary, size: 14.2),
+                              color: kPrimary, size: AppIconSize.sm),
                           SizedBox(width: 4),
                           Text(
                             'Live API',
                             style: TextStyle(
-                                fontSize: 12.5,
+                                fontSize: AppTypography.caption,
                                 color: kPrimary,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -287,7 +287,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: kPrimaryDark,
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Stack(children: [
         Positioned(
@@ -308,17 +308,17 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
             Row(children: [
               const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('KARTU NASABAH', style: TextStyle(
-                    color: Color(0xFFDDE5C9), fontSize: 10,
+                    color: Color(0xFFDDE5C9), fontSize: AppTypography.overline,
                     fontWeight: FontWeight.w800, letterSpacing: 1.1)),
                 SizedBox(height: 3),
                 Text('Rumah Hijau', style: TextStyle(
-                    color: Colors.white, fontSize: 16.1, fontWeight: FontWeight.w800)),
+                    color: Colors.white, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w800)),
               ])),
               IconButton(
                 tooltip: 'Perbesar QR',
                 onPressed: _showQrDialog,
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.open_in_full_rounded, color: Colors.white70, size: 18.9),
+                icon: const Icon(Icons.open_in_full_rounded, color: Colors.white70, size: AppIconSize.md),
               ),
             ]),
             const SizedBox(height: 9),
@@ -334,23 +334,23 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
               const SizedBox(width: 10),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('NAMA NASABAH', style: TextStyle(
-                    color: Color(0xFFCCD2C2), fontSize: 8.8,
+                    color: Color(0xFFCCD2C2), fontSize: AppTypography.overline,
                     fontWeight: FontWeight.w800, letterSpacing: .8)),
                 const SizedBox(height: 2),
                 Text(_nama.isEmpty ? 'Nasabah' : _nama, maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.8, fontWeight: FontWeight.w800)),
+                    style: const TextStyle(color: Colors.white, fontSize: AppTypography.bodySmall, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
                 const Text('KONTAK NASABAH', style: TextStyle(
-                    color: Color(0xFFCCD2C2), fontSize: 8.8,
+                    color: Color(0xFFCCD2C2), fontSize: AppTypography.overline,
                     fontWeight: FontWeight.w800, letterSpacing: .8)),
                 const SizedBox(height: 2),
                 Text(_noTelpon.isEmpty ? 'Kontak belum tersedia' : _noTelpon,
                     maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                    style: const TextStyle(color: Colors.white, fontSize: AppTypography.caption, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
                 const Text('Tunjukkan QR ini kepada petugas',
-                    style: TextStyle(color: Color(0xFFDDE5C9), fontSize: 10)),
+                    style: TextStyle(color: Color(0xFFDDE5C9), fontSize: AppTypography.overline)),
               ])),
             ]),
           ]),
@@ -418,7 +418,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                     s['step'] as String,
                     style: TextStyle(
                         color: stepC,
-                        fontSize: 12.5,
+                        fontSize: AppTypography.caption,
                         fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -432,20 +432,20 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                       s['title'] as String,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 11.2,
+                          fontSize: AppTypography.caption,
                           color: kText),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       s['desc'] as String,
                       style: const TextStyle(
-                          fontSize: 10, color: kTextSoft, height: 1.35),
+                          fontSize: AppTypography.overline, color: kTextSoft, height: 1.35),
                     ),
                   ],
                 ),
               ),
               Icon(s['icon'] as IconData,
-                  color: stepC.withValues(alpha: 0.4), size: 18.9),
+                  color: stepC.withValues(alpha: 0.4), size: AppIconSize.md),
             ],
           ),
         );
@@ -463,7 +463,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
         child: const Text(
           'Harga belum tersedia dari server. Tarik ke bawah untuk memuat ulang.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: kTextSoft, fontSize: 13.8, height: 1.45),
+          style: TextStyle(color: kTextSoft, fontSize: AppTypography.bodySmall, height: 1.45),
         ),
       );
     }
@@ -514,7 +514,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                         color: c.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(iconData, color: c, size: 23.6),
+                      child: Icon(iconData, color: c, size: AppIconSize.lg),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -525,14 +525,14 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                             jenis,
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14.9,
+                                fontSize: AppTypography.body,
                                 color: kText),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             bank,
                             style:
-                                const TextStyle(fontSize: 12.5, color: kTextSoft),
+                                const TextStyle(fontSize: AppTypography.caption, color: kTextSoft),
                           ),
                         ],
                       ),
@@ -540,7 +540,7 @@ class _SetorSampahScreenState extends State<SetorSampahScreen> {
                     Text(
                       'Rp ${harga.toStringAsFixed(0)}/kg',
                       style: TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 14.9, color: c),
+                          fontWeight: FontWeight.w800, fontSize: AppTypography.body, color: c),
                     ),
                   ],
                 ),

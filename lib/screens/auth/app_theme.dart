@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 
+
 const Color kPrimary = Color(0xFF65784E);
 const Color kPrimaryDark = Color(0xFF34422F);
 const Color kAccent = Color(0xFFD4B18A);
@@ -14,6 +15,7 @@ const Color kText = Color(0xFF2C3027);
 const Color kTextSoft = Color(0xFF85887C);
 const Color kPrimaryLight = Color(0xFFE5E7D8);
 const Color kBorder = Color(0xFFDDDED2);
+
 
 
 class AppSpacing {
