@@ -703,7 +703,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
           // Filter chips
           SizedBox(
-            height: 28,
+            height: 36,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -805,7 +805,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: active ? kPrimary : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.lg),
