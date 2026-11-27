@@ -137,16 +137,16 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
               children: [
                 Text((item['title'] ?? 'Detail setoran').toString(),
                     style: const TextStyle(
-                        fontSize: 22,
+                        fontSize: AppTypography.title,
                         fontWeight: FontWeight.w800,
                         color: kText)),
                 const SizedBox(height: 6),
                 Text((item['date'] ?? 'Tanggal belum tersedia').toString(),
-                    style: const TextStyle(color: kTextSoft, fontSize: 13.8)),
+                    style: const TextStyle(color: kTextSoft, fontSize: AppTypography.bodySmall)),
                 if (item['bank_name'] != null) ...[
                   const SizedBox(height: 4),
                   Text(item['bank_name'].toString(),
-                      style: const TextStyle(color: kTextSoft, fontSize: 13.8)),
+                      style: const TextStyle(color: kTextSoft, fontSize: AppTypography.bodySmall)),
                 ],
                 const SizedBox(height: 14),
                 Container(
@@ -162,14 +162,14 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                           .toString()
                           .toUpperCase(),
                       style: TextStyle(
-                          fontSize: 13.8,
+                          fontSize: AppTypography.bodySmall,
                           fontWeight: FontWeight.w800,
                           color: _getStatusColor(item['status']?.toString()))),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.lg),
                 const Text('Rincian sampah',
                     style: TextStyle(
-                        fontSize: 17.2,
+                        fontSize: AppTypography.subtitle,
                         fontWeight: FontWeight.w800,
                         color: kText)),
                 const SizedBox(height: 10),
@@ -197,13 +197,13 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                               Text(
                                   'Berat ${detail['weight'] ?? '—'} kg  •  ${_rupiah(detail['price_per_kg'])}/kg',
                                   style: const TextStyle(
-                                      color: kTextSoft, fontSize: 13.8)),
+                                      color: kTextSoft, fontSize: AppTypography.bodySmall)),
                               const SizedBox(height: 4),
                               Text('Subtotal  ${_rupiah(detail['subtotal'])}',
                                   style: const TextStyle(
                                       color: kPrimary,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 13.8)),
+                                      fontSize: AppTypography.bodySmall)),
                             ]),
                       )),
                 const Divider(height: 24),
@@ -230,14 +230,21 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: const Text('Riwayat transaksi'),
         backgroundColor: kBg,
-        foregroundColor: kText,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 23.6),
           onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, size: AppIconSize.lg, color: kText),
+        ),
+        title: const Text(
+          'Riwayat transaksi',
+          style: TextStyle(
+            color: kText,
+            fontSize: AppTypography.subtitle,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
       body: Column(
@@ -263,24 +270,24 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
   Widget _buildFilterBar() {
     final filters = ['Semua', 'Setoran', 'Tarik Saldo'];
     return Container(
-      height: 60,
+      height: 56,
       color: Colors.white,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: filters.length,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
         itemBuilder: (context, index) {
           final filter = filters[index];
           final isSelected = _selectedFilter == filter;
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: ChoiceChip(
               label: Text(
                 filter,
                 style: TextStyle(
                   color: isSelected ? Colors.white : kText,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  fontSize: 13.8,
+                  fontSize: AppTypography.bodySmall,
                 ),
               ),
               selected: isSelected,
@@ -313,22 +320,22 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 color: kPrimary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.history_rounded,
-                size: 64,
+                size: AppIconSize.hero,
                 color: kPrimary,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             const Text(
               'Belum ada transaksi',
               style: TextStyle(
-                fontSize: 18.4,
+                fontSize: AppTypography.subtitle,
                 fontWeight: FontWeight.w700,
                 color: kText,
               ),
@@ -342,7 +349,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                       : 'Penukaran saldo akan muncul di sini setelah diajukan.',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 14.9,
+                fontSize: AppTypography.body,
                 color: kTextSoft,
               ),
             ),
@@ -356,37 +363,37 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: _filteredAktivitas.length,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       itemBuilder: (context, index) {
         final item = _filteredAktivitas[index];
         final type = item['type'] ?? 'other';
         final status = item['status'] ?? 'selesai';
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
           decoration: AppTheme.cardDecoration,
           child: InkWell(
             borderRadius: BorderRadius.circular(18),
             onTap: () => _showTransactionDetail(item as Map),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: _getIconColor(type).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
                       _getIcon(type),
                       color: _getIconColor(type),
-                      size: 26,
+                      size: AppIconSize.md,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +401,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                         Text(
                           item['title'] ?? '',
                           style: const TextStyle(
-                            fontSize: 16.1,
+                            fontSize: AppTypography.bodyLarge,
                             fontWeight: FontWeight.w700,
                             color: kText,
                           ),
@@ -403,7 +410,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                         Text(
                           item['subtitle'] ?? '',
                           style: const TextStyle(
-                            fontSize: 14.9,
+                            fontSize: AppTypography.body,
                             fontWeight: FontWeight.w600,
                             color: kPrimary,
                           ),
@@ -412,7 +419,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                         Text(
                           item['detail'] ?? '',
                           style: const TextStyle(
-                            fontSize: 13.8,
+                            fontSize: AppTypography.bodySmall,
                             color: kTextSoft,
                           ),
                         ),
@@ -424,14 +431,14 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                               (item['date'] ?? 'Tanggal belum tersedia')
                                   .toString(),
                               style: const TextStyle(
-                                fontSize: 13.8,
+                                fontSize: AppTypography.bodySmall,
                                 color: kTextSoft,
                               ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
                                 color: _getStatusColor(status)
@@ -441,7 +448,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                               child: Text(
                                 status.toUpperCase(),
                                 style: TextStyle(
-                                  fontSize: 11.2,
+                                  fontSize: AppTypography.overline,
                                   fontWeight: FontWeight.w700,
                                   color: _getStatusColor(status),
                                 ),

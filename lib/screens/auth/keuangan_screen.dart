@@ -347,9 +347,9 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
 
     return InkWell(
       onTap: () => _showDetailTransaksi(context, item),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
         child: Row(
           children: [
             Container(
@@ -374,7 +374,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   const SizedBox(height: 2),
                   Text(
                     item.subjudul,
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: AppTypography.caption),
+                    style: TextStyle(color: kTextSoft, fontSize: AppTypography.caption),
                   ),
                 ],
               ),
@@ -386,7 +386,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   item.nominal,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: AppTypography.bodySmall,
+                    fontSize: AppTypography.body,
                     color: item.isPlus ? kPrimary : kDanger,
                   ),
                 ),
@@ -406,7 +406,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   item.tanggal.contains(',')
                       ? item.tanggal.split(',').last.trim()
                       : item.tanggal,
-                  style: TextStyle(fontSize: AppTypography.caption, color: Colors.grey.shade400),
+                  style: TextStyle(fontSize: AppTypography.caption, color: kTextSoft),
                 ),
               ],
             ),
@@ -545,8 +545,8 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                         MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.receipt_long_outlined,
-                                          size: AppIconSize.hero,
-                                          color: Colors.grey.shade300),
+                                          size: AppIconSize.xl,
+                                          color: kTextSoft),
                                       const SizedBox(height: 10),
                                       Text(
                                         'Belum ada transaksi',
@@ -726,7 +726,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.receipt_long_outlined,
-                          size: AppIconSize.hero, color: Colors.grey.shade300),
+                          size: AppIconSize.xl, color: kTextSoft),
                       const SizedBox(height: 12),
                       Text(
                         'Belum ada transaksi',
@@ -877,7 +877,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   const SizedBox(height: 2),
                   Text(item.subjudul,
                       style: TextStyle(
-                          color: Colors.grey.shade500, fontSize: AppTypography.caption)),
+                          color: kTextSoft, fontSize: AppTypography.caption)),
                 ],
               ),
             ),
@@ -888,7 +888,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   item.nominal,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: AppTypography.bodySmall,
+                    fontSize: AppTypography.body,
                     color: item.isPlus ? kPrimary : kDanger,
                   ),
                 ),
@@ -909,7 +909,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       ? item.tanggal.split(',').last.trim()
                       : item.tanggal,
                   style: TextStyle(
-                      fontSize: AppTypography.caption, color: Colors.grey.shade400),
+                      fontSize: AppTypography.caption, color: kTextSoft),
                 ),
               ],
             ),
@@ -2512,7 +2512,7 @@ PreferredSizeWidget _buildAppBar(
   VoidCallback? onBack,
 }) {
   return AppBar(
-    backgroundColor: Colors.white,
+    backgroundColor: kBg,
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     leading: showBack
@@ -2523,35 +2523,21 @@ PreferredSizeWidget _buildAppBar(
               } else if (Navigator.canPop(context)) {
                 Navigator.pop(context);
               } else {
-                Navigator.popUntil(
-                    context, (route) => route.isFirst);
+                Navigator.popUntil(context, (route) => route.isFirst);
               }
             },
-            icon: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black87, width: 2),
-              ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 17, color: Colors.black87),
-            ),
+            icon: const Icon(Icons.arrow_back, size: AppIconSize.lg, color: kText),
           )
         : null,
     title: Text(
       title,
       style: const TextStyle(
-        color: Colors.black87,
+        color: kText,
         fontWeight: FontWeight.w800,
-        fontSize: AppTypography.bodyLarge,
+        fontSize: AppTypography.subtitle,
       ),
     ),
-    centerTitle: true,
-    bottom: PreferredSize(
-      preferredSize: const Size.fromHeight(1),
-      child: Divider(height: 1, color: Colors.grey.shade200),
-    ),
+    centerTitle: false,
   );
 }
 
