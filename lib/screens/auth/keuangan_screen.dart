@@ -255,7 +255,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   const SizedBox(width: 6),
                   const Text('Saldomu',
                       style: TextStyle(color: Colors.white70, fontSize: AppTypography.bodySmall)),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   GestureDetector(
                     onTap: () => setState(() => _showSaldo = !_showSaldo),
                     child: Icon(
@@ -353,15 +353,15 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: iconBg,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(iconData, color: iconColor, size: AppIconSize.md),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,18 +426,18 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
       child: Column(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               color: kPrimary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: kPrimary, size: AppIconSize.lg),
+            child: Icon(icon, color: kPrimary, size: AppIconSize.md),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: AppTypography.caption, fontWeight: FontWeight.w700, color: kText)),
+              style: const TextStyle(fontSize: AppTypography.overline, fontWeight: FontWeight.w700, color: kText)),
         ],
       ),
     );
@@ -545,7 +545,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                         MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.receipt_long_outlined,
-                                          size: AppIconSize.xl,
+                                          size: AppIconSize.lg,
                                           color: kTextSoft),
                                       const SizedBox(height: 10),
                                       Text(
@@ -669,7 +669,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
           // Summary card
           if (RiwayatStore.data.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
@@ -677,7 +677,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16, horizontal: 20),
+                    vertical: AppSpacing.md, horizontal: AppSpacing.lg),
                 child: Row(
                   children: [
                     _summaryCol('Total masuk',
@@ -703,13 +703,13 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
           // Filter chips
           SizedBox(
-            height: 36,
+            height: 32,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               children: [
                 _chip('Semua', 0),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 _chip('Top-up Ewallet', 1),
                 const SizedBox(width: 8),
                 _chip('Tarik tunai', 2),
@@ -726,7 +726,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.receipt_long_outlined,
-                          size: AppIconSize.xl, color: kTextSoft),
+                          size: AppIconSize.lg, color: kTextSoft),
                       const SizedBox(height: 12),
                       Text(
                         'Belum ada transaksi',
@@ -854,8 +854,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: isCash ? const Color(0xFFFFF4E5) : kPrimaryLight,
                 borderRadius: BorderRadius.circular(12),
@@ -866,7 +866,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                 size: AppIconSize.md,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -979,7 +979,7 @@ class _MetodePembayaranScreenState
                               Expanded(
                                 child: Text(name,
                                     style: const TextStyle(
-                                        fontSize: AppTypography.bodyLarge,
+                                        fontSize: AppTypography.body,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.black87)),
                               ),
@@ -1044,7 +1044,7 @@ class _MetodePembayaranScreenState
                 child: const Text('Konfirmasi',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: AppTypography.bodyLarge,
+                        fontSize: AppTypography.button,
                         fontWeight: FontWeight.w600)),
               ),
             ),
@@ -1272,7 +1272,7 @@ Color _avatarFg(String initial) {
                                 MainAxisAlignment.center,
                             children: [
                               Icon(Icons.contacts_outlined,
-                                  size: AppIconSize.hero,
+                                  size: AppIconSize.lg,
                                   color: Colors.grey.shade300),
                               const SizedBox(height: 16),
                               Text('Izin kontak ditolak',
@@ -1454,7 +1454,7 @@ class _NominalTransferScreenState
               child: Row(
                 children: [
                   CircleAvatar(
-                    radius: 24,
+                    radius: 20,
                     backgroundColor: Colors.pink.shade100,
                     child: Text(
                       widget.namaPenerima.isNotEmpty
@@ -1463,7 +1463,7 @@ class _NominalTransferScreenState
                       style: TextStyle(
                           color: Colors.pink.shade400,
                           fontWeight: FontWeight.w700,
-                          fontSize: AppTypography.subtitle),
+                          fontSize: AppTypography.body),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1473,7 +1473,7 @@ class _NominalTransferScreenState
                       Text(_maskName(widget.namaPenerima),
                           style: const TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: AppTypography.bodyLarge)),
+                              fontSize: AppTypography.body)),
                       Text(widget.nomorPenerima,
                           style: TextStyle(
                               color: Colors.grey.shade500,
@@ -1500,7 +1500,7 @@ class _NominalTransferScreenState
             const SizedBox(height: 28),
             const Text('Nominal Top-up Ewallet',
                 style: TextStyle(
-                    fontSize: AppTypography.bodyLarge,
+                    fontSize: AppTypography.body,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87)),
             const SizedBox(height: 10),
@@ -1585,7 +1585,7 @@ class _NominalTransferScreenState
                 child: const Text('Lanjutkan',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: AppTypography.bodyLarge,
+                        fontSize: AppTypography.body,
                         fontWeight: FontWeight.w600)),
               ),
             ),
@@ -1694,7 +1694,7 @@ class _PinScreenState extends State<PinScreen> {
           const Spacer(),
           const Text('Masukan PIN',
               style: TextStyle(
-                  fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w600)),
+                  fontSize: AppTypography.body, fontWeight: FontWeight.w600)),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1844,16 +1844,16 @@ class StrukWidget extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.compare_arrows_rounded,
-                      color: Colors.white, size: AppIconSize.lg),
+                      color: Colors.white, size: AppIconSize.md),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   _fmt(nominal),
                   style: const TextStyle(
@@ -2321,8 +2321,8 @@ class _RincianTransaksiScreenState
                   child: Column(
                     children: [
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           color: kPrimary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(16),
@@ -2330,12 +2330,12 @@ class _RincianTransaksiScreenState
                         child: const Icon(
                             Icons.compare_arrows_rounded,
                             color: kPrimary,
-                            size: AppIconSize.lg),
+                            size: AppIconSize.md),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       Text(_fmt(widget.nominal),
                           style: const TextStyle(
-                              fontSize: AppTypography.title,
+                              fontSize: AppTypography.subtitle,
                               fontWeight: FontWeight.w800,
                               color: Colors.black87)),
                       const SizedBox(height: 6),
@@ -2359,7 +2359,7 @@ class _RincianTransaksiScreenState
                           const Text('Berhasil',
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: AppTypography.bodyLarge)),
+                                  fontSize: AppTypography.body)),
                           const SizedBox(width: 6),
                           Container(
                             width: 22,
@@ -2379,7 +2379,7 @@ class _RincianTransaksiScreenState
                         alignment: Alignment.centerLeft,
                         child: Text('Rincian Transaksi',
                             style: TextStyle(
-                                fontSize: AppTypography.bodyLarge,
+                                fontSize: AppTypography.body,
                                 fontWeight: FontWeight.w700)),
                       ),
                       const SizedBox(height: 16),
@@ -2422,7 +2422,7 @@ class _RincianTransaksiScreenState
                 label: const Text('Kembali ke Dashboard',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: AppTypography.bodyLarge,
+                        fontSize: AppTypography.button,
                         fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimary,
@@ -2487,7 +2487,7 @@ class _RincianTransaksiScreenState
                           strokeWidth: 2, color: kPrimary),
                     ),
                   )
-                : Icon(icon, color: kPrimary, size: AppIconSize.lg),
+                : Icon(icon, color: kPrimary, size: AppIconSize.md),
           ),
           const SizedBox(height: 6),
           Text(label,
@@ -2583,8 +2583,8 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
             Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: isCash ? const Color(0xFFFFF4E5) : kPrimaryLight,
                     borderRadius: BorderRadius.circular(16),
@@ -2592,10 +2592,10 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                   child: Icon(
                     isCash ? Icons.payments_outlined : Icons.account_balance_wallet_outlined,
                     color: isCash ? kWarning : kPrimaryDark,
-                    size: AppIconSize.xl,
+                    size: AppIconSize.md,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2603,7 +2603,7 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                       Text(
                         item.judul,
                         style: const TextStyle(
-                          fontSize: AppTypography.bodyLarge,
+                          fontSize: AppTypography.body,
                           fontWeight: FontWeight.w700,
                           color: kText,
                                         ),
@@ -2836,13 +2836,13 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
               child: Row(
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       color: kPrimaryLight,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.eco_rounded, color: kPrimaryDark, size: AppIconSize.xl),
+                    child: const Icon(Icons.eco_rounded, color: kPrimaryDark, size: AppIconSize.lg),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
@@ -2851,7 +2851,7 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
                       children: [
                         Text('admin', style: TextStyle(color: kTextSoft, fontSize: AppTypography.caption)),
                         SizedBox(height: 2),
-                        Text('Rumah Hijau', style: TextStyle(color: kText, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w800)),
+                        Text('Rumah Hijau', style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w800)),
                         SizedBox(height: 3),
                         Text('Penarikan uang tunai di lokasi mitra', style: TextStyle(color: kTextSoft, fontSize: AppTypography.caption)),
                       ],
@@ -2861,7 +2861,7 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Nominal tarik tunai', style: TextStyle(color: kText, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w700)),
+            const Text('Nominal tarik tunai', style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
               controller: _controller,
@@ -3041,7 +3041,7 @@ class _CashPinScreenState extends State<CashPinScreen> {
       body: Column(
         children: [
           const Spacer(),
-          const Text('Masukkan PIN yang telah dibuat', style: TextStyle(color: kText, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w700)),
+          const Text('Masukkan PIN yang telah dibuat', style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w700)),
           const SizedBox(height: 24),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(_length, (i) => Container(margin: const EdgeInsets.symmetric(horizontal: 8), width: 14, height: 14, decoration: BoxDecoration(shape: BoxShape.circle, color: i < _pin.length ? kPrimary : kBorder)))),
           const SizedBox(height: 30),
@@ -3117,7 +3117,7 @@ class CashTokenScreen extends StatelessWidget {
               decoration: BoxDecoration(color: kPrimaryDark, borderRadius: BorderRadius.circular(22)),
               child: Column(
                 children: [
-                  const Icon(Icons.verified_outlined, color: Colors.white, size: AppIconSize.xl),
+                  const Icon(Icons.verified_outlined, color: Colors.white, size: AppIconSize.lg),
                   const SizedBox(height: 10),
                   const Text('Kode tarik tunai', style: TextStyle(color: Colors.white70, fontSize: AppTypography.bodySmall)),
                   const SizedBox(height: 8),
@@ -3135,7 +3135,7 @@ class CashTokenScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Sampaikan kepada admin Rumah Hijau', style: TextStyle(color: kText, fontSize: AppTypography.bodyLarge, fontWeight: FontWeight.w800)),
+                  const Text('Sampaikan kepada admin Rumah Hijau', style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 10),
                   Text('Nomor ponsel terdaftar: $phone', style: const TextStyle(color: kText, fontSize: AppTypography.bodySmall)),
                   const SizedBox(height: 4),

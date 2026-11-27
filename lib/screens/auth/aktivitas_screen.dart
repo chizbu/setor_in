@@ -315,7 +315,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
       child: Container(
         height: MediaQuery.of(context).size.height - 180,
         alignment: Alignment.center,
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -327,7 +327,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
               ),
               child: const Icon(
                 Icons.history_rounded,
-                size: AppIconSize.hero,
+                size: AppIconSize.xl,
                 color: kPrimary,
               ),
             ),
