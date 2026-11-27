@@ -353,13 +353,13 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: iconBg,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(iconData, color: iconColor, size: AppIconSize.md),
+              child: Icon(iconData, color: iconColor, size: AppIconSize.sm),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -369,12 +369,12 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   Text(
                     item.judul,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: AppTypography.bodySmall),
+                        fontWeight: FontWeight.w700, fontSize: AppTypography.bodySmall),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     item.subjudul,
-                    style: TextStyle(color: kTextSoft, fontSize: AppTypography.caption),
+                    style: TextStyle(color: kTextSoft, fontSize: AppTypography.overline),
                   ),
                 ],
               ),
@@ -386,7 +386,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   item.nominal,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: AppTypography.body,
+                    fontSize: AppTypography.bodySmall,
                     color: item.isPlus ? kPrimary : kDanger,
                   ),
                 ),
@@ -406,7 +406,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                   item.tanggal.contains(',')
                       ? item.tanggal.split(',').last.trim()
                       : item.tanggal,
-                  style: TextStyle(fontSize: AppTypography.caption, color: kTextSoft),
+                  style: TextStyle(fontSize: AppTypography.overline, color: kTextSoft),
                 ),
               ],
             ),
@@ -426,13 +426,13 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
       child: Column(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: kPrimary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: kPrimary, size: AppIconSize.md),
+            child: Icon(icon, color: kPrimary, size: AppIconSize.sm),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(label,
@@ -545,7 +545,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                         MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.receipt_long_outlined,
-                                          size: AppIconSize.lg,
+                                          size: AppIconSize.md,
                                           color: kTextSoft),
                                       const SizedBox(height: 10),
                                       Text(
@@ -703,7 +703,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
           // Filter chips
           SizedBox(
-            height: 32,
+            height: 28,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -726,12 +726,12 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.receipt_long_outlined,
-                          size: AppIconSize.lg, color: kTextSoft),
+                          size: AppIconSize.md, color: kTextSoft),
                       const SizedBox(height: 12),
                       Text(
                         'Belum ada transaksi',
                         style: TextStyle(
-                            color: Colors.grey.shade400, fontSize: AppTypography.body),
+                            color: kTextSoft, fontSize: AppTypography.bodySmall),
                       ),
                     ],
                   )
@@ -854,8 +854,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: isCash ? const Color(0xFFFFF4E5) : kPrimaryLight,
                 borderRadius: BorderRadius.circular(12),
@@ -863,21 +863,21 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               child: Icon(
                 isCash ? Icons.payments_outlined : Icons.account_balance_wallet_outlined,
                 color: isCash ? kWarning : kPrimary,
-                size: AppIconSize.md,
+                size: AppIconSize.sm,
               ),
             ),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(item.judul,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: AppTypography.bodySmall)),
+                          fontWeight: FontWeight.w700, fontSize: AppTypography.bodySmall)),
                   const SizedBox(height: 2),
                   Text(item.subjudul,
                       style: TextStyle(
-                          color: kTextSoft, fontSize: AppTypography.caption)),
+                          color: kTextSoft, fontSize: AppTypography.overline)),
                 ],
               ),
             ),
@@ -888,7 +888,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                   item.nominal,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: AppTypography.body,
+                    fontSize: AppTypography.bodySmall,
                     color: item.isPlus ? kPrimary : kDanger,
                   ),
                 ),
@@ -909,7 +909,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       ? item.tanggal.split(',').last.trim()
                       : item.tanggal,
                   style: TextStyle(
-                      fontSize: AppTypography.caption, color: kTextSoft),
+                      fontSize: AppTypography.overline, color: kTextSoft),
                 ),
               ],
             ),
@@ -979,7 +979,7 @@ class _MetodePembayaranScreenState
                               Expanded(
                                 child: Text(name,
                                     style: const TextStyle(
-                                        fontSize: AppTypography.body,
+                                        fontSize: AppTypography.bodySmall,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.black87)),
                               ),
@@ -1272,7 +1272,7 @@ Color _avatarFg(String initial) {
                                 MainAxisAlignment.center,
                             children: [
                               Icon(Icons.contacts_outlined,
-                                  size: AppIconSize.lg,
+                                  size: AppIconSize.md,
                                   color: Colors.grey.shade300),
                               const SizedBox(height: 16),
                               Text('Izin kontak ditolak',
@@ -2487,7 +2487,7 @@ class _RincianTransaksiScreenState
                           strokeWidth: 2, color: kPrimary),
                     ),
                   )
-                : Icon(icon, color: kPrimary, size: AppIconSize.md),
+                : Icon(icon, color: kPrimary, size: AppIconSize.sm),
           ),
           const SizedBox(height: 6),
           Text(label,
@@ -2583,8 +2583,8 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
             Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: isCash ? const Color(0xFFFFF4E5) : kPrimaryLight,
                     borderRadius: BorderRadius.circular(16),
@@ -2592,10 +2592,10 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                   child: Icon(
                     isCash ? Icons.payments_outlined : Icons.account_balance_wallet_outlined,
                     color: isCash ? kWarning : kPrimaryDark,
-                    size: AppIconSize.md,
+                    size: AppIconSize.sm,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2603,7 +2603,7 @@ void _showDetailTransaksi(BuildContext context, RiwayatTransaksi item) {
                       Text(
                         item.judul,
                         style: const TextStyle(
-                          fontSize: AppTypography.body,
+                          fontSize: AppTypography.bodySmall,
                           fontWeight: FontWeight.w700,
                           color: kText,
                                         ),
@@ -2836,24 +2836,24 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
               child: Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: kPrimaryLight,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.eco_rounded, color: kPrimaryDark, size: AppIconSize.lg),
+                    child: const Icon(Icons.eco_rounded, color: kPrimaryDark, size: AppIconSize.md),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('admin', style: TextStyle(color: kTextSoft, fontSize: AppTypography.caption)),
+                        Text('admin', style: TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
                         SizedBox(height: 2),
-                        Text('Rumah Hijau', style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w800)),
+                        Text('Rumah Hijau', style: TextStyle(color: kText, fontSize: AppTypography.bodySmall, fontWeight: FontWeight.w800)),
                         SizedBox(height: 3),
-                        Text('Penarikan uang tunai di lokasi mitra', style: TextStyle(color: kTextSoft, fontSize: AppTypography.caption)),
+                        Text('Penarikan uang tunai di lokasi mitra', style: TextStyle(color: kTextSoft, fontSize: AppTypography.overline)),
                       ],
                     ),
                   ),
@@ -2861,7 +2861,7 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Nominal tarik tunai', style: TextStyle(color: kText, fontSize: AppTypography.body, fontWeight: FontWeight.w700)),
+            const Text('Nominal tarik tunai', style: TextStyle(color: kText, fontSize: AppTypography.bodySmall, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
               controller: _controller,

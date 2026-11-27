@@ -327,7 +327,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
               ),
               child: const Icon(
                 Icons.history_rounded,
-                size: AppIconSize.xl,
+                size: AppIconSize.lg,
                 color: kPrimary,
               ),
             ),
@@ -335,7 +335,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
             const Text(
               'Belum ada transaksi',
               style: TextStyle(
-                fontSize: AppTypography.subtitle,
+                fontSize: AppTypography.bodySmall,
                 fontWeight: FontWeight.w700,
                 color: kText,
               ),
@@ -349,7 +349,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                       : 'Penukaran saldo akan muncul di sini setelah diajukan.',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: AppTypography.body,
+                fontSize: AppTypography.caption,
                 color: kTextSoft,
               ),
             ),
@@ -381,8 +381,8 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       color: _getIconColor(type).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppRadius.md),
@@ -390,7 +390,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                     child: Icon(
                       _getIcon(type),
                       color: _getIconColor(type),
-                      size: AppIconSize.md,
+                      size: AppIconSize.sm,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -401,7 +401,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                         Text(
                           item['title'] ?? '',
                           style: const TextStyle(
-                            fontSize: AppTypography.bodyLarge,
+                            fontSize: AppTypography.bodySmall,
                             fontWeight: FontWeight.w700,
                             color: kText,
                           ),
@@ -410,7 +410,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                         Text(
                           item['subtitle'] ?? '',
                           style: const TextStyle(
-                            fontSize: AppTypography.body,
+                            fontSize: AppTypography.caption,
                             fontWeight: FontWeight.w600,
                             color: kPrimary,
                           ),
@@ -419,7 +419,7 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
                         Text(
                           item['detail'] ?? '',
                           style: const TextStyle(
-                            fontSize: AppTypography.bodySmall,
+                            fontSize: AppTypography.overline,
                             color: kTextSoft,
                           ),
                         ),
