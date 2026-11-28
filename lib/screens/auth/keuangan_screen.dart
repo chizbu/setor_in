@@ -251,10 +251,10 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
               Row(
                 children: [
                   const Icon(Icons.account_balance_wallet_outlined,
-                      color: Colors.white70, size: AppIconSize.md),
+                      color: Colors.white70, size: AppIconSize.sm),
                   const SizedBox(width: 6),
                   const Text('Saldomu',
-                      style: TextStyle(color: Colors.white70, fontSize: AppTypography.bodySmall)),
+                      style: TextStyle(color: Colors.white70, fontSize: AppTypography.caption)),
                   const SizedBox(width: AppSpacing.sm),
                   GestureDetector(
                     onTap: () => setState(() => _showSaldo = !_showSaldo),
@@ -263,7 +263,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
                       color: Colors.white70,
-                      size: AppIconSize.md,
+                      size: AppIconSize.sm,
                     ),
                   ),
                 ],
@@ -277,7 +277,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                         : 'Rp ••••••••',
                 style: const TextStyle(
                     color: Colors.white,
-                    fontSize: AppTypography.title,
+                    fontSize: AppTypography.bodyLarge,
                     fontWeight: FontWeight.w700),
               ),
               // ── Saldo Tertahan (jika ada) ──
@@ -514,7 +514,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                       const Text(
                                         'Riwayat transaksi',
                                         style: TextStyle(
-                                          fontSize: AppTypography.subtitle,
+                                          fontSize: AppTypography.bodyLarge,
                                           fontWeight: FontWeight.w700,
                                           color: kText,
                                         ),
@@ -522,7 +522,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                       Text(
                                         'Lihat semua',
                                         style: TextStyle(
-                                          fontSize: AppTypography.bodySmall,
+                                          fontSize: AppTypography.caption,
                                           color: kPrimary,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -552,7 +552,7 @@ class _KeuanganScreenState extends State<KeuanganScreen> {
                                         'Belum ada transaksi',
                                         style: TextStyle(
                                             color: Colors.grey.shade400,
-                                            fontSize: AppTypography.bodySmall),
+                                            fontSize: AppTypography.caption),
                                       ),
                                     ],
                                   )
@@ -2534,7 +2534,7 @@ PreferredSizeWidget _buildAppBar(
       style: const TextStyle(
         color: kText,
         fontWeight: FontWeight.w800,
-        fontSize: AppTypography.subtitle,
+        fontSize: AppTypography.bodyLarge,
       ),
     ),
     centerTitle: false,
